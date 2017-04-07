@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: @name@
+    description: @description@
+---
+info:
+  version: @version@
+  responsible: Anatoly Cherkasov
+  stage: dev
+  damsel:
+    version: @damsel.version@
+---
+endpoints:
+  health:
+    sensitive: false
+---
+server:
+  port: @server.port@
+---
+# bm poller
+bm:
+  pooling:
+    url: http://localhost:8023/repo
+    maxPoolSize: 1
+    delay: 5000
+
+# connection timeout
+merchant:
+  callback:
+    timeout: 10
+# sleep time for failed requests
+    sleep: 30
+# re-send policy count
+    resend:
+      count: 3
+
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    url: @db.url@
+    username: @db.user@
+    password: @db.password@
+    hikari:
+      maximum-pool-size: 3
+      idle-timeout: 30000
