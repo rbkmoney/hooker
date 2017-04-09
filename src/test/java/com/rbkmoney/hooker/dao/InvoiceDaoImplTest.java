@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.damsel.base.Content;
+import com.rbkmoney.hooker.AbstractIntegrationTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,7 +18,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class InvoiceDaoImplTest {
+public class InvoiceDaoImplTest extends AbstractIntegrationTest {
     @Autowired
     InvoiceDao invoiceDao;
     @Before

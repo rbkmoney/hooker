@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.dao;
 import com.rbkmoney.damsel.webhooker.EventFilter;
 import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.damsel.webhooker.WebhookParams;
+import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
 import com.rbkmoney.hooker.utils.EventFilterUtils;
 import org.junit.After;
@@ -25,7 +26,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class WebhookDaoImplTest {
+public class WebhookDaoImplTest extends AbstractIntegrationTest {
     @Autowired
     WebhookDao webhookDao;
     @Before
