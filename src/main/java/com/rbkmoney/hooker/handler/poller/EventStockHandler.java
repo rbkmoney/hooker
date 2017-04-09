@@ -25,6 +25,11 @@ public class EventStockHandler implements EventHandler<StockEvent> {
                     pollingEventHandler.handle(stockEvent);
                 } catch (Exception e) {
                     log.error("Error when poller handling", e);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
                 }
                 break;
             }

@@ -50,8 +50,14 @@ CREATE TABLE hook.key
 CREATE TABLE hook.invoice
 (
     id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
-    invoice_id character varying,
-    party_id character varying,
+    invoice_id character varying(40) NOT NULL,
+    party_id character varying(40) NOT NULL,
+    shop_id int NOT NULL,
+    amount numeric NOT NULL,
+    currency character varying(10) NOT NULL,
+    created_at character varying(80) NOT NULL,
+    content_type character varying,
+    content_data bytea,
     CONSTRAINT invoice_pkey PRIMARY KEY (id)
 );
 
@@ -60,7 +66,7 @@ COMMENT ON TABLE hook.invoice
 
 insert into hook.last_event_id (id, event_id) values (1, 1);
 
-insert into hook.webhook_type(id, code, description) values(1, 'source_event.processing_event.payload.invoice_event.invoice_created', 'Создание инвойса');
-insert into hook.webhook_type(id, code, description) values(2, 'source_event.processing_event.payload.invoice_event.invoice_status_changed', 'Изменение статуса инвойса');
-insert into hook.webhook_type(id, code, description) values(3, 'source_event.processing_event.payload.invoice_event.invoice_payment_event.invoice_payment_started', 'Создание платежа');
-insert into hook.webhook_type(id, code, description) values(4, 'source_event.processing_event.payload.invoice_event.invoice_payment_event.invoice_payment_status_changed', 'Изменение статуса платежа');
+insert into hook.webhook_type(id, code, description) values(1, 'source_event.processing_event.payload.invoice_event.invoice_created.payment', 'Создание инвойса');
+insert into hook.webhook_type(id, code, description) values(2, 'source_event.processing_event.payload.invoice_event.invoice_status_changed.status', 'Изменение статуса инвойса');
+insert into hook.webhook_type(id, code, description) values(3, 'source_event.processing_event.payload.invoice_event.invoice_payment_event.invoice_payment_started.payment', 'Создание платежа');
+insert into hook.webhook_type(id, code, description) values(4, 'source_event.processing_event.payload.invoice_event.invoice_payment_event.invoice_payment_status_changed.status', 'Изменение статуса платежа');

@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.handler.poller.impl;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.hooker.dao.EventTypeCode;
 import com.rbkmoney.hooker.dao.InvoiceDao;
+import com.rbkmoney.hooker.dao.InvoiceInfo;
 import com.rbkmoney.thrift.filter.Filter;
 import com.rbkmoney.thrift.filter.PathConditionFilter;
 import com.rbkmoney.thrift.filter.rule.PathConditionRule;
@@ -10,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoicePaymentStartedHandler extends AbstractEventHandler {
+public class InvoicePaymentStartedHandler extends AbstractInvoiceEventHandler {
     @Autowired
     InvoiceDao invoiceDao;
 
@@ -32,12 +33,8 @@ public class InvoicePaymentStartedHandler extends AbstractEventHandler {
     }
 
     @Override
-    protected String getPartyId(Event event) throws Exception {
-        return invoiceDao.getParty(event.getSource().getInvoice());
-    }
-
-    @Override
-    protected Object getEventForPost(Event event) {
-        return event.getPayload().getInvoiceEvent().getInvoicePaymentEvent().getInvoicePaymentStarted();
+    protected void prepareInvoiceInfo(Event event, InvoiceInfo invoiceInfo) {
+        invoiceInfo.setDescription("Создание платежа");
+        invoiceInfo.setStatus("created");
     }
 }

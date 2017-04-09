@@ -6,6 +6,7 @@ import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.hooker.dao.EventTypeCode;
+import com.rbkmoney.hooker.dao.InvoiceDao;
 import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.handler.poller.PollingEventHandler;
 import com.rbkmoney.hooker.service.EventService;
@@ -37,22 +38,22 @@ public abstract class AbstractEventHandler implements PollingEventHandler<StockE
     public void handle(StockEvent value) throws Exception {
         Event event = value.getSourceEvent().getProcessingEvent();
         long eventId = event.getId();
-        String invoiceId = event.getSource().getInvoice();
-        String partyId = null;
-        try {
-            partyId = getPartyId(event);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         String paramsAsString = null;
+        Object eventForPost = getEventForPost(event);
         try {
-            paramsAsString = new ObjectMapper().writeValueAsString(getEventForPost(event));
+            paramsAsString = new ObjectMapper().writeValueAsString(eventForPost);
         } catch (JsonProcessingException e) {
             log.error("Couldn't get JSON from context", e);
         }
+        String partyId = null;
+        try {
+            partyId = getPartyId(eventForPost);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         List<Webhook> webhookList = webhookDao.getWebhooksByCode(getCode(), partyId);
         if (webhookList != null) {
-            log.info("Start InvoiceCreatedHandler: event_id {}, invoiceId {}", eventId, invoiceId);
+            log.info("Start AbstractEventHandler: event_id {}", eventId);
             for (Webhook webhook : webhookList) {
                 KeyPair keyPair = webhookDao.getPairKey(partyId);
                 final String signature = signer.sign(paramsAsString, keyPair.getPrivKey());
@@ -68,12 +69,12 @@ public abstract class AbstractEventHandler implements PollingEventHandler<StockE
         } catch (Exception e) {
             log.error("Exception: not save Last id. Reason: " + e.getMessage());
         }
-        log.info("End InvoiceCreatedHandler: event_id {}, invoiceId {}", eventId, invoiceId);
+        log.info("End AbstractEventHandler: event_id {}", eventId);
     }
 
     protected abstract EventTypeCode getCode();
 
-    protected abstract String getPartyId(Event event) throws Exception;
+    protected abstract String getPartyId(Object eventForPost) throws Exception;
 
-    protected abstract Object getEventForPost(Event event);
+    protected abstract Object getEventForPost(Event event) throws Exception;
 }

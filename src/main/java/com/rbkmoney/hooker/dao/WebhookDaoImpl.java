@@ -33,12 +33,11 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     public List<Webhook> getPartyWebhooks(String partyId) {
         log.info("New getPartyWebhooks request. partyId = {}", partyId);
-        final String sql = "select w.*,  \n" +
+        final String sql = "select w.*, k.pub_key, wt.code \n" +
                 "from hook.webhook w, \n" +
                 "hook.webhook_type wt, \n" +
                 "hook.key k "+
                 "where wt.id = w.type " +
-                "and wt.code = w.id " +
                 "and w.party_id = k.party_id " +
                 "and w.party_id =:party_id";
 
@@ -58,10 +57,13 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     public Webhook getWebhookById(String id) {
         log.info("New getWebhook request. id = {}", id);
-        final String sql = "select w.*, k.pub_key \n" +
+        final String sql = "select w.*, k.pub_key, wt.code \n" +
                 "from hook.webhook w, \n" +
+                "hook.webhook_type wt, \n" +
                 "hook.key k "+
-                "where w.party_id=k.party_id and w.id =:id";
+                "where wt.id = w.type \n" +
+                "and w.party_id=k.party_id " +
+                "and w.id =:id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);
@@ -79,14 +81,13 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     public List<Webhook> getWebhooksByCode(EventTypeCode typeCode, String partyId) {
         log.info("New getWebhookByCode request. TypeCode = {}, partyId = {}", typeCode, partyId);
-        final String sql = "select w.*, k.pub_key \n" +
+        final String sql = "select w.*, k.pub_key, wt.code \n" +
                 "from hook.webhook w, \n" +
                 "hook.webhook_type wt, \n" +
                 "hook.key k \n" +
                 "where wt.id = w.type " +
-                "and wt.code = w.id " +
                 "and k.party_id = w.party_id " +
-                "and w.code =:code " +
+                "and wt.code =:code " +
                 "and w.party_id =:party_id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -119,7 +120,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         webhook.setPubKey(keyPair.getPublKey());
 
         final String sql = "INSERT INTO hook.webhook(id, party_id, type, url) " +
-                "VALUES (:id, :party_id, :type, :url)";
+                "VALUES (:id, :party_id, (select id from hook.webhook_type where code =:type), :url)";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", webhook.getId())
@@ -205,7 +206,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         return (rs, i) -> new Webhook(rs.getString("id"),
                 rs.getString("party_id"),
                 EventFilterUtils.getEventFilterByCode(
-                        EventTypeCode.valueOfKey(rs.getString("party_id"))),
+                        EventTypeCode.valueOfKey(rs.getString("code"))),
                 rs.getString("url"),
                 rs.getString("pub_key")
                 );
