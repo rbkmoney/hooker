@@ -3,48 +3,63 @@ package com.rbkmoney.hooker.utils;
 import com.rbkmoney.damsel.webhooker.*;
 import com.rbkmoney.hooker.dao.EventTypeCode;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by inalarsanukaev on 05.04.17.
  */
 public class EventFilterUtils {
-    public static EventFilter getEventFilterByCode(EventTypeCode eventTypeCode) {
+    public static EventFilter getEventFilterByCode(Set<EventTypeCode> eventTypeCodeSet) {
+        if (eventTypeCodeSet == null || eventTypeCodeSet.isEmpty()) {return null;}
         EventFilter eventFilter = new EventFilter();
-        switch (eventTypeCode){
-            case INVOICE_CREATED:
-                eventFilter.setInvoice(new InvoiceEventFilter(InvoiceEventType.created(new InvoiceCreated())));
-                break;
-            case INVOICE_STATUS_CHANGED:
-                eventFilter.setInvoice(new InvoiceEventFilter(InvoiceEventType.status_changed(new InvoiceStatusChanged())));
-                break;
-            case INVOICE_PAYMENT_STARTED:
-                eventFilter.setInvoice(new InvoiceEventFilter(InvoiceEventType.payment(InvoicePaymentEventType.created(new InvoicePaymentCreated()))));
-                break;
-            case INVOICE_PAYMENT_STATUS_CHANGED:
-                eventFilter.setInvoice(new InvoiceEventFilter(InvoiceEventType.payment(InvoicePaymentEventType.status_changed(new InvoicePaymentStatusChanged()))));
-                break;
-            default:
-                return null;
+        InvoiceEventFilter invoiceEventFilter = new InvoiceEventFilter();
+        Set<InvoiceEventType> invoiceEventTypes = new HashSet<>();
+        invoiceEventFilter.setTypes(invoiceEventTypes);
+        eventFilter.setInvoice(invoiceEventFilter);
+        for (EventTypeCode eventTypeCode : eventTypeCodeSet) {
+            switch (eventTypeCode) {
+                case INVOICE_CREATED:
+                    invoiceEventTypes.add(InvoiceEventType.created(new InvoiceCreated()));
+                    break;
+                case INVOICE_STATUS_CHANGED:
+                    invoiceEventTypes.add(InvoiceEventType.status_changed(new InvoiceStatusChanged()));
+                    break;
+                case INVOICE_PAYMENT_STARTED:
+                    invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType.created(new InvoicePaymentCreated())));
+                    break;
+                case INVOICE_PAYMENT_STATUS_CHANGED:
+                    invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType.status_changed(new InvoicePaymentStatusChanged())));
+                    break;
+                default:
+                    return null;
+            }
         }
         return eventFilter;
     }
 
-    public static EventTypeCode getEventTypeCodeByFilter(EventFilter eventFilter){
+    public static Set<EventTypeCode> getEventTypeCodeSetByFilter(EventFilter eventFilter){
+        Set<EventTypeCode> eventTypeCodeSet = new HashSet<>();
         if (eventFilter.isSetInvoice()) {
-            if (eventFilter.getInvoice().getType().isSetCreated()) {
-                return EventTypeCode.INVOICE_CREATED;
-            }
-            if (eventFilter.getInvoice().getType().isSetStatusChanged()) {
-                return EventTypeCode.INVOICE_STATUS_CHANGED;
-            }
-            if (eventFilter.getInvoice().getType().isSetPayment()) {
-                if (eventFilter.getInvoice().getType().getPayment().isSetCreated()) {
-                    return EventTypeCode.INVOICE_PAYMENT_STARTED;
+            Set<InvoiceEventType> invoiceEventTypes = eventFilter.getInvoice().getTypes();
+            for (InvoiceEventType invoiceEventType : invoiceEventTypes) {
+
+                if (invoiceEventType.isSetCreated()) {
+                    eventTypeCodeSet.add(EventTypeCode.INVOICE_CREATED);
                 }
-                if (eventFilter.getInvoice().getType().getPayment().isSetStatusChanged()) {
-                    return EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED;
+                if (invoiceEventType.isSetStatusChanged()) {
+                    eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
+                }
+                if (invoiceEventType.isSetPayment()) {
+                    if (invoiceEventType.getPayment().isSetCreated()) {
+                        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STARTED);
+                    }
+                    if (invoiceEventType.getPayment().isSetStatusChanged()) {
+                        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED);
+                    }
                 }
             }
         }
-        return null;
+        return eventTypeCodeSet;
     }
 }

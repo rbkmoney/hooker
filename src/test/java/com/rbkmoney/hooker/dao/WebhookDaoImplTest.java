@@ -1,10 +1,8 @@
 package com.rbkmoney.hooker.dao;
 
-import com.rbkmoney.damsel.webhooker.EventFilter;
 import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.damsel.webhooker.WebhookParams;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
-import com.rbkmoney.hooker.service.crypt.KeyPair;
 import com.rbkmoney.hooker.utils.EventFilterUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -13,13 +11,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.awt.image.Kernel;
+import java.util.HashSet;
 import java.util.List;
-
-import static org.junit.Assert.*;
+import java.util.Set;
 
 /**
  * Created by inalarsanukaev on 08.04.17.
@@ -31,9 +27,19 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
     WebhookDao webhookDao;
     @Before
     public void setUp() throws Exception {
-        WebhookParams webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED), "https://google.com");
+        Set<EventTypeCode> eventTypeCodeSet = new HashSet<>();
+        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED);
+        eventTypeCodeSet.add(EventTypeCode.INVOICE_CREATED);
+        WebhookParams webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://google.com");
         webhookDao.addWebhook(webhookParams);
-        webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(EventTypeCode.INVOICE_CREATED), "https://yandex.ru");
+        eventTypeCodeSet.clear();
+        eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
+        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STARTED);
+        webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://yandex.ru");
+        webhookDao.addWebhook(webhookParams);
+        eventTypeCodeSet.clear();
+        eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
+        webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://2ch.hk/b");
         webhookDao.addWebhook(webhookParams);
     }
 
@@ -43,11 +49,16 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
         for (Webhook w : list) {
             webhookDao.delete(w.getId());
         }
+        list = webhookDao.getPartyWebhooks("999");
+        for (Webhook w : list) {
+            webhookDao.delete(w.getId());
+        }
     }
 
     @Test
     public void getPartyWebhooks() throws Exception {
         Assert.assertEquals(webhookDao.getPartyWebhooks("123").size(), 2);
+        Assert.assertTrue(webhookDao.getPartyWebhooks("88888").isEmpty());
     }
 
     @Test
@@ -62,10 +73,12 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void getWebhooksByCode() throws Exception {
         Assert.assertNotNull(webhookDao.getWebhooksByCode(EventTypeCode.INVOICE_CREATED, "123"));
+        Assert.assertTrue(webhookDao.getWebhooksByCode(EventTypeCode.INVOICE_CREATED, "888").isEmpty());
     }
 
     @Test
     public void getPairKey() throws Exception {
         Assert.assertNotNull(webhookDao.getPairKey("123"));
+        Assert.assertNull(webhookDao.getPairKey("88888"));
     }
 }

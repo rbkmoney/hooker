@@ -1,11 +1,17 @@
 create schema if not exists hook;
 
+CREATE SEQUENCE hook.seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
 -- Table: hook.webhook
 CREATE TABLE hook.webhook
 (
     id character varying(40) NOT NULL,
     party_id character varying(40) NOT NULL,
-    code character varying(256) NOT NULL,
     url character varying(512) NOT NULL,
     CONSTRAINT pk_webhook PRIMARY KEY (id)
 );
@@ -15,12 +21,17 @@ create index webhook_party_id_key on hook.webhook (party_id);
 COMMENT ON TABLE hook.webhook
     IS 'Table with webhooks';
 
-CREATE SEQUENCE hook.seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 9223372036854775807
-    CACHE 1;
+-- Table: hook.webhook_event
+CREATE TABLE hook.webhook_event
+(
+    id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
+    hook_id character varying(40) NOT NULL,
+    code character varying(256) NOT NULL,
+    CONSTRAINT pk_webhook_event PRIMARY KEY (id)
+);
+
+COMMENT ON TABLE hook.webhook_event
+    IS 'Table with webhook events';
 
 CREATE TABLE hook.key
 (

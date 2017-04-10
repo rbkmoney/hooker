@@ -36,7 +36,11 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public Webhook create(WebhookParams webhookParams) throws TException {
-        return webhookDao.addWebhook(webhookParams);
+        Webhook webhook = webhookDao.addWebhook(webhookParams);
+        if (webhook == null) {
+            throw new TException("Webhookparams.EventFilter is empty.");
+        }
+        return webhook;
     }
 
     @Override
