@@ -53,7 +53,7 @@ public abstract class AbstractEventHandler implements PollingEventHandler<StockE
                     try {
                         webhookHttpPostSender.doPost(webhook.getUrl(), paramsAsString, signature);
                     } catch (IOException e) {
-                        log.error("Couldn't send post-request", e);
+                        log.warn("Couldn't send post-request", e);
                         throw new PostRequestException(e);
                     }
                 }

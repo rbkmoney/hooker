@@ -51,7 +51,7 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
         } catch (EmptyResultDataAccessException e) {
             log.warn("Invoice with id "+invoiceId+" not exist!");
         } catch (NestedRuntimeException e) {
-            log.error("PaymentPayerDaoImpl.getById error", e);
+            log.warn("InvoiceDaoImpl.getById error", e);
             throw new DaoException(e);
         }
         return result;
@@ -76,7 +76,7 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
         } catch (NestedRuntimeException e) {
-            log.error("PaymentPayerDaoImpl.add error", e);
+            log.warn("InvoiceDaoImpl.add error", e);
             throw new DaoException(e);
         }
         log.info("Party info with invoiceId = {} added to table", invoiceId);
@@ -103,7 +103,7 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
                 return false;
             }
         } catch (NestedRuntimeException e) {
-            log.error("PaymentPayerDaoImpl.delete error", e);
+            log.warn("InvoiceDaoImpl.delete error", e);
             throw new DaoException(e);
         }
         log.info("Payment info with invoiceId = {} deleted from table", id);

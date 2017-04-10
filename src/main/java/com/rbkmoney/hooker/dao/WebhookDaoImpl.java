@@ -48,8 +48,8 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
             log.info("Response getPartyWebhooks.");
             return result;
         } catch (EmptyResultDataAccessException e) {
-            log.error("Couldn't find template", e);
-            throw new DaoException("Couldn't find webhook with partyId = " + partyId);
+            log.info("Couldn't find webhooks for partyId "+partyId);
+            return null;
         }
     }
 
@@ -70,7 +70,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
             log.info("Response getWebhook.");
             return result;
         } catch (EmptyResultDataAccessException e) {
-            log.error("Couldn't find webhook", e);
+            log.warn("Couldn't find webhook", e);
             throw new DaoException("Couldn't find webhook with id = " +id);
         }
     }
@@ -91,11 +91,11 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
 
         try {
             List<Webhook> result = getNamedParameterJdbcTemplate().query(sql, params, getWebhookRowMapper());
-            log.info("Response getPartyWebhooks.");
+            log.info("Response getWebhooksByCode.");
             return result;
         } catch (EmptyResultDataAccessException e) {
-            log.error("Couldn't find template", e);
-            throw new DaoException("Couldn't find webhook with typeCode = " + typeCode + "; partyId = " + partyId);
+            log.info("Couldn't find webhook with TypeCode = "+typeCode+", partyId = "+partyId);
+            return null;
         }
     }
 
@@ -123,7 +123,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 throw new DaoException("Couldn't insert webhook "+webhook.getId()+" into table");
             }
         } catch (DataAccessException e) {
-            log.error("WebhookDaoImpl.addWebhook error", e);
+            log.warn("WebhookDaoImpl.addWebhook error", e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} added to table", webhook.getId());
@@ -131,20 +131,21 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     @Override
-    public void delete(final String id) {
+    public boolean delete(final String id) {
         log.info("Start deleting webhook info with id = {}", id);
         final String sql = "DELETE FROM hook.webhook where id=:id";
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
             if (updateCount != 1) {
-                log.error("Couldn't delete webhook from table");
-                throw new DaoException();
+                log.warn("Couldn't delete webhook from table");
+                return false;
             }
         } catch (DataAccessException e) {
-            log.error("WebhookDaoImpl.delete error", e);
-            //throw new DaoException(e);
+            log.warn("WebhookDaoImpl.delete error", e);
+            throw new DaoException(e);
         }
         log.info("Webhook with id = {} deleted from table", id);
+        return true;
     }
 
     @Autowired
@@ -181,9 +182,9 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 .addValue("priv_key", keyPair.getPrivKey())
                 .addValue("pub_key", keyPair.getPublKey());
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
-        } catch (NestedRuntimeException e) {
-            log.error("WebhookKeyDaoImpl.createPairKey error", e);
+            getNamedParameterJdbcTemplate().update(sql, params);
+        } catch (DataAccessException e) {
+            log.warn("WebhookKeyDaoImpl.createPairKey error", e);
             throw new DaoException(e);
         }
         log.info("Key with party_id = {} added to table", partyId);

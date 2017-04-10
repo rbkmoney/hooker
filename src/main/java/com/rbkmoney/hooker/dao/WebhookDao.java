@@ -14,7 +14,7 @@ public interface WebhookDao {
     Webhook getWebhookById(String id);
     List<Webhook> getWebhooksByCode(EventTypeCode typeCode, String partyId);
     Webhook addWebhook(WebhookParams webhookParams);
-    void delete(final String id);
+    boolean delete(final String id);
     KeyPair getPairKey(String partyId);
     KeyPair createPairKey(String partyId);
 }

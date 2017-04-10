@@ -27,7 +27,11 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public Webhook get(String s) throws WebhookNotFound, TException {
-        return webhookDao.getWebhookById(s);
+        try {
+            return webhookDao.getWebhookById(s);
+        } catch (DaoException e) {
+            throw new WebhookNotFound();
+        }
     }
 
     @Override
@@ -38,9 +42,11 @@ public class HookerService implements WebhookManagerSrv.Iface {
     @Override
     public void delete(String s) throws WebhookNotFound, TException {
         try {
-            webhookDao.delete(s);
+            if (!webhookDao.delete(s)) {
+                throw new WebhookNotFound();
+            }
         } catch (DaoException e) {
-            throw new WebhookNotFound();
+            throw new TException();
         }
     }
 }
