@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.handler.poller;
 
 import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.eventstock.client.EventHandler;
+import com.rbkmoney.hooker.handler.PollingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,13 +24,9 @@ public class EventStockHandler implements EventHandler<StockEvent> {
             if (pollingEventHandler.accept(stockEvent)) {
                 try {
                     pollingEventHandler.handle(stockEvent);
-                } catch (Exception e) {
+                } catch (PollingException e) {
                     log.error("Error when poller handling", e);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
+                    //TODO what should I do?
                 }
                 break;
             }

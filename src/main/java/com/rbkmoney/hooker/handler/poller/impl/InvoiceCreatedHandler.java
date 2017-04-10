@@ -3,9 +3,11 @@ package com.rbkmoney.hooker.handler.poller.impl;
 import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.Event;
+import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.EventTypeCode;
 import com.rbkmoney.hooker.dao.InvoiceDao;
 import com.rbkmoney.hooker.dao.InvoiceInfo;
+import com.rbkmoney.hooker.handler.PollingException;
 import com.rbkmoney.thrift.filter.Filter;
 import com.rbkmoney.thrift.filter.PathConditionFilter;
 import com.rbkmoney.thrift.filter.rule.PathConditionRule;
@@ -27,7 +29,16 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
     }
 
     @Override
-    public void handle(StockEvent value) throws Exception {
+    public void handle(StockEvent value) throws PollingException {
+        try {
+            addInvoice(value);
+        } catch (DaoException e){
+            throw new PollingException(e);
+        }
+        super.handle(value);
+    }
+
+    private void addInvoice(StockEvent value) throws DaoException{
         Event event = value.getSourceEvent().getProcessingEvent();
         Invoice invoice = event.getPayload().getInvoiceEvent().getInvoiceCreated().getInvoice();
         InvoiceInfo invoiceInfo = new InvoiceInfo();
@@ -40,7 +51,6 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         invoiceInfo.setCreatedAt(invoice.getCreatedAt());
         invoiceInfo.setMetadata(invoice.getContext());
         invoiceDao.add(invoiceInfo);
-        super.handle(value);
     }
 
     @Override
@@ -51,7 +61,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
     @Override
     protected void prepareInvoiceInfo(Event event, InvoiceInfo invoiceInfo) {
         invoiceInfo.setDescription("Создание инвойса");
-        invoiceInfo.setStatus("created");
+        invoiceInfo.setStatus(event.getPayload().getInvoiceEvent().getInvoiceCreated().getInvoice().getStatus().getSetField().getFieldName());
     }
 
     @Override

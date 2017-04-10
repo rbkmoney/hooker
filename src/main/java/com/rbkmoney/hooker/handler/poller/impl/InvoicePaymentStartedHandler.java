@@ -35,6 +35,6 @@ public class InvoicePaymentStartedHandler extends AbstractInvoiceEventHandler {
     @Override
     protected void prepareInvoiceInfo(Event event, InvoiceInfo invoiceInfo) {
         invoiceInfo.setDescription("Создание платежа");
-        invoiceInfo.setStatus("created");
+        invoiceInfo.setStatus(event.getPayload().getInvoiceEvent().getInvoicePaymentEvent().getInvoicePaymentStarted().getPayment().getStatus().getSetField().getFieldName());
     }
 }

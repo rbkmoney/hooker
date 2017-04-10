@@ -7,5 +7,5 @@ public interface Handler<T> {
 
     boolean accept(T value);
 
-    void handle(T value) throws Exception;
+    void handle(T value) throws PollingException;
 }
