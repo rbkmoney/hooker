@@ -101,12 +101,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
 
     @Override
     public Webhook addWebhook(WebhookParams webhookParams) {
-        //TODO
-        KeyPair keyPair = getPairKey(webhookParams.getPartyId());
-        if (keyPair == null) {
-            keyPair = createPairKey(webhookParams.getPartyId());
-        }
-
+        KeyPair keyPair = createPairKey(webhookParams.getPartyId());
         Webhook webhook = new Webhook();
         webhook.setId(UUID.randomUUID().toString());
         webhook.setEventFilter(webhookParams.getFilterStruct());
@@ -176,7 +171,9 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
 
     @Override
     public KeyPair createPairKey(String partyId) {
-        final String sql = "INSERT INTO hook.key(party_id, priv_key, pub_key) VALUES (:party_id, :priv_key, :pub_key)";
+        final String sql = "INSERT INTO hook.key(party_id, priv_key, pub_key) " +
+                "VALUES (:party_id, :priv_key, :pub_key) " +
+                "ON CONFLICT(party_id) DO NOTHING";
 
         KeyPair keyPair = signer.generateKeys();
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -185,9 +182,6 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 .addValue("pub_key", keyPair.getPublKey());
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
-            if (updateCount != 1) {
-                throw new DaoException("Couldn't insert key "+partyId+" into table");
-            }
         } catch (NestedRuntimeException e) {
             log.error("WebhookKeyDaoImpl.createPairKey error", e);
             throw new DaoException(e);

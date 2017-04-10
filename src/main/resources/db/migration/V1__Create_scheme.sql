@@ -30,7 +30,7 @@ CREATE TABLE hook.key
     priv_key character VARYING NOT NULL
 );
 
-create index key_party_id_key on hook.key (party_id);
+create unique index key_party_id_key on hook.key (party_id);
 
 CREATE TABLE hook.invoice
 (

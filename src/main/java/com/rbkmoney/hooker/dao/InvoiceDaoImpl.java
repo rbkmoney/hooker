@@ -75,9 +75,6 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
                 .addValue("content_data", invoiceInfo.getMetadata().getData());
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
-            if (updateCount != 1) {
-                return false;
-            }
         } catch (NestedRuntimeException e) {
             log.error("PaymentPayerDaoImpl.add error", e);
             throw new DaoException(e);
