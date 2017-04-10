@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.base.Content;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.NestedRuntimeException;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 
 @Component
@@ -25,7 +25,7 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
     }
 
     @Override
-    public InvoiceInfo get(String invoiceId) throws Exception {
+    public InvoiceInfo get(String invoiceId) throws DaoException {
         InvoiceInfo result = null;
         final String sql = "SELECT * FROM hook.invoice WHERE invoice_id =:invoice_id";
         MapSqlParameterSource params = new MapSqlParameterSource("invoice_id", invoiceId);
@@ -34,6 +34,7 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
                 @Override
                 public InvoiceInfo mapRow(ResultSet rs, int i) throws SQLException {
                     InvoiceInfo invoiceInfo = new InvoiceInfo();
+                    invoiceInfo.setEventId(rs.getLong("event_id"));
                     invoiceInfo.setInvoiceId(rs.getString("invoice_id"));
                     invoiceInfo.setPartyId(rs.getString("party_id"));
                     invoiceInfo.setShopId(rs.getInt("shop_id"));
@@ -57,15 +58,13 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
     }
 
     @Override
-    public boolean add(InvoiceInfo invoiceInfo) throws Exception {
+    public boolean add(InvoiceInfo invoiceInfo) throws DaoException {
         String invoiceId = invoiceInfo.getInvoiceId();
-        if (get(invoiceId) != null) {
-            log.warn("Payment info with invoiceId = {} already exists", invoiceId);
-            return false;
-        }
-        final String sql = "INSERT INTO hook.invoice(invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data) " +
-                "VALUES (:invoice_id, :party_id, :shop_id, :amount, :currency, :created_at, :content_type, :content_data)";
+        final String sql = "INSERT INTO hook.invoice(event_id, invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data) " +
+                "VALUES (:event_id, :invoice_id, :party_id, :shop_id, :amount, :currency, :created_at, :content_type, :content_data) " +
+                "ON CONFLICT(invoice_id) DO NOTHING";
         MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("event_id", invoiceInfo.getEventId())
                 .addValue("invoice_id", invoiceId)
                 .addValue("party_id", invoiceInfo.getPartyId())
                 .addValue("shop_id", invoiceInfo.getShopId())
@@ -88,7 +87,17 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
     }
 
     @Override
-    public boolean delete(final String id) {
+    public Long getMaxEventId() {
+        final String sql = "SELECT max(event_id) FROM hook.invoice";
+        try {
+            return getNamedParameterJdbcTemplate().queryForObject(sql, new HashMap<>(), Long.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public boolean delete(final String id) throws DaoException {
         log.info("Start deleting payment info with invoiceId = {}", id);
         final String sql = "DELETE FROM hook.invoice where invoice_id=:invoice_id";
         try {

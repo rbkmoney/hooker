@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.handler.poller.impl;
 
-import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.Event;
@@ -32,6 +31,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         Event event = value.getSourceEvent().getProcessingEvent();
         Invoice invoice = event.getPayload().getInvoiceEvent().getInvoiceCreated().getInvoice();
         InvoiceInfo invoiceInfo = new InvoiceInfo();
+        invoiceInfo.setEventId(event.getId());
         invoiceInfo.setInvoiceId(event.getSource().getInvoice());
         invoiceInfo.setPartyId(invoice.getOwnerId());
         invoiceInfo.setShopId(invoice.getShopId());

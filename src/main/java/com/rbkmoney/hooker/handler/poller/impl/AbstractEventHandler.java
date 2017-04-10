@@ -6,7 +6,6 @@ import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.hooker.dao.EventTypeCode;
-import com.rbkmoney.hooker.dao.InvoiceDao;
 import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.handler.poller.PollingEventHandler;
 import com.rbkmoney.hooker.service.EventService;
@@ -63,11 +62,6 @@ public abstract class AbstractEventHandler implements PollingEventHandler<StockE
                     log.error("Couldn't send post-request", e);
                 }
             }
-        }
-        try {
-            eventService.setLastEventId(eventId);
-        } catch (Exception e) {
-            log.error("Exception: not save Last id. Reason: " + e.getMessage());
         }
         log.info("End AbstractEventHandler: event_id {}", eventId);
     }

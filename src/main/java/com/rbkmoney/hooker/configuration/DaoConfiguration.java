@@ -1,6 +1,9 @@
 package com.rbkmoney.hooker.configuration;
 
-import com.rbkmoney.hooker.dao.*;
+import com.rbkmoney.hooker.dao.InvoiceDao;
+import com.rbkmoney.hooker.dao.InvoiceDaoImpl;
+import com.rbkmoney.hooker.dao.WebhookDao;
+import com.rbkmoney.hooker.dao.WebhookDaoImpl;
 import org.jooq.Schema;
 import org.jooq.impl.SchemaImpl;
 import org.springframework.context.annotation.Bean;
@@ -11,12 +14,6 @@ import javax.sql.DataSource;
 
 @Configuration
 public class DaoConfiguration {
-
-    @Bean
-    @DependsOn("dbInitializer")
-    public LastEventDao lastEventDao(DataSource dataSource) {
-        return new LastEventDaoImpl(dataSource);
-    }
 
     @Bean
     @DependsOn("dbInitializer")

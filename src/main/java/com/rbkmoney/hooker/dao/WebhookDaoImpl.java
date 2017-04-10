@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
@@ -33,13 +34,11 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     public List<Webhook> getPartyWebhooks(String partyId) {
         log.info("New getPartyWebhooks request. partyId = {}", partyId);
-        final String sql = "select w.*, k.pub_key, wt.code \n" +
-                "from hook.webhook w, \n" +
-                "hook.webhook_type wt, \n" +
-                "hook.key k "+
-                "where wt.id = w.type " +
-                "and w.party_id = k.party_id " +
-                "and w.party_id =:party_id";
+        final String sql = "select w.*, k.pub_key \n" +
+                "from hook.webhook w \n" +
+                "join hook.key k "+
+                "on w.party_id = k.party_id " +
+                "where w.party_id =:party_id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("party_id", partyId);
@@ -48,7 +47,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
             List<Webhook> result = getNamedParameterJdbcTemplate().query(sql, params, getWebhookRowMapper());
             log.info("Response getPartyWebhooks.");
             return result;
-        } catch (DataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             log.error("Couldn't find template", e);
             throw new DaoException("Couldn't find webhook with partyId = " + partyId);
         }
@@ -57,13 +56,11 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     public Webhook getWebhookById(String id) {
         log.info("New getWebhook request. id = {}", id);
-        final String sql = "select w.*, k.pub_key, wt.code \n" +
-                "from hook.webhook w, \n" +
-                "hook.webhook_type wt, \n" +
-                "hook.key k "+
-                "where wt.id = w.type \n" +
-                "and w.party_id=k.party_id " +
-                "and w.id =:id";
+        final String sql = "select w.*, k.pub_key \n" +
+                "from hook.webhook w \n" +
+                "join hook.key k " +
+                "on w.party_id = k.party_id " +
+                "where w.id =:id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);
@@ -72,7 +69,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
             Webhook result = getNamedParameterJdbcTemplate().queryForObject(sql, params, getWebhookRowMapper());
             log.info("Response getWebhook.");
             return result;
-        } catch (DataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             log.error("Couldn't find webhook", e);
             throw new DaoException("Couldn't find webhook with id = " +id);
         }
@@ -81,13 +78,11 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     public List<Webhook> getWebhooksByCode(EventTypeCode typeCode, String partyId) {
         log.info("New getWebhookByCode request. TypeCode = {}, partyId = {}", typeCode, partyId);
-        final String sql = "select w.*, k.pub_key, wt.code \n" +
-                "from hook.webhook w, \n" +
-                "hook.webhook_type wt, \n" +
-                "hook.key k \n" +
-                "where wt.id = w.type " +
-                "and k.party_id = w.party_id " +
-                "and wt.code =:code " +
+        final String sql = "select w.*, k.pub_key \n" +
+                "from hook.webhook w  \n" +
+                "join hook.key k \n" +
+                "on k.party_id = w.party_id " +
+                "where w.code =:code " +
                 "and w.party_id =:party_id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -98,7 +93,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
             List<Webhook> result = getNamedParameterJdbcTemplate().query(sql, params, getWebhookRowMapper());
             log.info("Response getPartyWebhooks.");
             return result;
-        } catch (DataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             log.error("Couldn't find template", e);
             throw new DaoException("Couldn't find webhook with typeCode = " + typeCode + "; partyId = " + partyId);
         }
@@ -119,13 +114,13 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         webhook.setUrl(webhookParams.getUrl());
         webhook.setPubKey(keyPair.getPublKey());
 
-        final String sql = "INSERT INTO hook.webhook(id, party_id, type, url) " +
-                "VALUES (:id, :party_id, (select id from hook.webhook_type where code =:type), :url)";
+        final String sql = "INSERT INTO hook.webhook(id, party_id, code, url) " +
+                "VALUES (:id, :party_id, :code, :url)";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", webhook.getId())
                 .addValue("party_id", webhook.getPartyId())
-                .addValue("type", EventFilterUtils.getEventTypeCodeByFilter(webhook.getEventFilter()).getKey())
+                .addValue("code", EventFilterUtils.getEventTypeCodeByFilter(webhook.getEventFilter()).getKey())
                 .addValue("url", webhookParams.getUrl());
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
@@ -173,7 +168,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                     (rs, i) -> new KeyPair(rs.getString("priv_key"), rs.getString("pub_key")));
             log.info("Response key.");
             return result;
-        } catch (DataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             log.info("Couldn't find key for party", e);
             return null;
         }

@@ -24,6 +24,7 @@ public class InvoiceDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         InvoiceInfo invoiceInfo = new InvoiceInfo();
+        invoiceInfo.setEventId(5555);
         invoiceInfo.setInvoiceId("1234");
         invoiceInfo.setPartyId("56678");
         invoiceInfo.setShopId(123);
@@ -45,5 +46,10 @@ public class InvoiceDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void get() throws Exception {
         Assert.assertEquals(invoiceDao.get("1234").getAmount(), 12235);
+    }
+
+    @Test
+    public void getMaxEventId(){
+        Assert.assertEquals(invoiceDao.getMaxEventId().longValue(), 5555);
     }
 }

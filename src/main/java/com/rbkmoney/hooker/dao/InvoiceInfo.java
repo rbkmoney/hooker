@@ -7,6 +7,7 @@ import com.rbkmoney.damsel.base.Content;
  * Created by inalarsanukaev on 07.04.17.
  */
 public class InvoiceInfo {
+    private long eventId;
     @JsonProperty("invoice_id")
     private String invoiceId;
     private String partyId;
@@ -18,6 +19,12 @@ public class InvoiceInfo {
     private Content metadata;
     private String description;
 
+    public long getEventId() {
+        return eventId;
+    }
+    public void setEventId(long eventId) {
+        this.eventId = eventId;
+    }
     public String getStatus() {
         return status;
     }
