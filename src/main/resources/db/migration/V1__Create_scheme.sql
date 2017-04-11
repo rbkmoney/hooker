@@ -16,7 +16,7 @@ CREATE TABLE hook.webhook
     CONSTRAINT pk_webhook PRIMARY KEY (id)
 );
 
-create index webhook_party_id_key on hook.webhook (party_id);
+create index webhook_party_id_key on hook.webhook(party_id);
 
 COMMENT ON TABLE hook.webhook
     IS 'Table with webhooks';
@@ -27,21 +27,23 @@ CREATE TABLE hook.webhook_event
     id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
     hook_id character varying(40) NOT NULL,
     code character varying(256) NOT NULL,
-    CONSTRAINT pk_webhook_event PRIMARY KEY (id)
+    CONSTRAINT pk_webhook_event PRIMARY KEY (id),
+    CONSTRAINT fk_webhook_event FOREIGN KEY (hook_id) REFERENCES hook.webhook(id)
 );
 
 COMMENT ON TABLE hook.webhook_event
     IS 'Table with webhook events';
 
-CREATE TABLE hook.key
+CREATE TABLE hook.party_key
 (
     id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
     party_id character varying(40) NOT NULL,
     pub_key character VARYING NOT NULL,
-    priv_key character VARYING NOT NULL
+    priv_key character VARYING NOT NULL,
+    CONSTRAINT pk_party_key PRIMARY KEY (id)
 );
 
-create unique index key_party_id_key on hook.key (party_id);
+create unique index key_party_id_key on hook.party_key (party_id);
 
 CREATE TABLE hook.invoice
 (

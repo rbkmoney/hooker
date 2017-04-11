@@ -34,7 +34,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         log.info("New getPartyWebhooks request. partyId = {}", partyId);
         final String sql = "select w.*, k.pub_key, we.code \n" +
                 "from hook.webhook w \n" +
-                "join hook.key k "+
+                "join hook.party_key k "+
                 "on w.party_id = k.party_id " +
                 "join hook.webhook_event we " +
                 "on we.hook_id = w.id "+
@@ -88,7 +88,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         log.info("New getWebhook request. id = {}", id);
         final String sql = "select w.*, k.pub_key, we.code \n" +
                 "from hook.webhook w \n" +
-                "join hook.key k " +
+                "join hook.party_key k " +
                 "on w.party_id = k.party_id " +
                 "join hook.webhook_event we " +
                 "on we.hook_id = w.id "+
@@ -113,7 +113,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         log.info("New getWebhookByCode request. TypeCode = {}, partyId = {}", typeCode, partyId);
         final String sql = "select w.*, k.pub_key, we.code \n" +
                 "from hook.webhook w  \n" +
-                "join hook.key k \n" +
+                "join hook.party_key k \n" +
                 "on k.party_id = w.party_id " +
                 "join hook.webhook_event we " +
                 "on we.hook_id = w.id "+
@@ -230,7 +230,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     public KeyPair getPairKey(String partyId) {
         log.info("New getPairKey request. partyId = {}", partyId);
-        final String sql = "select k.* from hook.key k where k.party_id =:party_id";
+        final String sql = "select k.* from hook.party_key k where k.party_id =:party_id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("party_id", partyId);
@@ -248,7 +248,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
 
     @Override
     public KeyPair createPairKey(String partyId) {
-        final String sql = "INSERT INTO hook.key(party_id, priv_key, pub_key) " +
+        final String sql = "INSERT INTO hook.party_key(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +
                 "ON CONFLICT(party_id) DO NOTHING";
 
