@@ -13,6 +13,7 @@ CREATE TABLE hook.webhook
     id character varying(40) NOT NULL,
     party_id character varying(40) NOT NULL,
     url character varying(512) NOT NULL,
+    enabled boolean NOT NULL DEFAULT true,
     CONSTRAINT pk_webhook PRIMARY KEY (id)
 );
 

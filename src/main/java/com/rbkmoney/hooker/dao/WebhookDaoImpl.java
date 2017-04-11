@@ -78,7 +78,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     private void addWebhookEvent(List<Webhook> result, Set<EventTypeCode> eventTypeCodeSet, WebhookEvent pwe) {
-        Webhook webhook = new Webhook(pwe.id, pwe.partyId, EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), pwe.url, pwe.pubKey);
+        Webhook webhook = new Webhook(pwe.id, pwe.partyId, EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), pwe.url, pwe.pubKey, pwe.enabled);
         result.add(webhook);
         eventTypeCodeSet.clear();
     }
@@ -138,17 +138,18 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
 
     @Override
     public Webhook addWebhook(WebhookParams webhookParams) {
-        Set<EventTypeCode> eventTypeCodeSetByFilter = EventFilterUtils.getEventTypeCodeSetByFilter(webhookParams.getFilterStruct());
+        Set<EventTypeCode> eventTypeCodeSetByFilter = EventFilterUtils.getEventTypeCodeSetByFilter(webhookParams.getEventFilter());
         if (eventTypeCodeSetByFilter == null || eventTypeCodeSetByFilter.isEmpty()) {
             return null;
         }
         KeyPair keyPair = createPairKey(webhookParams.getPartyId());
         Webhook webhook = new Webhook();
         webhook.setId(UUID.randomUUID().toString());
-        webhook.setEventFilter(webhookParams.getFilterStruct());
+        webhook.setEventFilter(webhookParams.getEventFilter());
         webhook.setPartyId(webhookParams.getPartyId());
         webhook.setUrl(webhookParams.getUrl());
         webhook.setPubKey(keyPair.getPublKey());
+        webhook.setEnabled(true);
 
         final String sql = "INSERT INTO hook.webhook(id, party_id, url) " +
                 "VALUES (:id, :party_id, :url)";
@@ -273,7 +274,8 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 rs.getString("party_id"),
                 EventTypeCode.valueOfKey(rs.getString("code")),
                 rs.getString("url"),
-                rs.getString("pub_key")
+                rs.getString("pub_key"),
+                rs.getBoolean("enabled")
                 );
     }
 
@@ -283,13 +285,15 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         EventTypeCode code;
         String url;
         String pubKey;
+        boolean enabled;
 
-        public WebhookEvent(String id, String partyId, EventTypeCode code, String url, String pubKey) {
+        public WebhookEvent(String id, String partyId, EventTypeCode code, String url, String pubKey, boolean enabled) {
             this.id = id;
             this.partyId = partyId;
             this.code = code;
             this.url = url;
             this.pubKey = pubKey;
+            this.enabled = enabled;
         }
     }
 }
