@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by inal on 28.11.2016.
@@ -32,12 +33,12 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     public List<Webhook> getPartyWebhooks(String partyId) {
         log.info("New getPartyWebhooks request. partyId = {}", partyId);
-        final String sql = "select w.*, k.pub_key, we.code \n" +
+        final String sql = "select w.*, k.pub_key, wte.event_code \n" +
                 "from hook.webhook w \n" +
                 "join hook.party_key k "+
                 "on w.party_id = k.party_id " +
-                "join hook.webhook_event we " +
-                "on we.hook_id = w.id "+
+                "join hook.webhook_to_events wte " +
+                "on wte.hook_id = w.id "+
                 "where w.party_id =:party_id " +
                 "order by id";
 
@@ -46,8 +47,8 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
 
         try {
 
-            List<WebhookEvent> webhookEvents = getNamedParameterJdbcTemplate().query(sql, params, getWebhookRowMapper());
-            List<Webhook> result = getWebhooksFromEvents(webhookEvents);
+            List<AllHookTablesRow> allHookTablesRows = getNamedParameterJdbcTemplate().query(sql, params, allHookTablesRowRowMapper);
+            List<Webhook> result = squashToWebhooks(allHookTablesRows);
             log.info("Response getPartyWebhooks.");
             return result;
         } catch (EmptyResultDataAccessException e) {
@@ -56,50 +57,55 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         }
     }
 
-    private List<Webhook> getWebhooksFromEvents(List<WebhookEvent> webhookEvents) {
-        List<Webhook> result = new ArrayList<>();
-        Set<EventTypeCode> eventTypeCodeSet = new HashSet<>();
-        boolean idChanged;
-        WebhookEvent pwe = null;
-        for (WebhookEvent we : webhookEvents) {
-            if (pwe != null) {
-                idChanged = !we.id.equals(pwe.id);
-                if (idChanged) {
-                    addWebhookEvent(result, eventTypeCodeSet, pwe);
-                }
-            }
-            eventTypeCodeSet.add(we.code);
-            pwe = we;
-        }
-        if (pwe != null) {
-            addWebhookEvent(result, eventTypeCodeSet, pwe);
-        }
-        return result;
-    }
+    private List<Webhook> squashToWebhooks(List<AllHookTablesRow> allHookTablesRows) {
+        final Map<String, List<AllHookTablesRow>> hookIdToRows = new HashMap<>();
 
-    private void addWebhookEvent(List<Webhook> result, Set<EventTypeCode> eventTypeCodeSet, WebhookEvent pwe) {
-        Webhook webhook = new Webhook(pwe.id, pwe.partyId, EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), pwe.url, pwe.pubKey, pwe.enabled);
-        result.add(webhook);
-        eventTypeCodeSet.clear();
+        //grouping by hookId
+        for(AllHookTablesRow row: allHookTablesRows){
+            final String hookId = row.id;
+            List<AllHookTablesRow> list = hookIdToRows.get(hookId);
+            if(list == null){
+                list = new ArrayList<>();
+                hookIdToRows.put(hookId, list);
+            }
+            list.add(row);
+        }
+
+        List<Webhook> result = new ArrayList<>();
+        for(String hookId: hookIdToRows.keySet()){
+            List<AllHookTablesRow> rows = hookIdToRows.get(hookId);
+            Webhook webhook = new Webhook();
+            webhook.setId(hookId);
+            webhook.setPartyId(rows.get(0).partyId);
+            webhook.setUrl(rows.get(0).url);
+            webhook.setPubKey(rows.get(0).pubKey);
+            webhook.setEnabled(rows.get(0).enabled);
+
+            webhook.setEventFilter(EventFilterUtils.getEventFilterByCode(rows.stream().map(r -> r.code).collect(Collectors.toList())));
+
+            result.add(webhook);
+        }
+
+        return result;
     }
 
     @Override
     public Webhook getWebhookById(String id) {
         log.info("New getWebhook request. id = {}", id);
-        final String sql = "select w.*, k.pub_key, we.code \n" +
+        final String sql = "select w.*, k.pub_key, wte.event_code \n" +
                 "from hook.webhook w \n" +
                 "join hook.party_key k " +
                 "on w.party_id = k.party_id " +
-                "join hook.webhook_event we " +
-                "on we.hook_id = w.id "+
+                "join hook.webhook_to_events wte " +
+                "on wte.hook_id = w.id "+
                 "where w.id =:id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);
 
         try {
-            List<WebhookEvent> webhookEvent = getNamedParameterJdbcTemplate().query(sql, params, getWebhookRowMapper());
-            List<Webhook> result = getWebhooksFromEvents(webhookEvent);
+            List<AllHookTablesRow> allHookTablesRows = getNamedParameterJdbcTemplate().query(sql, params, allHookTablesRowRowMapper);
+            List<Webhook> result = squashToWebhooks(allHookTablesRows);
             log.info("Response getWebhook.");
             return result.get(0);
         } catch (EmptyResultDataAccessException e) {
@@ -109,15 +115,16 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     @Override
+    @Deprecated
     public List<Webhook> getWebhooksByCode(EventTypeCode typeCode, String partyId) {
         log.info("New getWebhookByCode request. TypeCode = {}, partyId = {}", typeCode, partyId);
-        final String sql = "select w.*, k.pub_key, we.code \n" +
+        final String sql = "select w.*, k.pub_key, wte.event_code \n" +
                 "from hook.webhook w  \n" +
                 "join hook.party_key k \n" +
                 "on k.party_id = w.party_id " +
-                "join hook.webhook_event we " +
-                "on we.hook_id = w.id "+
-                "where we.code =:code " +
+                "join hook.webhook_to_events wte " +
+                "on wte.hook_id = w.id "+
+                "where wte.event_code =:code " +
                 "and w.party_id =:party_id " +
                 "order by w.id";
 
@@ -126,8 +133,8 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         params.addValue("party_id", partyId);
 
         try {
-            List<WebhookEvent> webhookEvents = getNamedParameterJdbcTemplate().query(sql, params, getWebhookRowMapper());
-            List<Webhook> result = getWebhooksFromEvents(webhookEvents);
+            List<AllHookTablesRow> allHookTablesRows = getNamedParameterJdbcTemplate().query(sql, params, allHookTablesRowRowMapper);
+            List<Webhook> result = squashToWebhooks(allHookTablesRows);
             log.info("Response getWebhooksByCode.");
             return result;
         } catch (EmptyResultDataAccessException e) {
@@ -137,13 +144,16 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     @Override
+    //TODO keys, weebhook and relation between hook and events should be saved in transaction
     public Webhook addWebhook(WebhookParams webhookParams) {
         Set<EventTypeCode> eventTypeCodeSetByFilter = EventFilterUtils.getEventTypeCodeSetByFilter(webhookParams.getEventFilter());
+        //TODO: does damsel reflect this ???
         if (eventTypeCodeSetByFilter == null || eventTypeCodeSetByFilter.isEmpty()) {
             return null;
         }
         KeyPair keyPair = createPairKey(webhookParams.getPartyId());
         Webhook webhook = new Webhook();
+        //TODO: use autogenerated id (bigint)
         webhook.setId(UUID.randomUUID().toString());
         webhook.setEventFilter(webhookParams.getEventFilter());
         webhook.setPartyId(webhookParams.getPartyId());
@@ -163,9 +173,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
             if (updateCount != 1) {
                 throw new DaoException("Couldn't insert webhook "+webhook.getId()+" into table");
             }
-            for (EventTypeCode etc : eventTypeCodeSetByFilter){
-                addWebhookEvent(webhook.getId(), etc);
-            }
+            saveEventCodeList(webhook.getId(), EventFilterUtils.getCodes(eventTypeCodeSetByFilter));
         } catch (DataAccessException e) {
             log.warn("WebhookDaoImpl.addWebhook error", e);
             throw new DaoException(e);
@@ -174,54 +182,41 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         return webhook;
     }
 
-    private void addWebhookEvent(String hookId, EventTypeCode eventTypeCode){
-        final String sql = "INSERT INTO hook.webhook_event(hook_id, code) " +
-                "VALUES (:hook_id, :code)";
+    private void saveEventCodeList(String hookId, List<String> eventCodes){
+        final String sqlTemplateBegin = "INSERT INTO hook.webhook_to_events(hook_id, event_code) VALUES ";
 
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("hook_id", hookId)
-                .addValue("code", eventTypeCode.getKey());
+        final MapSqlParameterSource params = new MapSqlParameterSource().addValue("hook_id", hookId);
+        final List<String> insertValues = new ArrayList<>();
+        for(int i=0; i < eventCodes.size(); i++){
+            insertValues.add("(:hook_id, :code" + i + ")");
+            params.addValue("code" + i, eventCodes.get(i));
+        }
+
+        final String sql =  sqlTemplateBegin + String.join(", ", insertValues) + ";";
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
-            if (updateCount != 1) {
-                throw new DaoException("Couldn't insert webhook_event into table");
+            if (updateCount != eventCodes.size()) {
+                throw new DaoException("Couldn't insert relation between hook and events.");
             }
         } catch (DataAccessException e) {
-            log.warn("WebhookDaoImpl.addWebhookEvent error", e);
+            log.warn("WebhookDaoImpl.addWebhookAndEventCodesRow error", e);
             throw new DaoException(e);
         }
-        log.info("Webhook_event added to table");
     }
 
     @Override
     public boolean delete(final String id) {
         log.info("Start deleting webhook info with id = {}", id);
-        deleteEvents(id);
-        final String sql = "DELETE FROM hook.webhook where id=:id";
+        final String sql =
+                "DELETE FROM hook.webhook_to_events where hook_id=:id;" +
+                "DELETE FROM hook.webhook where id=:id; ";
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
-            if (updateCount != 1) {
-                log.warn("Couldn't delete webhook from table");
-                return false;
-            }
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
         } catch (DataAccessException e) {
             log.warn("WebhookDaoImpl.delete error", e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} deleted from table", id);
-        return true;
-    }
-
-    public boolean deleteEvents(final String id) {
-        log.info("Start deleting webhook_event with id = {}", id);
-        final String sql = "DELETE FROM hook.webhook_event where hook_id=:hook_id";
-        try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", id));
-        } catch (DataAccessException e) {
-            log.warn("WebhookDaoImpl.deleteEvents error", e);
-            throw new DaoException(e);
-        }
-        log.info("Webhook_events with id = {} deleted from table", id);
         return true;
     }
 
@@ -269,17 +264,16 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
 
-    private RowMapper<WebhookEvent> getWebhookRowMapper() {
-        return (rs, i) -> new WebhookEvent(rs.getString("id"),
+    private static RowMapper<AllHookTablesRow> allHookTablesRowRowMapper =
+            (rs, i) -> new AllHookTablesRow(rs.getString("id"),
                 rs.getString("party_id"),
-                EventTypeCode.valueOfKey(rs.getString("code")),
+                EventTypeCode.valueOfKey(rs.getString("event_code")),
                 rs.getString("url"),
                 rs.getString("pub_key"),
-                rs.getBoolean("enabled")
-                );
-    }
+                rs.getBoolean("enabled"));
 
-    class WebhookEvent {
+
+    static class AllHookTablesRow {
         String id;
         String partyId;
         EventTypeCode code;
@@ -287,7 +281,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         String pubKey;
         boolean enabled;
 
-        public WebhookEvent(String id, String partyId, EventTypeCode code, String url, String pubKey, boolean enabled) {
+        AllHookTablesRow(String id, String partyId, EventTypeCode code, String url, String pubKey, boolean enabled) {
             this.id = id;
             this.partyId = partyId;
             this.code = code;

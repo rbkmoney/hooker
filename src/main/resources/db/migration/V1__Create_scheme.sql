@@ -22,18 +22,17 @@ create index webhook_party_id_key on hook.webhook(party_id);
 COMMENT ON TABLE hook.webhook
     IS 'Table with webhooks';
 
--- Table: hook.webhook_event
-CREATE TABLE hook.webhook_event
+-- Table: hook.webhook_to_events
+CREATE TABLE hook.webhook_to_events
 (
-    id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
     hook_id character varying(40) NOT NULL,
-    code character varying(256) NOT NULL,
-    CONSTRAINT pk_webhook_event PRIMARY KEY (id),
-    CONSTRAINT fk_webhook_event FOREIGN KEY (hook_id) REFERENCES hook.webhook(id)
+    event_code character varying(256) NOT NULL,
+    CONSTRAINT pk_webhook_to_events PRIMARY KEY (hook_id, event_code),
+    CONSTRAINT fk_webhook_to_events FOREIGN KEY (hook_id) REFERENCES hook.webhook(id)
 );
 
-COMMENT ON TABLE hook.webhook_event
-    IS 'Table with webhook events';
+COMMENT ON TABLE hook.webhook_to_events
+    IS 'Implementation of one-to-many relation between weebhooks end events(codes)';
 
 CREATE TABLE hook.party_key
 (

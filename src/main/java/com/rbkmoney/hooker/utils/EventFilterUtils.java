@@ -3,14 +3,17 @@ package com.rbkmoney.hooker.utils;
 import com.rbkmoney.damsel.webhooker.*;
 import com.rbkmoney.hooker.dao.EventTypeCode;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by inalarsanukaev on 05.04.17.
  */
 public class EventFilterUtils {
-    public static EventFilter getEventFilterByCode(Set<EventTypeCode> eventTypeCodeSet) {
+    public static EventFilter getEventFilterByCode(Collection<EventTypeCode> eventTypeCodeSet) {
         if (eventTypeCodeSet == null || eventTypeCodeSet.isEmpty()) {return null;}
         EventFilter eventFilter = new EventFilter();
         InvoiceEventFilter invoiceEventFilter = new InvoiceEventFilter();
@@ -62,4 +65,9 @@ public class EventFilterUtils {
         }
         return eventTypeCodeSet;
     }
+
+    public static List<String> getCodes(Collection<EventTypeCode> coll){
+        return coll.stream().map(etc -> etc.getKey()).collect(Collectors.toList());
+    }
+
 }
