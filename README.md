@@ -24,10 +24,10 @@
 #### Пример отправки запроса мерчанту
 
 ###### Отправка данных
-Запрос в формате JSON отправляется методом POST на url, указанный вебхука.
+Запрос в формате JSON отправляется методом POST на url, указанный при создании вебхука.
 Подпись идет в headers запроса.
 
-Тело запроса содержит поля (все поля обязательные):
+Тело запроса содержит поля (все поля, кроме payment_id, обязательные):
 
 Название | Описание | Пример
 ------------ | ------------- | -------------
@@ -48,12 +48,10 @@
 
 #### Пример формирования подписи
 Тело запроса (JSON) подписывается и подпись добавляется как заголовок http-запроса. Имя заголовка - X-Signature.
-
+Тело запроса для события "Инвойс создан" будет выглядеть так: 
 ```
-
-Тело запроса для подписи будет выглядеть так: 
 {"event_type":"invoice","invoice_id":"45b69f6ab0","payment_id":null,"shop_id":1,"amount":6207,"currency":"RUB","created_at":"2017-04-10T21:53:09.271Z","metadata":{"type":"contentType","data":"dGVzdA==","fields":["TYPE","DATA"],"fieldMetaData":{"TYPE":{"fieldName":"type","requirementType":1,"valueMetaData":{"type":11,"typedefName":null,"binary":false,"container":false,"struct":false,"typedef":false}},"DATA":{"fieldName":"data","requirementType":1,"valueMetaData":{"type":11,"typedefName":null,"binary":true,"container":false,"struct":false,"typedef":false}}},"setType":true,"setData":true},"status":"unpaid"}
-
+```
 После чего строка подписывается приватным ключом RSA с алгоритмом хэширования SHA-256 и размером ключа 1024.
 
 #### Пример запроса к мерчанту
@@ -68,4 +66,4 @@ curl -v -X POST
 
 Мерчант, используя публичный ключ и имея в распоряжении тело запроса, подпись, алгоритм подписи и хэширования, может произвести проверку подписи
 
-[1]: https://github.com/rbkmoney/damsel/blob/master/proto/webhook.thrift
+[1]: https://github.com/rbkmoney/damsel/blob/master/proto/webhooker.thrift
