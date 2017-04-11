@@ -37,5 +37,6 @@ public class InvoiceStatusChangedHandler extends AbstractInvoiceEventHandler {
     protected void prepareInvoiceInfo(Event event, InvoiceInfo invoiceInfo) {
         invoiceInfo.setDescription("Изменение статуса инвойса");
         invoiceInfo.setStatus(event.getPayload().getInvoiceEvent().getInvoiceStatusChanged().getStatus().getSetField().getFieldName());
+        invoiceInfo.setEventType("invoice");
     }
 }

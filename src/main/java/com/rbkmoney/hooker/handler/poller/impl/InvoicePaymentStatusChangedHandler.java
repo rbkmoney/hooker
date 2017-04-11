@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.payment_processing.Event;
+import com.rbkmoney.damsel.payment_processing.InvoicePaymentStatusChanged;
 import com.rbkmoney.hooker.dao.EventTypeCode;
 import com.rbkmoney.hooker.dao.InvoiceDao;
 import com.rbkmoney.hooker.dao.InvoiceInfo;
@@ -35,6 +36,9 @@ public class InvoicePaymentStatusChangedHandler extends AbstractInvoiceEventHand
     @Override
     protected void prepareInvoiceInfo(Event event, InvoiceInfo invoiceInfo) {
         invoiceInfo.setDescription("Изменение статуса платежа");
-        invoiceInfo.setStatus(event.getPayload().getInvoiceEvent().getInvoicePaymentEvent().getInvoicePaymentStatusChanged().getStatus().getSetField().getFieldName());
+        InvoicePaymentStatusChanged payment = event.getPayload().getInvoiceEvent().getInvoicePaymentEvent().getInvoicePaymentStatusChanged();
+        invoiceInfo.setStatus(payment.getStatus().getSetField().getFieldName());
+        invoiceInfo.setEventType("payment");
+        invoiceInfo.setPaymentId(payment.getPaymentId());
     }
 }

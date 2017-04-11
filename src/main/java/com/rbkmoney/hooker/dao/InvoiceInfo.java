@@ -1,16 +1,25 @@
 package com.rbkmoney.hooker.dao;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.rbkmoney.damsel.base.Content;
 
 /**
  * Created by inalarsanukaev on 07.04.17.
  */
+@JsonPropertyOrder({ "event_type", "invoice_id", "payment_id", "shop_id", "amount", "currency", "created_at", "metadata", "status" })
+@JsonIgnoreProperties({ "eventId", "partyId", "description" })
 public class InvoiceInfo {
     private long eventId;
+    @JsonProperty("event_type")
+    private String eventType;
     @JsonProperty("invoice_id")
     private String invoiceId;
+    @JsonProperty("payment_id")
+    private String paymentId;
     private String partyId;
+    @JsonProperty("shop_id")
     private int shopId;
     private long amount;
     private String currency;
@@ -18,6 +27,22 @@ public class InvoiceInfo {
     private String createdAt;
     private Content metadata;
     private String description;
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
 
     public long getEventId() {
         return eventId;

@@ -62,6 +62,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
     protected void prepareInvoiceInfo(Event event, InvoiceInfo invoiceInfo) {
         invoiceInfo.setDescription("Создание инвойса");
         invoiceInfo.setStatus(event.getPayload().getInvoiceEvent().getInvoiceCreated().getInvoice().getStatus().getSetField().getFieldName());
+        invoiceInfo.setEventType("invoice");
     }
 
     @Override
