@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Created by inalarsanukaev on 06.04.17.
  */
-public abstract class AbstractEventHandler implements PollingEventHandler<StockEvent> {
+public abstract class AbstractEventHandler<T> implements PollingEventHandler<StockEvent> {
     Logger log = LoggerFactory.getLogger(this.getClass());
     @Autowired
     EventService eventService;
@@ -40,7 +40,7 @@ public abstract class AbstractEventHandler implements PollingEventHandler<StockE
     public void handle(StockEvent value) throws PollingException {
         Event event = value.getSourceEvent().getProcessingEvent();
         long eventId = event.getId();
-        Object eventForPost = getEventForPost(event);
+        T eventForPost = getEventForPost(event);
         try {
             String paramsAsString = new ObjectMapper().writeValueAsString(eventForPost);
             String partyId = getPartyId(eventForPost);
@@ -72,5 +72,5 @@ public abstract class AbstractEventHandler implements PollingEventHandler<StockE
 
     protected abstract String getPartyId(Object eventForPost);
 
-    protected abstract Object getEventForPost(Event event) throws DaoException;
+    protected abstract T getEventForPost(Event event) throws DaoException;
 }
