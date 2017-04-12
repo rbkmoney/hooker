@@ -13,7 +13,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 
@@ -192,19 +191,17 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     private void saveEventCodeList(long hookId, List<String> eventCodes){
-        final String sqlTemplateBegin = "INSERT INTO hook.webhook_to_events(hook_id, event_code) VALUES ";
-
-        final MapSqlParameterSource params = new MapSqlParameterSource().addValue("hook_id", hookId);
-        final List<String> insertValues = new ArrayList<>();
-        for(int i=0; i < eventCodes.size(); i++){
-            insertValues.add("(:hook_id, :code" + i + ")");
-            params.addValue("code" + i, eventCodes.get(i));
+        int size = eventCodes.size();
+        List<Map<String, Object>> batchValues = new ArrayList<>(size);
+        for (String eventCode : eventCodes){
+            batchValues.add(new MapSqlParameterSource("hook_id", hookId).addValue("event_code", eventCode).getValues());
         }
 
-        final String sql =  sqlTemplateBegin + String.join(", ", insertValues) + ";";
+        final String sql = "INSERT INTO hook.webhook_to_events(hook_id, event_code) VALUES (:hook_id, :event_code)";
+
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
-            if (updateCount != eventCodes.size()) {
+            int updateCount[] = getNamedParameterJdbcTemplate().batchUpdate(sql, batchValues.toArray(new Map[size]));
+            if (updateCount.length != size) {
                 throw new DaoException("Couldn't insert relation between hook and events.");
             }
         } catch (DataAccessException e) {
