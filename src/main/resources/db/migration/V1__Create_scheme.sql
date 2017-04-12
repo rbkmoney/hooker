@@ -10,7 +10,7 @@ CREATE SEQUENCE hook.seq
 -- Table: hook.webhook
 CREATE TABLE hook.webhook
 (
-    id character varying(40) NOT NULL,
+    id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
     party_id character varying(40) NOT NULL,
     url character varying(512) NOT NULL,
     enabled boolean NOT NULL DEFAULT true,
@@ -25,7 +25,7 @@ COMMENT ON TABLE hook.webhook
 -- Table: hook.webhook_to_events
 CREATE TABLE hook.webhook_to_events
 (
-    hook_id character varying(40) NOT NULL,
+    hook_id bigint NOT NULL,
     event_code character varying(256) NOT NULL,
     CONSTRAINT pk_webhook_to_events PRIMARY KEY (hook_id, event_code),
     CONSTRAINT fk_webhook_to_events FOREIGN KEY (hook_id) REFERENCES hook.webhook(id)

@@ -50,7 +50,9 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         invoiceInfo.setCurrency(invoice.getCost().getCurrency().getSymbolicCode());
         invoiceInfo.setCreatedAt(invoice.getCreatedAt());
         invoiceInfo.setMetadata(invoice.getContext());
-        invoiceDao.add(invoiceInfo);
+        if (!invoiceDao.add(invoiceInfo)) {
+            throw new DaoException("Couldn't add invoice with id "+invoiceInfo.getInvoiceId());
+        }
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.base.Content;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.NestedRuntimeException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -75,6 +76,9 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
                 .addValue("content_data", invoiceInfo.getMetadata().getData());
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
+            if (updateCount != 1) {
+                return false;
+            }
         } catch (NestedRuntimeException e) {
             log.warn("InvoiceDaoImpl.add error", e);
             throw new DaoException(e);
@@ -94,7 +98,7 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
     }
 
     @Override
-    public boolean delete(final String id) throws DaoException {
+    public boolean delete(String id) throws DaoException {
         log.info("Start deleting payment info with invoiceId = {}", id);
         final String sql = "DELETE FROM hook.invoice where invoice_id=:invoice_id";
         try {
@@ -102,7 +106,7 @@ public class InvoiceDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
             if (updateCount != 1) {
                 return false;
             }
-        } catch (NestedRuntimeException e) {
+        } catch (DataAccessException e) {
             log.warn("InvoiceDaoImpl.delete error", e);
             throw new DaoException(e);
         }

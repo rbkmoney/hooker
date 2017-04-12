@@ -11,10 +11,10 @@ import java.util.List;
  */
 public interface WebhookDao {
     List<Webhook> getPartyWebhooks(String partyId);
-    Webhook getWebhookById(String id);
+    Webhook getWebhookById(long id);
     List<Webhook> getWebhooksByCode(EventTypeCode typeCode, String partyId);
     Webhook addWebhook(WebhookParams webhookParams);
-    boolean delete(final String id);
+    boolean delete(long id);
     KeyPair getPairKey(String partyId);
     KeyPair createPairKey(String partyId);
 }

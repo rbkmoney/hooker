@@ -5,7 +5,7 @@ spring:
 ---
 info:
   version: @version@
-  responsible: Anatoly Cherkasov
+  responsible: Inal Arsanukaev
   stage: dev
   damsel:
     version: @damsel.version@
