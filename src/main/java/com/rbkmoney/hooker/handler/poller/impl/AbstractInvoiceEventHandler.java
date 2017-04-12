@@ -24,8 +24,8 @@ public abstract class AbstractInvoiceEventHandler extends AbstractEventHandler<I
     }
 
     @Override
-    protected String getPartyId(Object eventForPost) {
-        return ((InvoiceInfo) eventForPost).getPartyId();
+    protected String getPartyId(InvoiceInfo eventForPost) {
+        return eventForPost.getPartyId();
     }
 
     protected abstract void prepareInvoiceInfo(Event event, InvoiceInfo invoiceInfo);

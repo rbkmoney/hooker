@@ -70,7 +70,7 @@ public abstract class AbstractEventHandler<T> implements PollingEventHandler<Sto
 
     protected abstract EventTypeCode getCode();
 
-    protected abstract String getPartyId(Object eventForPost);
+    protected abstract String getPartyId(T eventForPost);
 
     protected abstract T getEventForPost(Event event) throws DaoException;
 }
