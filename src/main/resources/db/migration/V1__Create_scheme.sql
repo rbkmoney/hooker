@@ -60,6 +60,25 @@ CREATE TABLE hook.invoice
     CONSTRAINT invoice_pkey PRIMARY KEY (id)
 );
 
+CREATE TYPE hook.EventStatus AS ENUM ('RECEIVED', 'SCHEDULED');
+
+CREATE TABLE hook.event
+(
+    id bigint NOT NULL,
+    code character varying(256) NOT NULL,
+    status hook.EventStatus NOT NULL,
+    --additional data required for different types of events
+    invoice_id character varying(40) NOT NULL,
+    CONSTRAINT event_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE hook.scheduled_task
+(
+    event_id bigint NOT NULL,
+    hook_id character varying(256) NOT NULL,
+    CONSTRAINT scheduled_task_pkey PRIMARY KEY (event_id, hook_id)
+);
+
 create unique index invoice_id_key on hook.invoice (invoice_id);
 create index invoice_event_id_key on hook.invoice (event_id);
 create index invoice_party_id_key on hook.invoice (party_id);
