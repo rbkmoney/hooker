@@ -51,31 +51,26 @@ CREATE TABLE hook.party_key
 
 create unique index key_party_id_key on hook.party_key (party_id);
 
-CREATE TABLE hook.invoice
+CREATE TYPE hook.EventStatus AS ENUM ('RECEIVED', 'SCHEDULED');
+
+CREATE TABLE hook.message
 (
     id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
-    event_id int NOT NULL,
+    event_type hook.EventType NOT NULL,
+    event_status hook.EventStatus NOT NULL,
+    type character varying(40) NOT NULL,
     invoice_id character varying(40) NOT NULL,
+    event_id int NOT NULL,
     party_id character varying(40) NOT NULL,
+    payment_id character varying(40),
     shop_id int NOT NULL,
     amount numeric NOT NULL,
     currency character varying(10) NOT NULL,
     created_at character varying(80) NOT NULL,
     content_type character varying,
     content_data bytea,
-    CONSTRAINT invoice_pkey PRIMARY KEY (id)
-);
-
-CREATE TYPE hook.EventStatus AS ENUM ('RECEIVED', 'SCHEDULED');
-
-CREATE TABLE hook.event
-(
-    id bigint NOT NULL,
-    event_type hook.EventType NOT NULL,
-    status hook.EventStatus NOT NULL,
-    --additional data required for different types of events
-    invoice_id character varying(40) NOT NULL,
-    CONSTRAINT event_pkey PRIMARY KEY (id)
+    status character varying(80) NOT NULL,
+    CONSTRAINT message_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE hook.scheduled_task
@@ -85,9 +80,6 @@ CREATE TABLE hook.scheduled_task
     CONSTRAINT scheduled_task_pkey PRIMARY KEY (event_id, hook_id)
 );
 
-create unique index invoice_id_key on hook.invoice (invoice_id);
-create index invoice_event_id_key on hook.invoice (event_id);
-create index invoice_party_id_key on hook.invoice (party_id);
 
-COMMENT ON TABLE hook.invoice
-    IS 'Table for saving invoice info';
+COMMENT ON TABLE hook.message
+    IS 'Table for saving messages for POST';

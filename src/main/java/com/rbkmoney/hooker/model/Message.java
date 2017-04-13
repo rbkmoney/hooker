@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.dao;
+package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,11 +9,11 @@ import com.rbkmoney.damsel.base.Content;
  * Created by inalarsanukaev on 07.04.17.
  */
 @JsonPropertyOrder({ "event_type", "invoice_id", "payment_id", "shop_id", "amount", "currency", "created_at", "metadata", "status" })
-@JsonIgnoreProperties({ "eventId", "partyId", "description" })
-public class InvoiceInfo {
+@JsonIgnoreProperties({ "eventId", "partyId", "eventType", "eventStatus" })
+public class Message {
     private long eventId;
     @JsonProperty("event_type")
-    private String eventType;
+    private String type;
     @JsonProperty("invoice_id")
     private String invoiceId;
     @JsonProperty("payment_id")
@@ -26,14 +26,16 @@ public class InvoiceInfo {
     @JsonProperty("created_at")
     private String createdAt;
     private Content metadata;
-    private String description;
 
-    public String getEventType() {
-        return eventType;
+    private EventType eventType;
+    private EventStatus eventStatus;
+
+    public String getType() {
+        return type;
     }
 
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getPaymentId() {
@@ -59,14 +61,6 @@ public class InvoiceInfo {
     }
 
     private String status;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public String getInvoiceId() {
         return invoiceId;
@@ -122,5 +116,21 @@ public class InvoiceInfo {
 
     public void setMetadata(Content metadata) {
         this.metadata = metadata;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public EventStatus getEventStatus() {
+        return eventStatus;
+    }
+
+    public void setEventStatus(EventStatus eventStatus) {
+        this.eventStatus = eventStatus;
     }
 }

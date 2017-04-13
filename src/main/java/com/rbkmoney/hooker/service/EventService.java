@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.hooker.dao.InvoiceDao;
+import com.rbkmoney.hooker.dao.MessageDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +12,10 @@ public class EventService {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    InvoiceDao invoiceDao;
+    MessageDao messageDao;
 
     public Long getLastEventId() {
-        Long lastEventId = invoiceDao.getMaxEventId();
+        Long lastEventId = messageDao.getMaxEventId();
         log.info("Get last event id = {}", lastEventId);
         return lastEventId;
     }

@@ -2,9 +2,10 @@ package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentStatusChanged;
+import com.rbkmoney.hooker.model.EventStatus;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.dao.InvoiceDao;
-import com.rbkmoney.hooker.dao.InvoiceInfo;
+import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.thrift.filter.Filter;
 import com.rbkmoney.thrift.filter.PathConditionFilter;
 import com.rbkmoney.thrift.filter.rule.PathConditionRule;
@@ -12,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoicePaymentStatusChangedHandler extends AbstractInvoiceEventHandler {
+public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHandler {
     @Autowired
-    InvoiceDao invoiceDao;
+    MessageDao messageDao;
 
     private Filter filter;
     private EventType eventType = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
@@ -29,16 +30,13 @@ public class InvoicePaymentStatusChangedHandler extends AbstractInvoiceEventHand
     }
 
     @Override
-    protected EventType getEventType() {
-        return eventType;
-    }
-
-    @Override
-    protected void prepareInvoiceInfo(Event event, InvoiceInfo invoiceInfo) {
-        invoiceInfo.setDescription("Изменение статуса платежа");
+    protected void modifyMessage(Event event, Message message) {
         InvoicePaymentStatusChanged payment = event.getPayload().getInvoiceEvent().getInvoicePaymentEvent().getInvoicePaymentStatusChanged();
-        invoiceInfo.setStatus(payment.getStatus().getSetField().getFieldName());
-        invoiceInfo.setEventType("payment");
-        invoiceInfo.setPaymentId(payment.getPaymentId());
+        message.setStatus(payment.getStatus().getSetField().getFieldName());
+        message.setType("payment");
+        message.setPaymentId(payment.getPaymentId());
+        message.setEventId(event.getId());
+        message.setEventType(eventType);
+        message.setEventStatus(EventStatus.RECEIVED);
     }
 }
