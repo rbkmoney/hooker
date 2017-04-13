@@ -13,6 +13,7 @@ import java.util.List;
 public interface WebhookDao {
     List<Webhook> getPartyWebhooks(String partyId);
     Webhook getWebhookById(long id);
+    @Deprecated
     List<Webhook> getWebhooksByCode(EventTypeCode typeCode, String partyId);
     List<Webhook> getWebhooksBy(Collection<String> eventTypeCodes, Collection<String> partyIds);
     Webhook addWebhook(WebhookParams webhookParams);

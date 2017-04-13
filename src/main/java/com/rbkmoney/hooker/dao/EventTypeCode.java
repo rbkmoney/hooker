@@ -6,6 +6,8 @@ import java.util.Map;
 /**
  * Created by inal on 30.11.2016.
  */
+@Deprecated
+// говнокласс, добавить енум в базу, и использовать мапинг на эти длинные строчки только там где нужно а не херачить их в базу
 public enum EventTypeCode {
     INVOICE_CREATED               ("source_event.processing_event.payload.invoice_event.invoice_created.invoice"),
     INVOICE_STATUS_CHANGED        ("source_event.processing_event.payload.invoice_event.invoice_status_changed.status"),
