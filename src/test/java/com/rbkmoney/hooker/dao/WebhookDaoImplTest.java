@@ -1,9 +1,11 @@
 package com.rbkmoney.hooker.dao;
 
-import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.damsel.webhooker.WebhookParams;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.EventFilterUtils;
+import com.rbkmoney.hooker.utils.HookConverter;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,30 +29,30 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
     WebhookDao webhookDao;
     @Before
     public void setUp() throws Exception {
-        Set<EventTypeCode> eventTypeCodeSet = new HashSet<>();
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED);
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_CREATED);
-        WebhookParams webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://google.com");
-        webhookDao.addWebhook(webhookParams);
-        eventTypeCodeSet.clear();
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STARTED);
-        webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://yandex.ru");
-        webhookDao.addWebhook(webhookParams);
-        eventTypeCodeSet.clear();
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
-        webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://2ch.hk/b");
-        webhookDao.addWebhook(webhookParams);
+        Set<EventType> eventTypeSet = new HashSet<>();
+        eventTypeSet.add(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
+        eventTypeSet.add(EventType.INVOICE_CREATED);
+        WebhookParams webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(eventTypeSet), "https://google.com");
+        webhookDao.save(HookConverter.convert(webhookParams));
+        eventTypeSet.clear();
+        eventTypeSet.add(EventType.INVOICE_STATUS_CHANGED);
+        eventTypeSet.add(EventType.INVOICE_PAYMENT_STARTED);
+        webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilter(eventTypeSet), "https://yandex.ru");
+        webhookDao.save(HookConverter.convert(webhookParams));
+        eventTypeSet.clear();
+        eventTypeSet.add(EventType.INVOICE_STATUS_CHANGED);
+        webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(eventTypeSet), "https://2ch.hk/b");
+        webhookDao.save(HookConverter.convert(webhookParams));;
     }
 
     @After
     public void tearDown() throws Exception {
-        List<Webhook> list = webhookDao.getPartyWebhooks("123");
-        for (Webhook w : list) {
+        List<Hook> list = webhookDao.getPartyWebhooks("123");
+        for (Hook w : list) {
             webhookDao.delete(w.getId());
         }
         list = webhookDao.getPartyWebhooks("999");
-        for (Webhook w : list) {
+        for (Hook w : list) {
             webhookDao.delete(w.getId());
         }
     }
@@ -63,8 +65,8 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getWebhookById() throws Exception {
-        List<Webhook> list = webhookDao.getPartyWebhooks("123");
-        for (Webhook w : list) {
+        List<Hook> list = webhookDao.getPartyWebhooks("123");
+        for (Hook w : list) {
             System.out.println(w);
             Assert.assertNotNull(webhookDao.getWebhookById(w.getId()));
         }
@@ -72,8 +74,8 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getWebhooksByCode() throws Exception {
-//        Assert.assertNotNull(webhookDao.getWebhooksByCode(EventTypeCode.INVOICE_CREATED, "123"));
-        Assert.assertTrue(webhookDao.getWebhooksByCode(EventTypeCode.INVOICE_CREATED, "888").isEmpty());
+//        Assert.assertNotNull(webhookDao.getWebhooksByCode(EventType.INVOICE_CREATED, "123"));
+        Assert.assertTrue(webhookDao.getWebhooksBy(EventType.INVOICE_CREATED, "888").isEmpty());
     }
 
     @Test

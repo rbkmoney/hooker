@@ -4,7 +4,7 @@ import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.EventTypeCode;
+import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.dao.InvoiceDao;
 import com.rbkmoney.hooker.dao.InvoiceInfo;
 import com.rbkmoney.hooker.handler.PollingException;
@@ -22,10 +22,10 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
 
     private Filter filter;
 
-    private EventTypeCode code = EventTypeCode.INVOICE_CREATED;
+    private EventType eventType = EventType.INVOICE_CREATED;
 
     public InvoiceCreatedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(code.getKey()));
+        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule()));
     }
 
     @Override
@@ -56,8 +56,8 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
     }
 
     @Override
-    protected EventTypeCode getCode() {
-        return code;
+    protected EventType getEventType() {
+        return eventType;
     }
 
     @Override

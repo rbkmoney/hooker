@@ -6,7 +6,7 @@ import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.EventTypeCode;
+import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.handler.PollingException;
 import com.rbkmoney.hooker.handler.poller.PollingEventHandler;
@@ -41,34 +41,34 @@ public abstract class AbstractEventHandler<T> implements PollingEventHandler<Sto
         Event event = value.getSourceEvent().getProcessingEvent();
         long eventId = event.getId();
         T eventForPost = getEventForPost(event);
-        try {
-            String paramsAsString = new ObjectMapper().writeValueAsString(eventForPost);
-            String partyId = getPartyId(eventForPost);
-            List<Webhook> webhookList = webhookDao.getWebhooksByCode(getCode(), partyId);
-            if (webhookList != null) {
-                log.info("Start AbstractEventHandler: event_id {}", eventId);
-                for (Webhook webhook : webhookList) {
-                    KeyPair keyPair = webhookDao.getPairKey(partyId);
-                    final String signature = signer.sign(paramsAsString, keyPair.getPrivKey());
-                    try {
-                        webhookHttpPostSender.doPost(webhook.getUrl(), paramsAsString, signature);
-                    } catch (IOException e) {
-                        log.warn("Couldn't send post-request", e);
-                        throw new PostRequestException(e);
-                    }
-                }
-            }
-        } catch (JsonProcessingException e) {
-            String message = "Couldn't get JSON from event";
-            log.error(message, e);
-            throw new PollingException(message);
-        } catch (DaoException | PostRequestException e) {
-            throw new PollingException(e);
-        }
+//        try {
+//            String paramsAsString = new ObjectMapper().writeValueAsString(eventForPost);
+//            String partyId = getPartyId(eventForPost);
+//            List<Webhook> webhookList = webhookDao.getWebhooksByCode(getEventType(), partyId);
+//            if (webhookList != null) {
+//                log.info("Start AbstractEventHandler: event_id {}", eventId);
+//                for (Webhook webhook : webhookList) {
+//                    KeyPair keyPair = webhookDao.getPairKey(partyId);
+//                    final String signature = signer.sign(paramsAsString, keyPair.getPrivKey());
+//                    try {
+//                        webhookHttpPostSender.doPost(webhook.getUrl(), paramsAsString, signature);
+//                    } catch (IOException e) {
+//                        log.warn("Couldn't send post-request", e);
+//                        throw new PostRequestException(e);
+//                    }
+//                }
+//            }
+//        } catch (JsonProcessingException e) {
+//            String message = "Couldn't get JSON from event";
+//            log.error(message, e);
+//            throw new PollingException(message);
+//        } catch (DaoException | PostRequestException e) {
+//            throw new PollingException(e);
+//        }
         log.info("End AbstractEventHandler: event_id {}", eventId);
     }
 
-    protected abstract EventTypeCode getCode();
+    protected abstract EventType getEventType();
 
     protected abstract String getPartyId(T eventForPost);
 

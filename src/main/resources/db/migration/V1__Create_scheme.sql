@@ -1,5 +1,11 @@
 create schema if not exists hook;
 
+CREATE TYPE hook.EventType AS ENUM (
+    'INVOICE_CREATED',
+    'INVOICE_STATUS_CHANGED',
+    'INVOICE_PAYMENT_STARTED',
+    'INVOICE_PAYMENT_STATUS_CHANGED');
+
 CREATE SEQUENCE hook.seq
     INCREMENT 1
     START 1
@@ -26,8 +32,8 @@ COMMENT ON TABLE hook.webhook
 CREATE TABLE hook.webhook_to_events
 (
     hook_id bigint NOT NULL,
-    event_code character varying(256) NOT NULL,
-    CONSTRAINT pk_webhook_to_events PRIMARY KEY (hook_id, event_code),
+    event_type hook.EventType NOT NULL,
+    CONSTRAINT pk_webhook_to_events PRIMARY KEY (hook_id, event_type),
     CONSTRAINT fk_webhook_to_events FOREIGN KEY (hook_id) REFERENCES hook.webhook(id)
 );
 
@@ -65,7 +71,7 @@ CREATE TYPE hook.EventStatus AS ENUM ('RECEIVED', 'SCHEDULED');
 CREATE TABLE hook.event
 (
     id bigint NOT NULL,
-    code character varying(256) NOT NULL,
+    event_type hook.EventType NOT NULL,
     status hook.EventStatus NOT NULL,
     --additional data required for different types of events
     invoice_id character varying(40) NOT NULL,

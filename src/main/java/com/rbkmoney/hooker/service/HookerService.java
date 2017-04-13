@@ -6,6 +6,8 @@ import com.rbkmoney.damsel.webhooker.WebhookNotFound;
 import com.rbkmoney.damsel.webhooker.WebhookParams;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.WebhookDao;
+import com.rbkmoney.hooker.model.Hook;
+import com.rbkmoney.hooker.utils.HookConverter;
 import org.apache.thrift.TException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,25 +24,26 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public List<Webhook> getList(String s) throws TException {
-        return webhookDao.getPartyWebhooks(s);
+        List<Hook> hooks = webhookDao.getPartyWebhooks(s);
+        return HookConverter.convert(hooks);
     }
 
     @Override
     public Webhook get(long id) throws WebhookNotFound, TException {
-        Webhook webhookById = webhookDao.getWebhookById(id);
-        if (webhookById == null) {
+        Hook hook = webhookDao.getWebhookById(id);
+        if (hook == null) {
             throw new WebhookNotFound();
         }
-        return webhookById;
+        return HookConverter.convert(hook);
     }
 
     @Override
     public Webhook create(WebhookParams webhookParams) throws TException {
-        Webhook webhook = webhookDao.addWebhook(webhookParams);
-        if (webhook == null) {
+        Hook hook = webhookDao.save(HookConverter.convert(webhookParams));
+        if (hook == null) {
             throw new TException("Webhookparams.EventFilter is empty.");
         }
-        return webhook;
+        return HookConverter.convert(hook);
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentStatusChanged;
-import com.rbkmoney.hooker.dao.EventTypeCode;
+import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.dao.InvoiceDao;
 import com.rbkmoney.hooker.dao.InvoiceInfo;
 import com.rbkmoney.thrift.filter.Filter;
@@ -17,10 +17,10 @@ public class InvoicePaymentStatusChangedHandler extends AbstractInvoiceEventHand
     InvoiceDao invoiceDao;
 
     private Filter filter;
-    private EventTypeCode code = EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED;
+    private EventType eventType = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
 
     public InvoicePaymentStatusChangedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(code.getKey()));
+        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule()));
     }
 
     @Override
@@ -29,8 +29,8 @@ public class InvoicePaymentStatusChangedHandler extends AbstractInvoiceEventHand
     }
 
     @Override
-    protected EventTypeCode getCode() {
-        return code;
+    protected EventType getEventType() {
+        return eventType;
     }
 
     @Override

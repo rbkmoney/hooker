@@ -1,27 +1,25 @@
 package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.damsel.webhooker.*;
-import com.rbkmoney.hooker.dao.EventTypeCode;
+import com.rbkmoney.hooker.model.EventType;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by inalarsanukaev on 05.04.17.
  */
 public class EventFilterUtils {
-    public static EventFilter getEventFilterByCode(Collection<EventTypeCode> eventTypeCodeSet) {
-        if (eventTypeCodeSet == null || eventTypeCodeSet.isEmpty()) {return null;}
+    public static EventFilter getEventFilter(Collection<EventType> eventTypeSet) {
+        if (eventTypeSet == null || eventTypeSet.isEmpty()) {return null;}
         EventFilter eventFilter = new EventFilter();
         InvoiceEventFilter invoiceEventFilter = new InvoiceEventFilter();
         Set<InvoiceEventType> invoiceEventTypes = new HashSet<>();
         invoiceEventFilter.setTypes(invoiceEventTypes);
         eventFilter.setInvoice(invoiceEventFilter);
-        for (EventTypeCode eventTypeCode : eventTypeCodeSet) {
-            switch (eventTypeCode) {
+        for (EventType eventType : eventTypeSet) {
+            switch (eventType) {
                 case INVOICE_CREATED:
                     invoiceEventTypes.add(InvoiceEventType.created(new InvoiceCreated()));
                     break;
@@ -41,33 +39,28 @@ public class EventFilterUtils {
         return eventFilter;
     }
 
-    public static Set<EventTypeCode> getEventTypeCodeSetByFilter(EventFilter eventFilter){
-        Set<EventTypeCode> eventTypeCodeSet = new HashSet<>();
+    public static Set<EventType> getEventTypes(EventFilter eventFilter){
+        Set<EventType> eventTypeSet = new HashSet<>();
         if (eventFilter.isSetInvoice()) {
             Set<InvoiceEventType> invoiceEventTypes = eventFilter.getInvoice().getTypes();
             for (InvoiceEventType invoiceEventType : invoiceEventTypes) {
 
                 if (invoiceEventType.isSetCreated()) {
-                    eventTypeCodeSet.add(EventTypeCode.INVOICE_CREATED);
+                    eventTypeSet.add(EventType.INVOICE_CREATED);
                 }
                 if (invoiceEventType.isSetStatusChanged()) {
-                    eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
+                    eventTypeSet.add(EventType.INVOICE_STATUS_CHANGED);
                 }
                 if (invoiceEventType.isSetPayment()) {
                     if (invoiceEventType.getPayment().isSetCreated()) {
-                        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STARTED);
+                        eventTypeSet.add(EventType.INVOICE_PAYMENT_STARTED);
                     }
                     if (invoiceEventType.getPayment().isSetStatusChanged()) {
-                        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED);
+                        eventTypeSet.add(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
                     }
                 }
             }
         }
-        return eventTypeCodeSet;
+        return eventTypeSet;
     }
-
-    public static List<String> getCodes(Collection<EventTypeCode> coll){
-        return coll.stream().map(etc -> etc.getKey()).collect(Collectors.toList());
-    }
-
 }

@@ -1,9 +1,9 @@
 package com.rbkmoney.hooker.scheduler;
 
-import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.hooker.dao.EventDao;
 import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.model.EventStatus;
+import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoiceFatEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +23,18 @@ import java.util.stream.Collectors;
 public class TasksCreator {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    EventDao eventDao;
+//    @Autowired
+//    EventDao eventDao;
 
     @Autowired
     WebhookDao webhookDao;
 
     @Scheduled(fixedDelayString = "${tasks.creator.delay}")
     public void start(){
-        final List<InvoiceFatEvent> events = eventDao.getByStatus(EventStatus.RECEIVED);
-        final Set<String> eventTypeCodes = getEventTypeCodes(events);
-        final Set<String> partyIds = getPartyIds(events);
-        final List<Webhook> participatedHooks = webhookDao.getWebhooksBy(eventTypeCodes, partyIds);
+//        final List<InvoiceFatEvent> events = eventDao.getByStatus(EventStatus.RECEIVED);
+//        final Set<String> eventTypeCodes = getEventTypeCodes(events);
+//        final Set<String> partyIds = getPartyIds(events);
+//        final List<Hook> participatedHooks = webhookDao.getWebhooksBy(eventTypeCodes, partyIds);
 
 
 
