@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 
 
 @Component
@@ -31,10 +32,10 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     @Override
     public Message getAny(String invoiceId) throws DaoException {
         Message result = null;
-        final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id";
+        final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id LIMIT 1";
         MapSqlParameterSource params = new MapSqlParameterSource("invoice_id", invoiceId);
         try {
-            result = getNamedParameterJdbcTemplate().queryForObject(sql, params, new RowMapper<Message>() {
+            List<Message> messages = getNamedParameterJdbcTemplate().query(sql, params, new RowMapper<Message>() {
                 @Override
                 public Message mapRow(ResultSet rs, int i) throws SQLException {
                     Message message = new Message();
@@ -58,6 +59,9 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                     return message;
                 }
             });
+            if(messages.size() > 0){
+                return messages.get(0);
+            }
         } catch (EmptyResultDataAccessException e) {
             log.warn("Invoice with id "+invoiceId+" not exist!");
         } catch (NestedRuntimeException e) {
@@ -113,11 +117,24 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     }
 
     @Override
-    public boolean delete(String id) throws DaoException {
-        log.info("Start deleting payment info with invoiceId = {}", id);
+    public boolean delete(String invoiceId) throws DaoException {
+        log.info("Start deleting payment info with invoiceId = {}", invoiceId);
         final String sql = "DELETE FROM hook.message where invoice_id=:invoice_id";
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("invoice_id", id));
+            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("invoice_id", invoiceId));
+        } catch (DataAccessException e) {
+            log.warn("MessageDaoImpl.delete error", e);
+            throw new DaoException(e);
+        }
+        log.info("Payment info with invoiceId = {} deleted from table", invoiceId);
+        return true;
+    }
+
+    @Override
+    public boolean delete(long id) throws DaoException {
+        final String sql = "DELETE FROM hook.message where id = :id";
+        try {
+            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
             if (updateCount != 1) {
                 return false;
             }
@@ -125,7 +142,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
-        log.info("Payment info with invoiceId = {} deleted from table", id);
         return true;
     }
 }

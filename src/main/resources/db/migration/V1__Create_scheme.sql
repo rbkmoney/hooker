@@ -75,9 +75,9 @@ CREATE TABLE hook.message
 
 CREATE TABLE hook.scheduled_task
 (
-    event_id bigint NOT NULL,
-    hook_id character varying(256) NOT NULL,
-    CONSTRAINT scheduled_task_pkey PRIMARY KEY (event_id, hook_id)
+    message_id bigint NOT NULL,
+    hook_id bigint NOT NULL,
+    CONSTRAINT scheduled_task_fkey FOREIGN KEY (message_id) REFERENCES hook.message(id)
 );
 
 
