@@ -152,6 +152,12 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     @Override
+    public List<Webhook> getWebhooksBy(Collection<String> eventTypeCodes, Collection<String> partyIds) {
+        //TODO implement
+        return new ArrayList<>();
+    }
+
+    @Override
     //TODO keys, weebhook and relation between hook and events should be saved in transaction
     public Webhook addWebhook(WebhookParams webhookParams) {
         Set<EventTypeCode> eventTypeCodeSetByFilter = EventFilterUtils.getEventTypeCodeSetByFilter(webhookParams.getEventFilter());

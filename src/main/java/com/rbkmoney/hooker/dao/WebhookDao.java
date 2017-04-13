@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.damsel.webhooker.WebhookParams;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -13,6 +14,7 @@ public interface WebhookDao {
     List<Webhook> getPartyWebhooks(String partyId);
     Webhook getWebhookById(long id);
     List<Webhook> getWebhooksByCode(EventTypeCode typeCode, String partyId);
+    List<Webhook> getWebhooksBy(Collection<String> eventTypeCodes, Collection<String> partyIds);
     Webhook addWebhook(WebhookParams webhookParams);
     boolean delete(long id);
     KeyPair getPairKey(String partyId);
