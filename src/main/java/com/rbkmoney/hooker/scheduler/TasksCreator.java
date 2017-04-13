@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
  * Created by jeckep on 12.04.17.
  */
 
-@Service
+//@Service
 public class TasksCreator {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Scheduled(fixedDelayString = "${tasks.creator.delay}")
+//    @Scheduled(fixedDelayString = "${tasks.creator.delay}")
     public void start(){
         log.info("TasksCreator");
 
