@@ -15,8 +15,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -24,6 +22,29 @@ import java.util.List;
 @Component
 public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
+
+    private static RowMapper<Message> messageRowMapper = (rs, i) -> {
+        Message message = new Message();
+        message.setId(rs.getLong("id"));
+        message.setInvoiceId(rs.getString("invoice_id"));
+        message.setPartyId(rs.getString("party_id"));
+        message.setShopId(rs.getInt("shop_id"));
+        message.setAmount(rs.getLong("amount"));
+        message.setCurrency(rs.getString("currency"));
+        message.setCreatedAt(rs.getString("created_at"));
+        Content metadata = new Content();
+        metadata.setType(rs.getString("content_type"));
+        metadata.setData(rs.getBytes("content_data"));
+        message.setMetadata(metadata);
+
+        message.setEventStatus(EventStatus.valueOf(rs.getString("event_status")));
+        message.setEventType(EventType.valueOf(rs.getString("event_type")));
+        message.setEventId(rs.getLong("event_id"));
+        message.setType(rs.getString("type"));
+        message.setStatus(rs.getString("status"));
+        message.setPaymentId(rs.getString("payment_id"));
+        return message;
+    };
 
     public MessageDaoImpl(DataSource dataSource) {
         setDataSource(dataSource);
@@ -35,37 +56,11 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id LIMIT 1";
         MapSqlParameterSource params = new MapSqlParameterSource("invoice_id", invoiceId);
         try {
-            List<Message> messages = getNamedParameterJdbcTemplate().query(sql, params, new RowMapper<Message>() {
-                @Override
-                public Message mapRow(ResultSet rs, int i) throws SQLException {
-                    Message message = new Message();
-                    message.setInvoiceId(rs.getString("invoice_id"));
-                    message.setPartyId(rs.getString("party_id"));
-                    message.setShopId(rs.getInt("shop_id"));
-                    message.setAmount(rs.getLong("amount"));
-                    message.setCurrency(rs.getString("currency"));
-                    message.setCreatedAt(rs.getString("created_at"));
-                    Content metadata = new Content();
-                    metadata.setType(rs.getString("content_type"));
-                    metadata.setData(rs.getBytes("content_data"));
-                    message.setMetadata(metadata);
-
-                    message.setEventStatus(EventStatus.valueOf(rs.getString("event_status")));
-                    message.setEventType(EventType.valueOf(rs.getString("event_type")));
-                    message.setEventId(rs.getLong("event_id"));
-                    message.setType(rs.getString("type"));
-                    message.setStatus(rs.getString("status"));
-                    message.setPaymentId(rs.getString("payment_id"));
-                    return message;
-                }
-            });
-            if(messages.size() > 0){
-                return messages.get(0);
-            }
+            result = getNamedParameterJdbcTemplate().queryForObject(sql, params, messageRowMapper);
         } catch (EmptyResultDataAccessException e) {
-            log.warn("Invoice with id "+invoiceId+" not exist!");
+            log.warn("Message with invoice id "+invoiceId+" not exist!");
         } catch (NestedRuntimeException e) {
-            log.warn("MessageDaoImpl.getById error", e);
+            log.warn("MessageDaoImpl.getAny error", e);
             throw new DaoException(e);
         }
         return result;
@@ -143,5 +138,17 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             throw new DaoException(e);
         }
         return true;
+    }
+
+    @Override
+    public List<Message> getBy(EventStatus eventStatus) {
+        final String sql = "SELECT * FROM hook.message WHERE event_status = '" + eventStatus.toString() + "'";
+        try {
+            List<Message> messages = getNamedParameterJdbcTemplate().query(sql, messageRowMapper);
+            return messages;
+        }  catch (NestedRuntimeException e) {
+            log.warn("MessageDaoImpl.getById error", e);
+            throw new DaoException(e);
+        }
     }
 }

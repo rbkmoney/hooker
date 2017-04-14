@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.scheduler;
 
+import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.WebhookDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 public class TasksCreator {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
+    @Autowired
+    MessageDao messageDao;
 
     @Autowired
     WebhookDao webhookDao;

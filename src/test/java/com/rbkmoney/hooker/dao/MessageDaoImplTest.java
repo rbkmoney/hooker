@@ -57,6 +57,11 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void getBy() throws Exception {
+        Assert.assertEquals(2, messageDao.getBy(EventStatus.RECEIVED).size());
+    }
+
+    @Test
     public void getMaxEventId(){
         Assert.assertEquals(messageDao.getMaxEventId().longValue(), 5555);
     }

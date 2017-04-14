@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,9 +74,13 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void getWebhooksByCode() throws Exception {
-//        Assert.assertNotNull(webhookDao.getWebhooksByCode(EventType.INVOICE_CREATED, "123"));
+    public void getWebhooksByEmpty() throws Exception {
         Assert.assertTrue(webhookDao.getWebhooksBy(EventType.INVOICE_CREATED, "888").isEmpty());
+    }
+
+    @Test
+    public void getWebhooksBy1() throws Exception {
+        Assert.assertEquals(1, webhookDao.getWebhooksBy(Arrays.asList(EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED), Arrays.asList("999")).size());
     }
 
     @Test

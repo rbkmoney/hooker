@@ -122,37 +122,40 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Override
     @Deprecated
     public List<Hook> getWebhooksBy(EventType eventType, String partyId) {
-        log.info("New getWebhookByCode request. TypeCode = {}, partyId = {}", eventType, partyId);
-        final String sql = "select w.*, k.pub_key, wte.event_type \n" +
-                "from hook.webhook w  \n" +
-                "join hook.party_key k \n" +
-                "on k.party_id = w.party_id " +
-                "join hook.webhook_to_events wte " +
-                "on wte.hook_id = w.id "+
-                "where wte.event_type = CAST(:event_type AS hook.eventtype) " +
-                "and w.party_id =:party_id " +
-                "order by w.id";
+        return getWebhooksBy(Arrays.asList(eventType), Arrays.asList(partyId));
+    }
+
+    @Override
+    public List<Hook> getWebhooksBy(Collection<EventType> eventTypes, Collection<String> partyIds) {
+        if(eventTypes.size() == 0 || partyIds.size() == 0){
+            return new ArrayList<>();
+        }
+
+        final String eventTypesSql = "(" +eventTypes.stream()
+                .map(e -> "'" + e.toString() + "'")
+                .reduce((r, e) -> r + ", " + e).get() + ")";
+
+        final String sql =
+                " select w.*, k.pub_key, wte.event_type \n" +
+                " from hook.webhook w  \n" +
+                " join hook.party_key k \n" +
+                " on k.party_id = w.party_id " +
+                " join hook.webhook_to_events wte " +
+                " on wte.hook_id = w.id "+
+                " where wte.event_type in " + eventTypesSql +
+                " and w.party_id in (:party_ids) " +
+                " order by w.id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("event_type", eventType.toString());
-        params.addValue("party_id", partyId);
+        params.addValue("party_ids", partyIds);
 
         try {
             List<AllHookTablesRow> allHookTablesRows = getNamedParameterJdbcTemplate().query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
-            log.info("Response getWebhooksByCode.");
             return result;
         } catch (DataAccessException e) {
-            String message = "Couldn't getWebhooksByCode for eventType = " + eventType +"; partyId = "+partyId;
-            log.warn(message, e);
-            throw new DaoException(message);
+            throw new DaoException(e);
         }
-    }
-
-    @Override
-    public List<Hook> getWebhooksBy(Collection<String> eventTypeCodes, Collection<String> partyIds) {
-        //TODO implement
-        return new ArrayList<>();
     }
 
     @Override
