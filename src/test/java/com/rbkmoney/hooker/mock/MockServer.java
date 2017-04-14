@@ -11,6 +11,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 
 /**
  * @since 12.04.17
@@ -29,7 +32,15 @@ public class MockServer {
 
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-                System.out.println("Request: " + request.getRequestLine() + "\nBody: " + request.getBody());
+
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                try {
+                    request.getBody().writeTo(byteArrayOutputStream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                log.info("\nRequest: " + request.getRequestLine() + "\nBody: " + byteArrayOutputStream.toString());
+
                 if (request.getPath().startsWith("/mock/")) {
                     return new MockResponse().setBody("xyi").setResponseCode(200);
                 }
