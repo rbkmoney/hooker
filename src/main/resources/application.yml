@@ -47,4 +47,4 @@ spring:
 
 tasks:
   creator:
-    delay: 2000
+    delay: 1000

@@ -1,6 +1,8 @@
-package com.rbkmoney.hooker.dao;
+package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.damsel.base.Content;
+import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.EventStatus;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
@@ -12,14 +14,12 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
-import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.List;
 
 
-@Component
 public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -146,8 +146,31 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         try {
             List<Message> messages = getNamedParameterJdbcTemplate().query(sql, messageRowMapper);
             return messages;
-        }  catch (NestedRuntimeException e) {
-            log.warn("MessageDaoImpl.getById error", e);
+        }  catch (DataAccessException e) {
+            log.error("MessageDaoImpl.getByStatus error", e);
+            throw new DaoException(e);
+        }
+    }
+
+    @Override
+    public List<Long> getIdsBy(EventStatus eventStatus) {
+        final String sql = "SELECT id FROM hook.message WHERE event_status = '" + eventStatus.toString() + "'";
+        try {
+            List<Long> ids = getNamedParameterJdbcTemplate().queryForList(sql,new HashMap<>(), Long.class);
+            return ids;
+        }  catch (DataAccessException e) {
+            log.error("MessageDaoImpl.getIdsByStatus error", e);
+            throw new DaoException(e);
+        }
+    }
+
+    @Override
+    public void updateStatus(List<Long> ids, EventStatus eventStatus) {
+        final String sql = "UPDATE hook.message SET event_status = cast(:event_status as hook.eventstatus) WHERE id in (:ids)";
+        try {
+            getNamedParameterJdbcTemplate().update(sql,new MapSqlParameterSource("ids", ids).addValue("event_status", eventStatus.toString()));
+        }  catch (DataAccessException e) {
+            log.error("Fail to update status of messages.", e);
             throw new DaoException(e);
         }
     }

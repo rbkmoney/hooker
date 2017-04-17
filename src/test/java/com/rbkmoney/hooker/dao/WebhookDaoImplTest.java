@@ -26,8 +26,10 @@ import java.util.Set;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class WebhookDaoImplTest extends AbstractIntegrationTest {
+
     @Autowired
     WebhookDao webhookDao;
+
     @Before
     public void setUp() throws Exception {
         Set<EventType> eventTypeSet = new HashSet<>();
@@ -87,5 +89,14 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
     public void getPairKey() throws Exception {
         Assert.assertNotNull(webhookDao.getPairKey("123"));
         Assert.assertNull(webhookDao.getPairKey("88888"));
+    }
+
+    public static Hook buildHook(String partyId, String url){
+        Hook hook = new Hook();
+        hook.setPartyId(partyId);
+        hook.setUrl(url);
+        hook.setEventTypes(new HashSet<>(Arrays.asList(EventType.INVOICE_PAYMENT_STARTED, EventType.INVOICE_PAYMENT_STATUS_CHANGED)));
+
+        return hook;
     }
 }

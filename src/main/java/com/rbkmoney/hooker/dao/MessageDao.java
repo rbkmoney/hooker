@@ -11,6 +11,9 @@ public interface MessageDao {
     boolean delete(String invoiceId) throws DaoException;
     boolean delete(long id) throws DaoException;
     List<Message> getBy(EventStatus eventStatus);
+    List<Long> getIdsBy(EventStatus eventStatus);
+
+    void updateStatus(List<Long> ids, EventStatus eventStatus);
 
     Long getMaxEventId();
 }

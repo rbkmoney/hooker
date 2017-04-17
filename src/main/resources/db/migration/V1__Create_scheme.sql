@@ -77,7 +77,9 @@ CREATE TABLE hook.scheduled_task
 (
     message_id bigint NOT NULL,
     hook_id bigint NOT NULL,
-    CONSTRAINT scheduled_task_fkey FOREIGN KEY (message_id) REFERENCES hook.message(id)
+    CONSTRAINT scheduled_task_pkey PRIMARY KEY (message_id, hook_id),
+    CONSTRAINT scheduled_task_fkey1 FOREIGN KEY (message_id) REFERENCES hook.message(id),
+    CONSTRAINT scheduled_task_fkey2 FOREIGN KEY (hook_id) REFERENCES hook.webhook(id)
 );
 
 

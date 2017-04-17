@@ -1,5 +1,7 @@
-package com.rbkmoney.hooker.dao;
+package com.rbkmoney.hooker.dao.impl;
 
+import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Created by inal on 28.11.2016.
  */
-@Component
+
 public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements WebhookDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 

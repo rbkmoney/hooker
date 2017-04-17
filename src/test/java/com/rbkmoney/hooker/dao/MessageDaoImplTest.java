@@ -14,35 +14,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Created by inalarsanukaev on 09.04.17.
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class MessageDaoImplTest extends AbstractIntegrationTest {
+
     @Autowired
     MessageDao messageDao;
+
     @Before
     public void setUp() throws Exception {
-        Message message = new Message();
-        message.setEventId(5555);
-        message.setInvoiceId("1234");
-        message.setPartyId("56678");
-        message.setShopId(123);
-        message.setAmount(12235);
-        message.setCurrency("RUB");
-        message.setCreatedAt("12.12.2008");
-        Content metadata = new Content();
-        metadata.setType("string");
-        metadata.setData("somedata".getBytes());
-        message.setMetadata(metadata);
-        message.setEventType(EventType.INVOICE_CREATED);
-        message.setEventStatus(EventStatus.RECEIVED);
-        message.setType("invoice");
-        message.setStatus("message status");
-        message.setPaymentId("paymentId");
-        messageDao.save(message);
-        messageDao.save(message);
+        messageDao.save(buildMessage("1234", "56678"));
+        messageDao.save(buildMessage("1234", "56678"));
     }
 
     @After
@@ -58,11 +46,38 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getBy() throws Exception {
-        Assert.assertEquals(2, messageDao.getBy(EventStatus.RECEIVED).size());
+        List<Message> messages = messageDao.getBy(EventStatus.RECEIVED);
+        Assert.assertEquals(2, messages.size());
+        Assert.assertEquals(0, messageDao.getBy(EventStatus.SCHEDULED).size());
+
+        messageDao.updateStatus(messages.stream().map(m -> m.getId()).collect(Collectors.toList()), EventStatus.SCHEDULED);
+        Assert.assertEquals(2, messageDao.getBy(EventStatus.SCHEDULED).size());
+
     }
 
     @Test
     public void getMaxEventId(){
         Assert.assertEquals(messageDao.getMaxEventId().longValue(), 5555);
+    }
+
+    public static Message buildMessage(String invoceId, String partyId){
+        Message message = new Message();
+        message.setEventId(5555);
+        message.setInvoiceId(invoceId);
+        message.setPartyId(partyId);
+        message.setShopId(123);
+        message.setAmount(12235);
+        message.setCurrency("RUB");
+        message.setCreatedAt("12.12.2008");
+        Content metadata = new Content();
+        metadata.setType("string");
+        metadata.setData("somedata".getBytes());
+        message.setMetadata(metadata);
+        message.setEventType(EventType.INVOICE_CREATED);
+        message.setEventStatus(EventStatus.RECEIVED);
+        message.setType("invoice");
+        message.setStatus("message status");
+        message.setPaymentId("paymentId");
+        return message;
     }
 }
