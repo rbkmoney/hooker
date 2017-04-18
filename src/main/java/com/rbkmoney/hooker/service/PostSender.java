@@ -10,13 +10,13 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class WebhookHttpPostSender {
+public class PostSender {
     Logger log = LoggerFactory.getLogger(this.getClass());
     private final OkHttpClient httpClient;
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public static final String SIGNATURE_HEADER = "X-Signature";
 
-    public WebhookHttpPostSender(@Value("${merchant.callback.timeout}") int timeout) {
+    public PostSender(@Value("${merchant.callback.timeout}") int timeout) {
         this.httpClient = new OkHttpClient.Builder()
                 .connectTimeout(timeout, TimeUnit.SECONDS)
                 .writeTimeout(timeout, TimeUnit.SECONDS)

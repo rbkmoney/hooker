@@ -8,6 +8,8 @@ import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
+import com.rbkmoney.hooker.service.PostSender;
+import com.rbkmoney.hooker.service.crypt.Signer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,12 @@ public class MessageScheduler {
     @Autowired
     private RetryPoliciesService retryPoliciesService;
 
+    @Autowired
+    Signer signer;
+
+    @Autowired
+    PostSender postSender;
+
     private final Set<Long> processedHooks = Collections.synchronizedSet(new HashSet<>());
     private ExecutorService executorService;
 
@@ -67,7 +75,7 @@ public class MessageScheduler {
                        .map(t -> messages.get(t.getMessageId()))
                        .collect(Collectors.toList());
 
-                MessageSender messageSender = new MessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this);
+                MessageSender messageSender = new MessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this, signer, postSender);
                 executorService.submit(messageSender);
             }
         }
