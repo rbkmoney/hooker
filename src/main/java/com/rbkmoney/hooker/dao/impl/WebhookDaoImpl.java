@@ -4,6 +4,7 @@ import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
+import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import org.slf4j.Logger;
@@ -33,13 +34,17 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     public static RowMapper<Hook> hookWithPolicyRowMapper = (rs, i) -> {
-      Hook hook = new Hook();
-        rs.getLong("id");
-                rs.getString("party_id");
-                rs.getString("url");
-                rs.getString("pub_key");
-                rs.getBoolean("enabled");
-      return hook;
+        Hook hook = new Hook();
+        hook.setId(rs.getLong("id"));
+        hook.setPartyId(rs.getString("party_id"));
+        hook.setUrl(rs.getString("url"));
+        hook.setPubKey(rs.getString("pub_key"));
+        hook.setPrivKey(rs.getString("priv_key"));
+        hook.setEnabled(rs.getBoolean("enabled"));
+        RetryPolicyType retryPolicyType = RetryPolicyType.valueOf(rs.getString("retry_policy"));
+        hook.setRetryPolicyType(retryPolicyType);
+        hook.setRetryPolicyRecord(retryPolicyType.build(rs));
+        return hook;
     };
 
     @Override
@@ -173,7 +178,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 " select w.*, k.*, srp.*" +
                 " from hook.webhook w " +
                 " join hook.party_key k on k.party_id = w.party_id " +
-                " left join simple_retry_policy srp srp.hook_id = w.id" +
+                " left join hook.simple_retry_policy srp on srp.hook_id = w.id" +
                 " where w.id in (:ids)";
         final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids);
 

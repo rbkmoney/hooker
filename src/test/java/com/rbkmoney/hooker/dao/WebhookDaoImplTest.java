@@ -15,10 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by inalarsanukaev on 08.04.17.
@@ -30,22 +29,27 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
     @Autowired
     WebhookDao webhookDao;
 
+    List<Long> ids = new ArrayList<>();
+
     @Before
     public void setUp() throws Exception {
         Set<EventType> eventTypeSet = new HashSet<>();
         eventTypeSet.add(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
         eventTypeSet.add(EventType.INVOICE_CREATED);
         WebhookParams webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(eventTypeSet), "https://google.com");
-        webhookDao.create(HookConverter.convert(webhookParams));
+        Hook hook = webhookDao.create(HookConverter.convert(webhookParams));
+        ids.add(hook.getId());
         eventTypeSet.clear();
         eventTypeSet.add(EventType.INVOICE_STATUS_CHANGED);
         eventTypeSet.add(EventType.INVOICE_PAYMENT_STARTED);
         webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilter(eventTypeSet), "https://yandex.ru");
-        webhookDao.create(HookConverter.convert(webhookParams));
+        hook = webhookDao.create(HookConverter.convert(webhookParams));
+        ids.add(hook.getId());
         eventTypeSet.clear();
         eventTypeSet.add(EventType.INVOICE_STATUS_CHANGED);
         webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(eventTypeSet), "https://2ch.hk/b");
-        webhookDao.create(HookConverter.convert(webhookParams));;
+        hook = webhookDao.create(HookConverter.convert(webhookParams));
+        ids.add(hook.getId());
     }
 
     @After
@@ -62,7 +66,7 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getPartyWebhooks() throws Exception {
-        Assert.assertEquals(webhookDao.getPartyWebhooks("123").size(), 2);
+        assertEquals(webhookDao.getPartyWebhooks("123").size(), 2);
         Assert.assertTrue(webhookDao.getPartyWebhooks("88888").isEmpty());
     }
 
@@ -82,13 +86,19 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getWebhooksBy1() throws Exception {
-        Assert.assertEquals(1, webhookDao.getWebhooksBy(Arrays.asList(EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED), Arrays.asList("999")).size());
+        assertEquals(1, webhookDao.getWebhooksBy(Arrays.asList(EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED), Arrays.asList("999")).size());
     }
 
     @Test
     public void getPairKey() throws Exception {
         Assert.assertNotNull(webhookDao.getPairKey("123"));
         Assert.assertNull(webhookDao.getPairKey("88888"));
+    }
+
+    @Test
+    public void getByIds(){
+        List<Hook> hooks = webhookDao.getWithPolicies(ids);
+        assertEquals(3, hooks.size());
     }
 
     public static Hook buildHook(String partyId, String url){
