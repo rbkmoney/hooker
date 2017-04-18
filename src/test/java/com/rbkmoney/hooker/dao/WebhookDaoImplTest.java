@@ -80,22 +80,6 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void getWebhooksByEmpty() throws Exception {
-        Assert.assertTrue(webhookDao.getWebhooksBy(EventType.INVOICE_CREATED, "888").isEmpty());
-    }
-
-    @Test
-    public void getWebhooksBy1() throws Exception {
-        assertEquals(1, webhookDao.getWebhooksBy(Arrays.asList(EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED), Arrays.asList("999")).size());
-    }
-
-    @Test
-    public void getPairKey() throws Exception {
-        Assert.assertNotNull(webhookDao.getPairKey("123"));
-        Assert.assertNull(webhookDao.getPairKey("88888"));
-    }
-
-    @Test
     public void getByIds(){
         List<Hook> hooks = webhookDao.getWithPolicies(ids);
         assertEquals(3, hooks.size());

@@ -11,12 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -136,43 +134,6 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         }
     }
 
-    @Override
-    @Deprecated
-    public List<Hook> getWebhooksBy(EventType eventType, String partyId) {
-        return getWebhooksBy(Arrays.asList(eventType), Arrays.asList(partyId));
-    }
-
-    @Override
-    public List<Hook> getWebhooksBy(Collection<EventType> eventTypes, Collection<String> partyIds) {
-        if(eventTypes.size() == 0 || partyIds.size() == 0){
-            return new ArrayList<>();
-        }
-
-        final String eventTypesSql = "(" +eventTypes.stream()
-                .map(e -> "'" + e.toString() + "'")
-                .reduce((r, e) -> r + ", " + e).get() + ")";
-
-        final String sql =
-                " select w.*, k.pub_key, wte.event_type " +
-                " from hook.webhook w  " +
-                " join hook.party_key k  on k.party_id = w.party_id " +
-                " join hook.webhook_to_events wte on wte.hook_id = w.id "+
-                " where wte.event_type in " + eventTypesSql +
-                " and w.party_id in (:party_ids) " +
-                " order by w.id";
-
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("party_ids", partyIds);
-
-        try {
-            List<AllHookTablesRow> allHookTablesRows = getNamedParameterJdbcTemplate().query(sql, params, allHookTablesRowRowMapper);
-            List<Hook> result = squashToWebhooks(allHookTablesRows);
-            return result;
-        } catch (DataAccessException e) {
-            throw new DaoException(e);
-        }
-    }
-
     public List<Hook> getWithPolicies(Collection<Long> ids){
         final String sql =
                 " select w.*, k.*, srp.*" +
@@ -284,27 +245,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     @Autowired
     Signer signer;
 
-    @Override
-    public KeyPair getPairKey(String partyId) {
-        log.info("New getPairKey request. partyId = {}", partyId);
-        final String sql = "select k.* from hook.party_key k where k.party_id =:party_id";
-
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("party_id", partyId);
-
-        try {
-            KeyPair result = getNamedParameterJdbcTemplate().queryForObject(sql, params,
-                    (rs, i) -> new KeyPair(rs.getString("priv_key"), rs.getString("pub_key")));
-            log.info("Response key.");
-            return result;
-        } catch (EmptyResultDataAccessException e) {
-            log.info("Couldn't find key for party " + partyId);
-            return null;
-        }
-    }
-
-    @Override
-    public KeyPair createPairKey(String partyId) {
+    private KeyPair createPairKey(String partyId) {
         final String sql = "INSERT INTO hook.party_key(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +
                 "ON CONFLICT(party_id) DO NOTHING";
