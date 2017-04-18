@@ -14,5 +14,5 @@ public interface TaskDao {
     void create(Collection<Long> messageIds);
     void remove(long hookId, long messageId);
     List<Task> getAll();
-    Map<Long, List<Task>> getScheduled();
+    Map<Long, List<Task>> getScheduled(Collection<Long> excludeHooksIds);
 }

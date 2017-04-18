@@ -73,14 +73,18 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
 
     @Override
     // should return ordered BY hook_id, message_id
-    public Map<Long, List<Task>> getScheduled() {
+    public Map<Long, List<Task>> getScheduled(Collection<Long> excludeHooksIds) {
         final String sql =
                 " SELECT * " +
                 " FROM hook.scheduled_task st" +
                 " JOIN hook.webhook w on w.id = st.hook_id and w.enabled = :enabled" +
+                " WHERE st.hook_id not in (:hook_ids)" +
                 " ORDER BY hook_id ASC , message_id ASC";
         try {
-            List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("enabled", true), taskRowMapper);
+            List<Task> tasks = getNamedParameterJdbcTemplate().query(
+                    sql,
+                    new MapSqlParameterSource("enabled", true).addValue("hook_ids", excludeHooksIds)
+                    , taskRowMapper);
             return splitByHooks(tasks);
         }  catch (DataAccessException e) {
             log.error("Fail to get active tasks from scheduled_task", e);
