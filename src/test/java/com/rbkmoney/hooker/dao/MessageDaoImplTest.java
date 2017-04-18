@@ -14,8 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by inalarsanukaev on 09.04.17.
@@ -41,23 +44,25 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void get() throws Exception {
         Message message = messageDao.getAny("1234");
-        Assert.assertEquals(message.getAmount(), 12235);
+        assertEquals(message.getAmount(), 12235);
+
+        assertEquals(1, messageDao.getBy(Arrays.asList(message.getId())).size());
     }
 
     @Test
     public void getBy() throws Exception {
         List<Message> messages = messageDao.getBy(EventStatus.RECEIVED);
-        Assert.assertEquals(2, messages.size());
-        Assert.assertEquals(0, messageDao.getBy(EventStatus.SCHEDULED).size());
+        assertEquals(2, messages.size());
+        assertEquals(0, messageDao.getBy(EventStatus.SCHEDULED).size());
 
         messageDao.updateStatus(messages.stream().map(m -> m.getId()).collect(Collectors.toList()), EventStatus.SCHEDULED);
-        Assert.assertEquals(2, messageDao.getBy(EventStatus.SCHEDULED).size());
+        assertEquals(2, messageDao.getBy(EventStatus.SCHEDULED).size());
 
     }
 
     @Test
     public void getMaxEventId(){
-        Assert.assertEquals(messageDao.getMaxEventId().longValue(), 5555);
+        assertEquals(messageDao.getMaxEventId().longValue(), 5555);
     }
 
     public static Message buildMessage(String invoceId, String partyId){

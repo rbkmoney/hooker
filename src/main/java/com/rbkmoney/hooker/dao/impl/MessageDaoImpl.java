@@ -16,6 +16,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -108,6 +110,21 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             return getNamedParameterJdbcTemplate().queryForObject(sql, new HashMap<>(), Long.class);
         } catch (EmptyResultDataAccessException e) {
             return null;
+        }
+    }
+
+    @Override
+    public List<Message> getBy(Collection<Long> messageIds) {
+        if(messageIds == null || messageIds.size() == 0){
+            return new ArrayList<>();
+        }
+        final String sql = "SELECT * FROM hook.message WHERE id in (:ids)";
+        try {
+            List<Message> messages = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
+            return messages;
+        }  catch (DataAccessException e) {
+            log.error("MessageDaoImpl.getByIds error", e);
+            throw new DaoException(e);
         }
     }
 

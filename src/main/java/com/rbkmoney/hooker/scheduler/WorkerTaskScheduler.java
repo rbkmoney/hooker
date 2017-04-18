@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.scheduler;
 
+import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.model.Hook;
@@ -7,12 +8,16 @@ import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Collectors;
 
 /**
  * Created by jeckep on 17.04.17.
@@ -23,42 +28,53 @@ import java.util.concurrent.BlockingQueue;
 public class WorkerTaskScheduler {
 
     @Autowired
-    TaskDao taskDao;
+    private TaskDao taskDao;
 
     @Autowired
-    WebhookDao webhookDao;
+    private WebhookDao webhookDao;
 
     @Autowired
-    RetryPoliciesService retryPoliciesService;
+    private MessageDao messageDao;
 
-    Set<Long> processedHooks = Collections.synchronizedSet(new HashSet<>());
+    @Autowired
+    private RetryPoliciesService retryPoliciesService;
+
+    private final Set<Long> processedHooks = Collections.synchronizedSet(new HashSet<>());
+    private final BlockingQueue<WorkerTask> queue = new ArrayBlockingQueue<>(100);
 
     @Scheduled(fixedRateString = "${tasks.executor.delay}")
-    public void loop(){
+    public void loop() throws InterruptedException {
         final List<Long> currentlyProcessedHooks;
-
         synchronized (processedHooks){
             currentlyProcessedHooks = new ArrayList<>(processedHooks);
         }
 
-        Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
+        final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
+        final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+        final Map<Long, Message> messages = loadMessages(scheduledTasks).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
 
 
-        final List<Hook> hooksWaitingMessages = webhookDao.getWithPolicies(scheduledTasks.keySet());
-        final List<Hook> healthyHooks = retryPoliciesService.filter(hooksWaitingMessages);
+        for(long hookId: scheduledTasks.keySet()){
+            if(healthyHooks.containsKey(hookId)){
+               List<Message> messagesForHook = scheduledTasks.get(hookId)
+                       .stream()
+                       .map(t -> messages.get(t.getMessageId()))
+                       .collect(Collectors.toList());
 
-        //TODO create worker tasks and add them to blocking queue for workers
-
+               queue.put(new WorkerTask(healthyHooks.get(hookId), messagesForHook));
+            }
+        }
     }
 
+    @Data
+    @AllArgsConstructor
     public static class WorkerTask {
-        Hook hook;
-        List<Message> messages;
+        private Hook hook;
+        private List<Message> messages;
     }
 
     public BlockingQueue<WorkerTask> getTaskQueue(){
-        //TODO
-        return null;
+        return queue;
     }
 
     //worker should invoke this method when it is done with scheduled messages for hookId
@@ -82,5 +98,23 @@ public class WorkerTaskScheduler {
 
     private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeHooksIds){
         return taskDao.getScheduled(excludeHooksIds);
+    }
+
+    private List<Hook> loadHooks(Collection<Long> hookIds){
+        List<Hook> hooksWaitingMessages = webhookDao.getWithPolicies(hookIds);
+        return retryPoliciesService.filter(hooksWaitingMessages);
+    }
+
+    private List<Message> loadMessages(Map<Long, List<Task>> scheduledTasks){
+        Set<Long> messageIds = scheduledTasks.values()
+                .stream()
+                .flatMap(c -> c.stream())
+                .map(t -> t.getMessageId())
+                .collect(Collectors.toSet());
+        return loadMessages(messageIds);
+    }
+
+    private List<Message> loadMessages(Collection<Long> messageIds){
+        return messageDao.getBy(messageIds);
     }
 }

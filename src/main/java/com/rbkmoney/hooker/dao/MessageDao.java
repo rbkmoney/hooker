@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.dao;
 import com.rbkmoney.hooker.model.EventStatus;
 import com.rbkmoney.hooker.model.Message;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface MessageDao {
@@ -16,4 +17,6 @@ public interface MessageDao {
     void updateStatus(List<Long> ids, EventStatus eventStatus);
 
     Long getMaxEventId();
+
+    List<Message> getBy(Collection<Long> messageIds);
 }
