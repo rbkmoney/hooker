@@ -6,21 +6,20 @@ import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
-import com.rbkmoney.hooker.retry.RetryPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by jeckep on 17.04.17.
  */
 
 @Service
-//TODO change name
-public class ParallelPoster {
+//TODO find appropriate name
+public class WorkerTaskScheduler {
 
     @Autowired
     TaskDao taskDao;
@@ -32,9 +31,6 @@ public class ParallelPoster {
     RetryPoliciesService retryPoliciesService;
 
     Set<Long> processedHooks = Collections.synchronizedSet(new HashSet<>());
-
-    //TODO может мы должны передовать всю необходимую информацию воркерам и полиси и хук
-    Map<Long, RetryPolicy> policyMap = Collections.synchronizedMap(new HashMap<Long, RetryPolicy>());
 
     @Scheduled(fixedRateString = "${tasks.executor.delay}")
     public void loop(){
@@ -50,37 +46,33 @@ public class ParallelPoster {
         final List<Hook> hooksWaitingMessages = webhookDao.getWithPolicies(scheduledTasks.keySet());
         final List<Hook> healthyHooks = retryPoliciesService.filter(hooksWaitingMessages);
 
-        // load related politics - maybe use politics service
-        // filter them by politics
+        //TODO create worker tasks and add them to blocking queue for workers
+
     }
 
     public static class WorkerTask {
         Hook hook;
-        Message message;
+        List<Message> messages;
     }
 
+    public BlockingQueue<WorkerTask> getTaskQueue(){
+        //TODO
+        return null;
+    }
 
     //worker should invoke this method when it is done with scheduled messages for hookId
-    public void done(long hookId){
-        processedHooks.remove(hookId);
+    public void done(Hook hook){
+        processedHooks.remove(hook.getId());
     }
 
     //worker should invoke this method when it is fail to send message to hookId
-    public void fail(long hookId){
-        RetryPolicy retryPolicy = policyMap.get(hookId);
-        retryPolicy.onFail(hookId);
-        processedHooks.remove(hookId);
+    public void fail(Hook hook){
+        retryPoliciesService.getRetryPolicyByType(hook.getRetryPolicyType())
+                .onFail(hook.getRetryPolicyRecord());
+        processedHooks.remove(hook.getId());
     }
 
     private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeHooksIds){
         return taskDao.getScheduled(excludeHooksIds);
-    }
-
-    private List<Task> getActiveHooks(){
-        return null;
-    }
-
-    private Set<Long> getHooksIds(List<Task> tasks){
-        return tasks.stream().map(t -> t.getHookId()).collect(Collectors.toSet());
     }
 }

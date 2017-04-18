@@ -19,7 +19,7 @@ public class RetryPoliciesService {
     @Autowired
     SimpleRetryPolicy simpleRetryPolicy;
 
-    RetryPolicy getRetryPolicyByType(RetryPolicyType type){
+    public RetryPolicy getRetryPolicyByType(RetryPolicyType type){
         if(RetryPolicyType.SIMPLE.equals(type)){
             return simpleRetryPolicy;
         } else {
