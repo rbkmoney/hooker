@@ -6,6 +6,7 @@ import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
+import com.rbkmoney.hooker.retry.RetryPolicyRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,13 @@ public class WorkerTaskScheduler {
     //worker should invoke this method when it is done with scheduled messages for hookId
     public void done(Hook hook){
         processedHooks.remove(hook.getId());
+
+        //reset fail count for hook
+        if(hook.getRetryPolicyRecord().isFailed()){
+            RetryPolicyRecord record = hook.getRetryPolicyRecord();
+            record.reset();
+            retryPoliciesService.update(record);
+        }
     }
 
     //worker should invoke this method when it is fail to send message to hookId
