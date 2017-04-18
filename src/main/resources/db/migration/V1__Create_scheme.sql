@@ -54,13 +54,11 @@ CREATE TABLE hook.party_key
 
 create unique index key_party_id_key on hook.party_key (party_id);
 
-CREATE TYPE hook.EventStatus AS ENUM ('RECEIVED', 'SCHEDULED');
 
 CREATE TABLE hook.message
 (
     id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
     event_type hook.EventType NOT NULL,
-    event_status hook.EventStatus NOT NULL,
     type character varying(40) NOT NULL,
     invoice_id character varying(40) NOT NULL,
     event_id int NOT NULL,

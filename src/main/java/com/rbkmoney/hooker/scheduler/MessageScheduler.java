@@ -8,15 +8,16 @@ import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -25,7 +26,8 @@ import java.util.stream.Collectors;
 
 @Service
 //TODO find appropriate name
-public class WorkerTaskScheduler {
+public class MessageScheduler {
+    Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private TaskDao taskDao;
@@ -40,9 +42,13 @@ public class WorkerTaskScheduler {
     private RetryPoliciesService retryPoliciesService;
 
     private final Set<Long> processedHooks = Collections.synchronizedSet(new HashSet<>());
-    private final BlockingQueue<WorkerTask> queue = new ArrayBlockingQueue<>(100);
+    private ExecutorService executorService;
 
-    @Scheduled(fixedRateString = "${tasks.executor.delay}")
+    public MessageScheduler(@Value("${message.sender.number}") int numberOfWorkers) {
+        this.executorService = Executors.newFixedThreadPool(numberOfWorkers);
+    }
+
+    @Scheduled(fixedRateString = "${message.scheduler.delay}")
     public void loop() throws InterruptedException {
         final List<Long> currentlyProcessedHooks;
         synchronized (processedHooks){
@@ -61,21 +67,12 @@ public class WorkerTaskScheduler {
                        .map(t -> messages.get(t.getMessageId()))
                        .collect(Collectors.toList());
 
-               queue.put(new WorkerTask(healthyHooks.get(hookId), messagesForHook));
+                MessageSender messageSender = new MessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this);
+                executorService.submit(messageSender);
             }
         }
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class WorkerTask {
-        private Hook hook;
-        private List<Message> messages;
-    }
-
-    public BlockingQueue<WorkerTask> getTaskQueue(){
-        return queue;
-    }
 
     //worker should invoke this method when it is done with scheduled messages for hookId
     public void done(Hook hook){

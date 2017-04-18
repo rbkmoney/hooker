@@ -2,7 +2,6 @@ package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
-import com.rbkmoney.hooker.model.EventStatus;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import org.junit.After;
@@ -15,8 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -50,17 +47,6 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void getBy() throws Exception {
-        List<Message> messages = messageDao.getBy(EventStatus.RECEIVED);
-        assertEquals(2, messages.size());
-        assertEquals(0, messageDao.getBy(EventStatus.SCHEDULED).size());
-
-        messageDao.updateStatus(messages.stream().map(m -> m.getId()).collect(Collectors.toList()), EventStatus.SCHEDULED);
-        assertEquals(2, messageDao.getBy(EventStatus.SCHEDULED).size());
-
-    }
-
-    @Test
     public void getMaxEventId(){
         assertEquals(messageDao.getMaxEventId().longValue(), 5555);
     }
@@ -79,7 +65,6 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
         metadata.setData("somedata".getBytes());
         message.setMetadata(metadata);
         message.setEventType(EventType.INVOICE_CREATED);
-        message.setEventStatus(EventStatus.RECEIVED);
         message.setType("invoice");
         message.setStatus("message status");
         message.setPaymentId("paymentId");

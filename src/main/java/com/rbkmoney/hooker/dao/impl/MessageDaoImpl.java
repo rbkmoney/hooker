@@ -3,27 +3,29 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.model.EventStatus;
+import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    TaskDao taskDao;
 
     private static RowMapper<Message> messageRowMapper = (rs, i) -> {
         Message message = new Message();
@@ -39,7 +41,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         metadata.setData(rs.getBytes("content_data"));
         message.setMetadata(metadata);
 
-        message.setEventStatus(EventStatus.valueOf(rs.getString("event_status")));
         message.setEventType(EventType.valueOf(rs.getString("event_type")));
         message.setEventId(rs.getLong("event_id"));
         message.setType(rs.getString("type"));
@@ -71,9 +72,10 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     @Override
     public boolean save(Message message) throws DaoException {
         String invoiceId = message.getInvoiceId();
-        final String sql = "INSERT INTO hook.message(invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data, event_id, event_type, event_status, type, payment_id, status) " +
-                "VALUES (:invoice_id, :party_id, :shop_id, :amount, :currency, :created_at, :content_type, :content_data, :event_id," +
-                " CAST(:event_type as hook.eventtype), CAST(:event_status as hook.eventstatus), :type, :payment_id, :status) ";
+        final String sql = "INSERT INTO hook.message(invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data, event_id, event_type, type, payment_id, status) " +
+                " VALUES (:invoice_id, :party_id, :shop_id, :amount, :currency, :created_at, :content_type, :content_data, :event_id," +
+                " CAST(:event_type as hook.eventtype), :type, :payment_id, :status) " +
+                " RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("invoice_id", invoiceId)
                 .addValue("party_id", message.getPartyId())
@@ -87,14 +89,17 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 .addValue("type", message.getType())
                 .addValue("event_id", message.getEventId())
                 .addValue("event_type", message.getEventType().toString())
-                .addValue("event_status", message.getEventStatus().toString())
                 .addValue("payment_id", message.getPaymentId())
                 .addValue("status", message.getStatus());
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, params);
+            GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+            int updateCount = getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             if (updateCount != 1) {
                 return false;
             }
+            // create tasks
+            // TODO do all operations in save methods in one transaction
+            taskDao.create(Arrays.asList(keyHolder.getKey().longValue()));
         } catch (NestedRuntimeException e) {
             log.warn("MessageDaoImpl.create error", e);
             throw new DaoException(e);
@@ -155,43 +160,5 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             throw new DaoException(e);
         }
         return true;
-    }
-
-    @Override
-    public List<Message> getBy(EventStatus eventStatus) {
-        final String sql = "SELECT * FROM hook.message WHERE event_status = '" + eventStatus.toString() + "'";
-        try {
-            List<Message> messages = getNamedParameterJdbcTemplate().query(sql, messageRowMapper);
-            return messages;
-        }  catch (DataAccessException e) {
-            log.error("MessageDaoImpl.getByStatus error", e);
-            throw new DaoException(e);
-        }
-    }
-
-    @Override
-    public List<Long> getIdsBy(EventStatus eventStatus) {
-        final String sql = "SELECT id FROM hook.message WHERE event_status = '" + eventStatus.toString() + "'";
-        try {
-            List<Long> ids = getNamedParameterJdbcTemplate().queryForList(sql,new HashMap<>(), Long.class);
-            return ids;
-        }  catch (DataAccessException e) {
-            log.error("MessageDaoImpl.getIdsByStatus error", e);
-            throw new DaoException(e);
-        }
-    }
-
-    @Override
-    public void updateStatus(List<Long> ids, EventStatus eventStatus) {
-        if(ids == null || ids.size() == 0){
-            return;
-        }
-        final String sql = "UPDATE hook.message SET event_status = cast(:event_status as hook.eventstatus) WHERE id in (:ids)";
-        try {
-            getNamedParameterJdbcTemplate().update(sql,new MapSqlParameterSource("ids", ids).addValue("event_status", eventStatus.toString()));
-        }  catch (DataAccessException e) {
-            log.error("Fail to update status of messages.", e);
-            throw new DaoException(e);
-        }
     }
 }

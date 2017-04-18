@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.model.EventStatus;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.thrift.filter.Filter;
@@ -43,7 +42,6 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         message.setStatus(event.getPayload().getInvoiceEvent().getInvoiceCreated().getInvoice().getStatus().getSetField().getFieldName());
         message.setType("invoice");
         message.setEventType(eventType);
-        message.setEventStatus(EventStatus.RECEIVED);
         message.setEventId(event.getId());
 
         if (!messageDao.save(message)) {

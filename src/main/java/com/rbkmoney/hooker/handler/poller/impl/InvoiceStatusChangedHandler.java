@@ -2,7 +2,6 @@ package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.model.EventStatus;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.thrift.filter.Filter;
@@ -35,6 +34,5 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
         message.setType("invoice");
         message.setEventId(event.getId());
         message.setEventType(eventType);
-        message.setEventStatus(EventStatus.RECEIVED);
     }
 }

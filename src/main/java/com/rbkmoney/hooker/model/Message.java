@@ -9,7 +9,7 @@ import com.rbkmoney.damsel.base.Content;
  * Created by inalarsanukaev on 07.04.17.
  */
 @JsonPropertyOrder({ "event_type", "invoice_id", "payment_id", "shop_id", "amount", "currency", "created_at", "metadata", "status" })
-@JsonIgnoreProperties({ "id", "eventId", "partyId", "eventType", "eventStatus" })
+@JsonIgnoreProperties({ "id", "eventId", "partyId", "eventType"})
 public class Message {
     private long id;
     private long eventId;
@@ -29,7 +29,6 @@ public class Message {
     private Content metadata;
 
     private EventType eventType;
-    private EventStatus eventStatus;
 
     public long getId() {
         return id;
@@ -133,13 +132,5 @@ public class Message {
 
     public void setEventType(EventType eventType) {
         this.eventType = eventType;
-    }
-
-    public EventStatus getEventStatus() {
-        return eventStatus;
-    }
-
-    public void setEventStatus(EventStatus eventStatus) {
-        this.eventStatus = eventStatus;
     }
 }

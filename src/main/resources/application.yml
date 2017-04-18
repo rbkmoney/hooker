@@ -48,6 +48,11 @@ spring:
 tasks:
   creator:
     delay: 1000
-  executor:
+
+message:
+  scheduler:
     delay: 1000
+  sender:
+    number: 10
+
 
