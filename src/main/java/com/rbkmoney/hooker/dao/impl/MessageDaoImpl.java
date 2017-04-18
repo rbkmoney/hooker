@@ -94,7 +94,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 return false;
             }
         } catch (NestedRuntimeException e) {
-            log.warn("MessageDaoImpl.save error", e);
+            log.warn("MessageDaoImpl.create error", e);
             throw new DaoException(e);
         }
         log.info("Party info with invoiceId = {} added to table", invoiceId);
@@ -166,6 +166,9 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
 
     @Override
     public void updateStatus(List<Long> ids, EventStatus eventStatus) {
+        if(ids == null || ids.size() == 0){
+            return;
+        }
         final String sql = "UPDATE hook.message SET event_status = cast(:event_status as hook.eventstatus) WHERE id in (:ids)";
         try {
             getNamedParameterJdbcTemplate().update(sql,new MapSqlParameterSource("ids", ids).addValue("event_status", eventStatus.toString()));

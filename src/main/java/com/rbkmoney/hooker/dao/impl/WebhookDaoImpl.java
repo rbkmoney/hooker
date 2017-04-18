@@ -32,6 +32,16 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         this.setDataSource(ds);
     }
 
+    public static RowMapper<Hook> hookWithPolicyRowMapper = (rs, i) -> {
+      Hook hook = new Hook();
+        rs.getLong("id");
+                rs.getString("party_id");
+                rs.getString("url");
+                rs.getString("pub_key");
+                rs.getBoolean("enabled");
+      return hook;
+    };
+
     @Override
     public List<Hook> getPartyWebhooks(String partyId) {
         log.info("New getPartyWebhooks request. partyId = {}", partyId);
@@ -138,12 +148,10 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 .reduce((r, e) -> r + ", " + e).get() + ")";
 
         final String sql =
-                " select w.*, k.pub_key, wte.event_type \n" +
-                " from hook.webhook w  \n" +
-                " join hook.party_key k \n" +
-                " on k.party_id = w.party_id " +
-                " join hook.webhook_to_events wte " +
-                " on wte.hook_id = w.id "+
+                " select w.*, k.pub_key, wte.event_type " +
+                " from hook.webhook w  " +
+                " join hook.party_key k  on k.party_id = w.party_id " +
+                " join hook.webhook_to_events wte on wte.hook_id = w.id "+
                 " where wte.event_type in " + eventTypesSql +
                 " and w.party_id in (:party_ids) " +
                 " order by w.id";
@@ -160,9 +168,27 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         }
     }
 
+    public List<Hook> getWithPolicies(Collection<Long> ids){
+        final String sql =
+                " select w.*, k.*, srp.*" +
+                " from hook.webhook w " +
+                " join hook.party_key k on k.party_id = w.party_id " +
+                " left join simple_retry_policy srp srp.hook_id = w.id" +
+                " where w.id in (:ids)";
+        final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids);
+
+        try {
+            List<Hook> hooks = getNamedParameterJdbcTemplate().query(sql, params, hookWithPolicyRowMapper);
+            return hooks;
+        } catch (DataAccessException e) {
+            throw new DaoException(e);
+        }
+
+    }
+
     @Override
     //TODO keys, weebhook and relation between hook and events should be saved in transaction
-    public Hook save(Hook hook) {
+    public Hook create(Hook hook) {
         KeyPair keyPair = createPairKey(hook.getPartyId());
         hook.setPubKey(keyPair.getPublKey());
         hook.setEnabled(true);
@@ -181,12 +207,24 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
             }
             hook.setId(keyHolder.getKey().longValue());
             saveEventCodeList(hook.getId(), hook.getEventTypes());
+            addRecordToRetryPolicy(hook.getId());
         } catch (DataAccessException e) {
             log.warn("WebhookDaoImpl.addWebhook error", e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} added to table", hook.getId());
         return hook;
+    }
+
+    private void addRecordToRetryPolicy(long hookId){
+        final String sql = "insert into hook.simple_retry_policy(hook_id) VALUES (:hook_id)";
+        try {
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId));
+        } catch (DataAccessException e) {
+            log.warn("Fail to create simple_retry_policy for hook: " + hookId, e);
+            throw new DaoException(e);
+        }
+
     }
 
     private void saveEventCodeList(long hookId, Collection<EventType> eventTypes){
@@ -213,16 +251,29 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     public boolean delete(long id) {
         log.info("Start deleting webhook info with id = {}", id);
         final String sql =
-                "DELETE FROM hook.webhook_to_events where hook_id=:id;" +
-                "DELETE FROM hook.webhook where id=:id; ";
+                " DELETE FROM hook.simple_retry_policy where hook_id=:id;" +
+                " DELETE FROM hook.webhook_to_events where hook_id=:id;" +
+                " DELETE FROM hook.webhook where id=:id; ";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
         } catch (DataAccessException e) {
-            log.warn("WebhookDaoImpl.delete error", e);
+            log.error("WebhookDaoImpl.delete error", e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} deleted from table", id);
         return true;
+    }
+
+    @Override
+    public void disable(long id) {
+        final String sql = " UPDATE hook.webhook SET enabled = FALSE where id=:id; ";
+        try {
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
+        } catch (DataAccessException e) {
+            log.error("Fail to disable webhook: " + id, e);
+            throw new DaoException(e);
+        }
+        log.info("Webhook with id = {} disabled", id);
     }
 
     @Autowired

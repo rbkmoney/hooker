@@ -28,7 +28,9 @@ public class HookConverter {
                 EventFilterUtils.getEventTypes(webhook.getEventFilter()),
                 webhook.getUrl(),
                 webhook.getPubKey(),
-                webhook.isEnabled());
+                null,
+                webhook.isEnabled(),
+                null, null);
     }
 
     public static Hook convert(WebhookParams webhookParams){

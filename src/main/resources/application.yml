@@ -48,3 +48,6 @@ spring:
 tasks:
   creator:
     delay: 1000
+  executor:
+    delay: 1000
+

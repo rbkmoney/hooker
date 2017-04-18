@@ -1,5 +1,7 @@
 package com.rbkmoney.hooker.model;
 
+import com.rbkmoney.hooker.retry.RetryPolicyRecord;
+import com.rbkmoney.hooker.retry.RetryPolicyType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,10 +16,13 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Hook {
-    public long id;
-    public String partyId;
-    public Set<EventType> eventTypes;
-    public String url;
-    public String pubKey;
+    private long id;
+    private String partyId;
+    private Set<EventType> eventTypes;
+    private String url;
+    private String pubKey;
+    private String privKey;
     private boolean enabled;
+    private RetryPolicyType retryPolicyType;
+    private RetryPolicyRecord retryPolicyRecord;
 }

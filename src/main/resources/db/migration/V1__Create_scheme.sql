@@ -1,5 +1,7 @@
 create schema if not exists hook;
 
+CREATE TYPE hook.RetryPolicyType AS ENUM ('SIMPLE');
+
 CREATE TYPE hook.EventType AS ENUM (
     'INVOICE_CREATED',
     'INVOICE_STATUS_CHANGED',
@@ -19,6 +21,7 @@ CREATE TABLE hook.webhook
     id bigint NOT NULL DEFAULT nextval('hook.seq'::regclass),
     party_id character varying(40) NOT NULL,
     url character varying(512) NOT NULL,
+    retry_policy hook.RetryPolicyType NOT NULL DEFAULT 'SIMPLE',
     enabled boolean NOT NULL DEFAULT true,
     CONSTRAINT pk_webhook PRIMARY KEY (id)
 );
@@ -80,6 +83,15 @@ CREATE TABLE hook.scheduled_task
     CONSTRAINT scheduled_task_pkey PRIMARY KEY (message_id, hook_id),
     CONSTRAINT scheduled_task_fkey1 FOREIGN KEY (message_id) REFERENCES hook.message(id),
     CONSTRAINT scheduled_task_fkey2 FOREIGN KEY (hook_id) REFERENCES hook.webhook(id)
+);
+
+
+CREATE TABLE hook.simple_retry_policy
+(
+    hook_id bigint NOT NULL,
+    fail_count int NOT NULL DEFAULT 0,
+    last_fail_time BIGINT,
+    CONSTRAINT simple_retry_policy_pkey PRIMARY KEY (hook_id)
 );
 
 

@@ -36,7 +36,7 @@ public class TaskDaoImplTest  extends AbstractIntegrationTest {
         messageDao.save(MessageDaoImplTest.buildMessage("2345","partyId"));
         messageId = messageDao.getAny("2345").getId();
 
-        hookId = webhookDao.save(WebhookDaoImplTest.buildHook("partyId", "fake.url")).getId();
+        hookId = webhookDao.create(WebhookDaoImplTest.buildHook("partyId", "fake.url")).getId();
     }
 
     @Test

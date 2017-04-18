@@ -36,16 +36,16 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
         eventTypeSet.add(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
         eventTypeSet.add(EventType.INVOICE_CREATED);
         WebhookParams webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(eventTypeSet), "https://google.com");
-        webhookDao.save(HookConverter.convert(webhookParams));
+        webhookDao.create(HookConverter.convert(webhookParams));
         eventTypeSet.clear();
         eventTypeSet.add(EventType.INVOICE_STATUS_CHANGED);
         eventTypeSet.add(EventType.INVOICE_PAYMENT_STARTED);
         webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilter(eventTypeSet), "https://yandex.ru");
-        webhookDao.save(HookConverter.convert(webhookParams));
+        webhookDao.create(HookConverter.convert(webhookParams));
         eventTypeSet.clear();
         eventTypeSet.add(EventType.INVOICE_STATUS_CHANGED);
         webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(eventTypeSet), "https://2ch.hk/b");
-        webhookDao.save(HookConverter.convert(webhookParams));;
+        webhookDao.create(HookConverter.convert(webhookParams));;
     }
 
     @After

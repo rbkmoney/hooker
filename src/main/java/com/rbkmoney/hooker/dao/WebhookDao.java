@@ -16,8 +16,11 @@ public interface WebhookDao {
     @Deprecated
     List<Hook> getWebhooksBy(EventType typeCode, String partyId);
     List<Hook> getWebhooksBy(Collection<EventType> eventTypes, Collection<String> partyIds);
-    Hook save(Hook hook);
+    Hook create(Hook hook);
     boolean delete(long id);
+    void disable(long id);
     KeyPair getPairKey(String partyId);
     KeyPair createPairKey(String partyId);
+
+    List<Hook> getWithPolicies(Collection<Long> ids);
 }

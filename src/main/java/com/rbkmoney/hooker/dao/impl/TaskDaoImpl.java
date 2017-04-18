@@ -12,7 +12,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 
 import javax.sql.DataSource;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by jeckep on 17.04.17.
@@ -29,6 +31,9 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
 
     @Override
     public void create(Collection<Long> messageIds) {
+        if(messageIds == null || messageIds.size() == 0){
+            return;
+        }
         final String sql = " insert into hook.scheduled_task(message_id, hook_id)\n" +
                 " select m.id, w.id \n" +
                 " from hook.message m\n" +
@@ -61,8 +66,46 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
             List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, taskRowMapper);
             return tasks;
         }  catch (DataAccessException e) {
-            log.error("MessageDaoImpl.getByStatus error", e);
+            log.error("Fail to get all tasks from scheduled_task", e);
             throw new DaoException(e);
         }
+    }
+
+    @Override
+    // should return ordered BY hook_id, message_id
+    public Map<Long, List<Task>> getScheduled() {
+        final String sql =
+                " SELECT * " +
+                " FROM hook.scheduled_task st" +
+                " JOIN hook.webhook w on w.id = st.hook_id and w.enabled = :enabled" +
+                " ORDER BY hook_id ASC , message_id ASC";
+        try {
+            List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("enabled", true), taskRowMapper);
+            return splitByHooks(tasks);
+        }  catch (DataAccessException e) {
+            log.error("Fail to get active tasks from scheduled_task", e);
+            throw new DaoException(e);
+        }
+    }
+
+    //should preserve order
+    private Map<Long, List<Task>> splitByHooks(List<Task> orderedByHookIdMessageIdTasks){
+        final Map<Long, List<Task>> map = new HashMap<>();
+        if(orderedByHookIdMessageIdTasks.size() == 0){
+            return map;
+        }
+        int start = 0;
+        long previousHookId = orderedByHookIdMessageIdTasks.get(0).getHookId();
+        for(int i = 0; i < orderedByHookIdMessageIdTasks.size(); i++){
+            long currentHookId = orderedByHookIdMessageIdTasks.get(i).getHookId();
+            if(previousHookId != currentHookId){
+                map.put(previousHookId, orderedByHookIdMessageIdTasks.subList(start, i));
+                start = i;
+                previousHookId = currentHookId;
+            }
+        }
+        map.put(previousHookId, orderedByHookIdMessageIdTasks.subList(start, orderedByHookIdMessageIdTasks.size()));
+
+        return map;
     }
 }
