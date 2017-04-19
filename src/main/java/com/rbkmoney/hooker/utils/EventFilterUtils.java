@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.webhooker.*;
 import com.rbkmoney.hooker.dao.EventTypeCode;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
+import org.apache.thrift.meta_data.StructMetaData;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,23 +38,13 @@ public class EventFilterUtils {
                     if (status != null) {
                         InvoiceStatus value = new InvoiceStatus();
                         InvoiceStatus._Fields fields = InvoiceStatus._Fields.findByName(status);
-                        switch (fields) {
-                            case CANCELLED:
-                                value.setCancelled(new InvoiceCancelled());
-                                break;
-                            case FULFILLED:
-                                value.setFulfilled(new InvoiceFulfilled());
-                                break;
-                            case PAID:
-                                value.setPaid(new InvoicePaid());
-                                break;
-                            case UNPAID:
-                                value.setUnpaid(new InvoiceUnpaid());
-                                break;
-                            default:
-                                throw new UnknownStatusException("Unknown status "+status+"; must be one of these: "+Arrays.toString(InvoiceStatus._Fields.values()));
+                        try {
+                            Object tBase =  ((StructMetaData) value.getFieldMetaData().get(fields).valueMetaData).structClass.newInstance();
+                            value.setFieldValue(fields, tBase);
+                            invoiceStatusChanged.setValue(value);
+                        } catch (InstantiationException | IllegalAccessException e) {
+                            throw new UnsupportedOperationException("Unknown status "+status+"; must be one of these: "+Arrays.toString(InvoiceStatus._Fields.values()));
                         }
-                        invoiceStatusChanged.setValue(value);
                     }
                     invoiceEventTypes.add(InvoiceEventType.status_changed(invoiceStatusChanged));
                     break;
@@ -66,26 +57,13 @@ public class EventFilterUtils {
                     if (invoicePaymentStatus != null) {
                         InvoicePaymentStatus value1 = new InvoicePaymentStatus();
                         InvoicePaymentStatus._Fields fields = InvoicePaymentStatus._Fields.findByName(invoicePaymentStatus);
-                        switch (fields) {
-                            case CANCELLED:
-                                value1.setCancelled(new InvoicePaymentCancelled());
-                                break;
-                            case CAPTURED:
-                                value1.setCaptured(new InvoicePaymentCaptured());
-                                break;
-                            case FAILED:
-                                value1.setFailed(new InvoicePaymentFailed());
-                                break;
-                            case PENDING:
-                                value1.setPending(new InvoicePaymentPending());
-                                break;
-                            case PROCESSED:
-                                value1.setProcessed(new InvoicePaymentProcessed());
-                                break;
-                            default:
-                                throw new UnknownStatusException("Unknown status "+invoicePaymentStatus+"; must be one of these: "+Arrays.toString(InvoicePaymentStatus._Fields.values()));
+                        try {
+                            Object tBase = ((StructMetaData) value1.getFieldMetaData().get(fields).valueMetaData).structClass.newInstance();
+                            value1.setFieldValue(fields, tBase);
+                            invoicePaymentStatusChanged.setValue(value1);
+                        } catch (InstantiationException | IllegalAccessException e) {
+                            throw new UnsupportedOperationException("Unknown status "+invoicePaymentStatus+"; must be one of these: "+Arrays.toString(InvoicePaymentStatus._Fields.values()));
                         }
-                        invoicePaymentStatusChanged.setValue(value1);
                     }
                     invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType.status_changed(invoicePaymentStatusChanged)));
                     break;
