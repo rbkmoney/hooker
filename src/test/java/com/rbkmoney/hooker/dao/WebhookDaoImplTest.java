@@ -23,7 +23,7 @@ import java.util.Set;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class WebhookDaoImplTest  {
+public class WebhookDaoImplTest extends AbstractIntegrationTest {
 
     @Autowired
     WebhookDao webhookDao;
