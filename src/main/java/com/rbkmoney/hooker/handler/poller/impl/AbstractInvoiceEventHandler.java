@@ -17,7 +17,7 @@ public abstract class AbstractInvoiceEventHandler extends AbstractEventHandler<I
     protected InvoiceInfo getEventForPost(Event event) throws DaoException {
         InvoiceInfo invoiceInfo = invoiceDao.get(event.getSource().getInvoice());
         if (invoiceInfo == null) {
-            throw new DaoException("Invoice with id "+event.getSource().getInvoice() + " not exist");
+            return null;
         }
         prepareInvoiceInfo(event, invoiceInfo);
         return invoiceInfo;

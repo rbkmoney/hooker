@@ -6,7 +6,6 @@ import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.EventTypeCode;
 import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.handler.PollingException;
 import com.rbkmoney.hooker.handler.poller.PollingEventHandler;
@@ -41,10 +40,14 @@ public abstract class AbstractEventHandler<T> implements PollingEventHandler<Sto
         Event event = value.getSourceEvent().getProcessingEvent();
         long eventId = event.getId();
         T eventForPost = getEventForPost(event);
+        if (eventForPost == null) {
+            log.warn("Couldn't process event "+eventId+": Invoice with id " + event.getSource().getInvoice() + " not found in database.");
+            return;
+        }
         try {
             String paramsAsString = new ObjectMapper().writeValueAsString(eventForPost);
             String partyId = getPartyId(eventForPost);
-            List<Webhook> webhookList = webhookDao.getWebhooksByCode(getCode(), partyId);
+            List<Webhook> webhookList = getWebhooks(eventForPost);
             if (webhookList != null) {
                 log.info("Start AbstractEventHandler: event_id {}", eventId);
                 for (Webhook webhook : webhookList) {
@@ -68,7 +71,7 @@ public abstract class AbstractEventHandler<T> implements PollingEventHandler<Sto
         log.info("End AbstractEventHandler: event_id {}", eventId);
     }
 
-    protected abstract EventTypeCode getCode();
+    protected abstract List<Webhook> getWebhooks(T eventForPost);
 
     protected abstract String getPartyId(T eventForPost);
 

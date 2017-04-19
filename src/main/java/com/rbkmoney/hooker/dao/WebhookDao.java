@@ -12,7 +12,9 @@ import java.util.List;
 public interface WebhookDao {
     List<Webhook> getPartyWebhooks(String partyId);
     Webhook getWebhookById(long id);
-    List<Webhook> getWebhooksByCode(EventTypeCode typeCode, String partyId);
+    List<Webhook> getWebhooksForInvoices(EventTypeCode typeCode, String partyId, Integer shopId);
+    List<Webhook> getWebhooksForInvoiceStatusChanged(EventTypeCode typeCode, String partyId, Integer shopId, String status);
+    List<Webhook> getWebhooksForInvoicePaymentStatusChanged(EventTypeCode typeCode, String partyId, Integer shopId, String status);
     Webhook addWebhook(WebhookParams webhookParams);
     boolean delete(long id);
     KeyPair getPairKey(String partyId);

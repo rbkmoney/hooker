@@ -27,6 +27,9 @@ CREATE TABLE hook.webhook_to_events
 (
     hook_id bigint NOT NULL,
     event_code character varying(256) NOT NULL,
+    invoice_shop_id int,
+    invoice_status character varying(32),
+    invoice_payment_status character varying(32),
     CONSTRAINT pk_webhook_to_events PRIMARY KEY (hook_id, event_code),
     CONSTRAINT fk_webhook_to_events FOREIGN KEY (hook_id) REFERENCES hook.webhook(id)
 );

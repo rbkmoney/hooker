@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.dao;
 
+import com.rbkmoney.damsel.webhooker.EventFilter;
 import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.damsel.webhooker.WebhookParams;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
@@ -22,24 +23,27 @@ import java.util.Set;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class WebhookDaoImplTest extends AbstractIntegrationTest {
+public class WebhookDaoImplTest  {
+
     @Autowired
     WebhookDao webhookDao;
     @Before
     public void setUp() throws Exception {
-        Set<EventTypeCode> eventTypeCodeSet = new HashSet<>();
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED);
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_CREATED);
-        WebhookParams webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://google.com");
+        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED, 34, null, "cancelled"));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_CREATED));
+        EventFilter eventFilterByCode = EventFilterUtils.getEventFilterByCode(webhookAdditionalFilters);
+        eventFilterByCode.getInvoice().setShopId(1);
+        WebhookParams webhookParams = new WebhookParams("123", eventFilterByCode, "https://google.com");
         webhookDao.addWebhook(webhookParams);
-        eventTypeCodeSet.clear();
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STARTED);
-        webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://yandex.ru");
+        webhookAdditionalFilters.clear();
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_STATUS_CHANGED, 78, "unpaid", null));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_PAYMENT_STARTED, 78));
+        webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilterByCode(webhookAdditionalFilters), "https://yandex.ru");
         webhookDao.addWebhook(webhookParams);
-        eventTypeCodeSet.clear();
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
-        webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(eventTypeCodeSet), "https://2ch.hk/b");
+        webhookAdditionalFilters.clear();
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_STATUS_CHANGED));
+        webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilterByCode(webhookAdditionalFilters), "https://2ch.hk/b");
         webhookDao.addWebhook(webhookParams);
     }
 
@@ -72,8 +76,24 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getWebhooksByCode() throws Exception {
-//        Assert.assertNotNull(webhookDao.getWebhooksByCode(EventTypeCode.INVOICE_CREATED, "123"));
-        Assert.assertTrue(webhookDao.getWebhooksByCode(EventTypeCode.INVOICE_CREATED, "888").isEmpty());
+        Assert.assertTrue(webhookDao.getWebhooksForInvoices(EventTypeCode.INVOICE_CREATED, "888", 44).isEmpty());
+    }
+
+    @Test
+    public void getWebhooksForInvoices() throws Exception {
+        Assert.assertFalse(webhookDao.getWebhooksForInvoices(EventTypeCode.INVOICE_PAYMENT_STARTED, "999", 78).isEmpty());
+        Assert.assertTrue(webhookDao.getWebhooksForInvoices(EventTypeCode.INVOICE_PAYMENT_STARTED, "999", 79).isEmpty());
+    }
+
+    @Test
+    public void getWebhooksForInvoiceStatusChanged() throws Exception {
+        Assert.assertFalse(webhookDao.getWebhooksForInvoiceStatusChanged(EventTypeCode.INVOICE_STATUS_CHANGED, "999", 78, "unpaid").isEmpty());
+        Assert.assertTrue(webhookDao.getWebhooksForInvoiceStatusChanged(EventTypeCode.INVOICE_STATUS_CHANGED, "999", 78, "cancelled").isEmpty());
+    }
+
+    @Test
+    public void getWebhooksForInvoicePaymentStatusChanged() throws Exception {
+
     }
 
     @Test

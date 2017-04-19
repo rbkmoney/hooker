@@ -2,13 +2,12 @@ package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.damsel.webhooker.EventFilter;
 import com.rbkmoney.hooker.dao.EventTypeCode;
+import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by inalarsanukaev on 10.04.17.
@@ -21,17 +20,17 @@ public class EventFilterUtilsTest {
     }
 
     private EventFilter getEventFilter() {
-        HashSet<EventTypeCode> eventTypeCodeSet = new HashSet<>();
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_CREATED);
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STARTED);
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED);
-        eventTypeCodeSet.add(EventTypeCode.INVOICE_STATUS_CHANGED);
+        Collection<WebhookAdditionalFilter> eventTypeCodeSet = new HashSet<>();
+        eventTypeCodeSet.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_CREATED));
+        eventTypeCodeSet.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_PAYMENT_STARTED, 77));
+        eventTypeCodeSet.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_PAYMENT_STATUS_CHANGED));
+        eventTypeCodeSet.add(new WebhookAdditionalFilter(EventTypeCode.INVOICE_STATUS_CHANGED));
         return EventFilterUtils.getEventFilterByCode(eventTypeCodeSet);
     }
 
     @Test
-    public void getEventTypeCodeSetByFilter() throws Exception {
-        Set<EventTypeCode> eventTypeCodeSet = EventFilterUtils.getEventTypeCodeSetByFilter(getEventFilter());
+    public void getWebhookAdditionalFilter() throws Exception {
+        Collection<WebhookAdditionalFilter> eventTypeCodeSet = EventFilterUtils.getWebhookAdditionalFilter(getEventFilter());
         Assert.assertEquals(eventTypeCodeSet.size(), 4);
     }
 
