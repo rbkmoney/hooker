@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.model;
 
+import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ import java.util.Set;
 public class Hook {
     private long id;
     private String partyId;
-    private Set<EventType> eventTypes;
+    private Set<WebhookAdditionalFilter> filters;
     private String url;
     private String pubKey;
     private String privKey;

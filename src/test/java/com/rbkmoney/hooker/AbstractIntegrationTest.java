@@ -18,7 +18,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ContextConfiguration(classes = HookerApplication.class, initializers = AbstractIntegrationTest.Initializer.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class AbstractIntegrationTest {
+public abstract class AbstractIntegrationTest {
     @ClassRule
     public static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:9.6");
 

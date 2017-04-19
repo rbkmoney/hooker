@@ -15,7 +15,7 @@ public class HookConverter {
         return new Webhook(
                 hook.getId(),
                 hook.getPartyId(),
-                EventFilterUtils.getEventFilter(hook.getEventTypes()),
+                EventFilterUtils.getEventFilter(hook.getFilters()),
                 hook.getUrl(),
                 hook.getPubKey(),
                 hook.isEnabled());
@@ -25,7 +25,7 @@ public class HookConverter {
         return new Hook(
                 webhook.getId(),
                 webhook.getPartyId(),
-                EventFilterUtils.getEventTypes(webhook.getEventFilter()),
+                EventFilterUtils.getWebhookAdditionalFilter(webhook.getEventFilter()),
                 webhook.getUrl(),
                 webhook.getPubKey(),
                 null,
@@ -37,7 +37,7 @@ public class HookConverter {
         Hook hook = new Hook();
         hook.setPartyId(webhookParams.getPartyId());
         hook.setUrl(webhookParams.getUrl());
-        hook.setEventTypes(EventFilterUtils.getEventTypes(webhookParams.getEventFilter()));
+        hook.setFilters(EventFilterUtils.getWebhookAdditionalFilter(webhookParams.getEventFilter()));
 
         return hook;
     }
