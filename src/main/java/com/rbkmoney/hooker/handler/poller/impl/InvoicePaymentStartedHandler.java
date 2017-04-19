@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.domain.InvoicePayment;
 import com.rbkmoney.damsel.payment_processing.Event;
+import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.hooker.dao.EventTypeCode;
 import com.rbkmoney.hooker.dao.InvoiceDao;
 import com.rbkmoney.hooker.dao.InvoiceInfo;
@@ -10,6 +11,8 @@ import com.rbkmoney.thrift.filter.PathConditionFilter;
 import com.rbkmoney.thrift.filter.rule.PathConditionRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class InvoicePaymentStartedHandler extends AbstractInvoiceEventHandler {
@@ -29,8 +32,8 @@ public class InvoicePaymentStartedHandler extends AbstractInvoiceEventHandler {
     }
 
     @Override
-    protected EventTypeCode getCode() {
-        return code;
+    protected List<Webhook> getWebhooks(InvoiceInfo invoiceInfo) {
+        return webhookDao.getWebhooksForInvoices(code, invoiceInfo.getPartyId(), invoiceInfo.getShopId());
     }
 
     @Override
