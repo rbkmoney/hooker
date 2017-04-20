@@ -80,7 +80,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
     // should return ordered BY hook_id, message_id
     public Map<Long, List<Task>> getScheduled(Collection<Long> excludeHooksIds) {
         final String sql =
-                " SELECT * " +
+                " SELECT DISTINCT * " +
                 " FROM hook.scheduled_task st" +
                 " JOIN hook.webhook w on w.id = st.hook_id and w.enabled = :enabled" +
                 (excludeHooksIds.size() > 0 ? " WHERE st.hook_id not in (:hook_ids)" : "") +

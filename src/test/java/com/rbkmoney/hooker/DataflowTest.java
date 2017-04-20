@@ -66,16 +66,32 @@ public class DataflowTest extends AbstractIntegrationTest {
 
     @Test
     public void testMessageSend() throws InterruptedException {
-        final Message sourceMessage = messageDao.create(message("1", "partyId1", EventType.INVOICE_CREATED, "status"));
+        List<Message> sourceMessages = new ArrayList<>();
+        sourceMessages.add(messageDao.create(message("1", "partyId1", EventType.INVOICE_CREATED, "status")));
+        sourceMessages.add(messageDao.create(message("2", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status")));
+        sourceMessages.add(messageDao.create(message("3", "partyId1", EventType.INVOICE_CREATED, "status")));
 
-        Message receivedMessage1 = hook1Queue.poll(1, TimeUnit.SECONDS);
-        Message receivedMessage2 = hook2Queue.poll(1, TimeUnit.SECONDS);
+        List<Message> hook1 = new ArrayList<>();
+        List<Message> hook2 = new ArrayList<>();
 
-        assertEquals(sourceMessage.getInvoiceId(), receivedMessage1.getInvoiceId());
-        assertEquals(sourceMessage.getInvoiceId(), receivedMessage2.getInvoiceId());
+        for(int i = 0; i < 2; i++){
+           hook1.add(hook1Queue.poll(1, TimeUnit.SECONDS));
+        }
+        assertEquals(sourceMessages.get(0).getInvoiceId(), hook1.get(0).getInvoiceId());
+        assertEquals(sourceMessages.get(2).getInvoiceId(), hook1.get(1).getInvoiceId());
+
+
+        for(int i = 0; i < 3; i++){
+            hook2.add(hook2Queue.poll(1, TimeUnit.SECONDS));
+        }
+        for(int i = 0; i < 3; i++){
+            assertEquals(sourceMessages.get(i).getInvoiceId(), hook2.get(i).getInvoiceId());
+        }
 
         assertTrue(hook1Queue.isEmpty());
         assertTrue(hook2Queue.isEmpty());
+
+        Thread.currentThread().sleep(1000);
 
     }
 
