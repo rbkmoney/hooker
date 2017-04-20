@@ -5,6 +5,10 @@ public class PostRequestException extends Exception {
         super(cause);
     }
 
+    public PostRequestException(String errMessage) {
+        super(errMessage);
+    }
+
     @Override
     public String getMessage() {
         return "Unknown error during request to merchant execution. \n" + getCause().getMessage();

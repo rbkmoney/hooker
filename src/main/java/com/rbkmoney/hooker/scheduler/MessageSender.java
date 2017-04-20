@@ -6,8 +6,11 @@ import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
+import com.rbkmoney.hooker.service.err.PostRequestException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.apache.http.HttpStatus;
+import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +37,14 @@ public class MessageSender implements Runnable {
             for(Message message: messages) {
                 final String messageJson = new ObjectMapper().writeValueAsString(message);
                 final String signature = signer.sign(messageJson, hook.getPrivKey());
-                postSender.doPost(hook.getUrl(), messageJson, signature);
+                int statusCode = postSender.doPost(hook.getUrl(), messageJson, signature);
+                if (statusCode != HttpStatus.SC_OK) {
+                    log.warn("Wrong status code " + statusCode + " from merchant. Message id = " + message.getId());
+                }
+                //TODO may be other error codes
+                if (statusCode >= HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+                    throw new PostRequestException("Internal server error for message id = "+message.getId() );
+                }
 
                 log.info("Message: " + message.getId() + " is sent to hook: " + hook.getId());
 
