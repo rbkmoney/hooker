@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -10,6 +11,7 @@ import com.rbkmoney.damsel.base.Content;
  */
 @JsonPropertyOrder({ "event_type", "invoice_id", "payment_id", "shop_id", "amount", "currency", "created_at", "metadata", "status" })
 @JsonIgnoreProperties({ "id", "eventId", "partyId", "eventType"})
+
 public class Message {
     private long id;
     private long eventId;
@@ -27,7 +29,7 @@ public class Message {
     @JsonProperty("created_at")
     private String createdAt;
     private Content metadata;
-
+    private String status;
     private EventType eventType;
 
     public long getId() {
@@ -68,7 +70,7 @@ public class Message {
         this.status = status;
     }
 
-    private String status;
+
 
     public String getInvoiceId() {
         return invoiceId;
@@ -122,6 +124,7 @@ public class Message {
         return metadata;
     }
 
+    @JsonIgnore
     public void setMetadata(Content metadata) {
         this.metadata = metadata;
     }

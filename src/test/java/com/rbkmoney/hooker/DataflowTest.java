@@ -59,19 +59,20 @@ public class DataflowTest extends AbstractIntegrationTest {
         final String baseServerUrl = webserver(dispatcher());
         log.info("Mock server url: " + baseServerUrl);
 
-        hooks.add(hook("partyId1", baseServerUrl + HOOK_1, EventType.INVOICE_CREATED));
-        hooks.add(hook("partyId1", baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED));
+        hooks.add(webhookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
+        hooks.add(webhookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
     }
 
 
     @Test
     public void testMessageSend() throws InterruptedException {
         final Message sourceMessage = messageDao.create(message("1", "partyId1", EventType.INVOICE_CREATED, "status"));
-        Message receivedMessage1 = hook1Queue.poll(2, TimeUnit.SECONDS);
-        Message receivedMessage2 = hook2Queue.poll(2, TimeUnit.SECONDS);
 
-        assertEquals(sourceMessage.getId(), receivedMessage1.getId());
-        assertEquals(sourceMessage.getId(), receivedMessage2.getId());
+        Message receivedMessage1 = hook1Queue.poll(1, TimeUnit.SECONDS);
+        Message receivedMessage2 = hook2Queue.poll(1, TimeUnit.SECONDS);
+
+        assertEquals(sourceMessage.getInvoiceId(), receivedMessage1.getInvoiceId());
+        assertEquals(sourceMessage.getInvoiceId(), receivedMessage2.getInvoiceId());
 
         assertTrue(hook1Queue.isEmpty());
         assertTrue(hook2Queue.isEmpty());
