@@ -31,23 +31,24 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
 
     @Override
     public void create(Collection<Long> messageIds) {
-        if(messageIds == null || messageIds.size() == 0){
+        if (messageIds == null || messageIds.size() == 0) {
             return;
         }
         final String sql =
                 " insert into hook.scheduled_task(message_id, hook_id)" +
-                " select m.id, w.id " +
-                " from hook.message m" +
-                " join hook.webhook w on m.party_id = w.party_id and w.enabled = TRUE " +
-                " join hook.webhook_to_events wte on wte.hook_id = w.id" +
-                " where m.id in (:ids) " +
+                        " select m.id, w.id " +
+                        " from hook.message m" +
+                        " join hook.webhook w on m.party_id = w.party_id and w.enabled = TRUE " +
+                        " join hook.webhook_to_events wte on wte.hook_id = w.id" +
+                        " where m.id in (:ids) " +
                         " and m.event_type = wte.event_type " +
                         " and (wte.invoice_shop_id is null or m.shop_id = wte.invoice_shop_id) " +
                         " and (m.status = COALESCE(wte.invoice_status, wte.invoice_payment_status) or (wte.invoice_status is null and wte.invoice_payment_status is null))" +
-                " ON CONFLICT (message_id, hook_id) DO NOTHING";
+                        " ON CONFLICT (message_id, hook_id) DO NOTHING";
         try {
-            getNamedParameterJdbcTemplate().update(sql,new MapSqlParameterSource("ids", messageIds));
-        }  catch (DataAccessException e) {
+            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("ids", messageIds));
+            log.info("Created tasks count : " + updateCount);
+        } catch (DataAccessException e) {
             log.error("Fail to create tasks for messages messages.", e);
             throw new DaoException(e);
         }
@@ -58,6 +59,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         final String sql = "DELETE FROM hook.scheduled_task where hook_id=:hook_id and message_id=:message_id";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId).addValue("message_id", messageId));
+            log.info("Task with hook_id = " + hookId + " messageId = " + messageId + " removed from hook.scheduled_task");
         } catch (DataAccessException e) {
             log.error("Fail to delete task by hook_id and message_id", e);
             throw new DaoException(e);
@@ -69,8 +71,9 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         final String sql = "SELECT * FROM hook.scheduled_task";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, taskRowMapper);
+            log.info("Tasks count: " + tasks.size());
             return tasks;
-        }  catch (DataAccessException e) {
+        } catch (DataAccessException e) {
             log.error("Fail to get all tasks from scheduled_task", e);
             throw new DaoException(e);
         }
@@ -81,33 +84,34 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
     public Map<Long, List<Task>> getScheduled(Collection<Long> excludeHooksIds) {
         final String sql =
                 " SELECT DISTINCT * " +
-                " FROM hook.scheduled_task st" +
-                " JOIN hook.webhook w on w.id = st.hook_id and w.enabled = :enabled" +
-                (excludeHooksIds.size() > 0 ? " WHERE st.hook_id not in (:hook_ids)" : "") +
-                " ORDER BY hook_id ASC , message_id ASC";
+                        " FROM hook.scheduled_task st" +
+                        " JOIN hook.webhook w on w.id = st.hook_id and w.enabled = :enabled" +
+                        (excludeHooksIds.size() > 0 ? " WHERE st.hook_id not in (:hook_ids)" : "") +
+                        " ORDER BY hook_id ASC , message_id ASC";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(
                     sql,
                     new MapSqlParameterSource("enabled", true).addValue("hook_ids", excludeHooksIds)
                     , taskRowMapper);
-            return splitByHooks(tasks);
-        }  catch (DataAccessException e) {
+            Map<Long, List<Task>> longListMap = splitByHooks(tasks);
+            return longListMap;
+        } catch (DataAccessException e) {
             log.error("Fail to get active tasks from scheduled_task", e);
             throw new DaoException(e);
         }
     }
 
     //should preserve order
-    private Map<Long, List<Task>> splitByHooks(List<Task> orderedByHookIdMessageIdTasks){
+    private Map<Long, List<Task>> splitByHooks(List<Task> orderedByHookIdMessageIdTasks) {
         final Map<Long, List<Task>> map = new HashMap<>();
-        if(orderedByHookIdMessageIdTasks.size() == 0){
+        if (orderedByHookIdMessageIdTasks.size() == 0) {
             return map;
         }
         int start = 0;
         long previousHookId = orderedByHookIdMessageIdTasks.get(0).getHookId();
-        for(int i = 0; i < orderedByHookIdMessageIdTasks.size(); i++){
+        for (int i = 0; i < orderedByHookIdMessageIdTasks.size(); i++) {
             long currentHookId = orderedByHookIdMessageIdTasks.get(i).getHookId();
-            if(previousHookId != currentHookId){
+            if (previousHookId != currentHookId) {
                 map.put(previousHookId, orderedByHookIdMessageIdTasks.subList(start, i));
                 start = i;
                 previousHookId = currentHookId;
