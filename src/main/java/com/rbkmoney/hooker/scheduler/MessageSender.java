@@ -34,6 +34,8 @@ public class MessageSender implements Runnable {
     @Override
     public void run() {
         try{
+            workerTaskScheduler.start(hook);
+
             for(Message message: messages) {
                 final String messageJson = new ObjectMapper().writeValueAsString(message);
                 final String signature = signer.sign(messageJson, hook.getPrivKey());
@@ -50,6 +52,7 @@ public class MessageSender implements Runnable {
 
                 taskDao.remove(hook.getId(), message.getId()); //required after message is sent
             }
+
             workerTaskScheduler.done(hook); // required after all messages processed
         }catch (Exception e){
             log.warn("Couldn't send message to hook: " + hook.getId(), e);

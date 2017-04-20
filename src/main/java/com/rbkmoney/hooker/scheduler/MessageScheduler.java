@@ -82,6 +82,11 @@ public class MessageScheduler {
         }
     }
 
+    //worker should invoke this method when it starts process
+    public void start(Hook hook){
+        processedHooks.add(hook.getId());
+    }
+
     //worker should invoke this method when it is done with scheduled messages for hookId
     public void done(Hook hook){
         processedHooks.remove(hook.getId());
