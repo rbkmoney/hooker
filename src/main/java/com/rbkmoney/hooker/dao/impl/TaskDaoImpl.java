@@ -83,7 +83,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
                 " SELECT * " +
                 " FROM hook.scheduled_task st" +
                 " JOIN hook.webhook w on w.id = st.hook_id and w.enabled = :enabled" +
-                " WHERE st.hook_id not in (:hook_ids)" +
+                (excludeHooksIds.size() > 0 ? " WHERE st.hook_id not in (:hook_ids)" : "") +
                 " ORDER BY hook_id ASC , message_id ASC";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(

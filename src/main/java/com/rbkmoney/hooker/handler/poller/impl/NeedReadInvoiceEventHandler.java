@@ -23,7 +23,7 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         }
         modifyMessage(event, message);
 
-        messageDao.save(message);
+        messageDao.create(message);
         //TODO getAny message id and write to logs
     }
 

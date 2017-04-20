@@ -70,7 +70,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     }
 
     @Override
-    public boolean save(Message message) throws DaoException {
+    public Message create(Message message) throws DaoException {
         String invoiceId = message.getInvoiceId();
         final String sql = "INSERT INTO hook.message(invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data, event_id, event_type, type, payment_id, status) " +
                 " VALUES (:invoice_id, :party_id, :shop_id, :amount, :currency, :created_at, :content_type, :content_data, :event_id," +
@@ -93,19 +93,14 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 .addValue("status", message.getStatus());
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
-            if (updateCount != 1) {
-                return false;
-            }
+            getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             // create tasks
-            // TODO do all operations in save methods in one transaction
             taskDao.create(Arrays.asList(keyHolder.getKey().longValue()));
+            message.setId(keyHolder.getKey().longValue());
+            return message;
         } catch (NestedRuntimeException e) {
-            log.warn("MessageDaoImpl.create error", e);
-            throw new DaoException(e);
+            throw new DaoException("Couldn't create message with invoce_id "+ message.getInvoiceId(), e);
         }
-        log.info("Party info with invoiceId = {} added to table", invoiceId);
-        return true;
     }
 
     @Override

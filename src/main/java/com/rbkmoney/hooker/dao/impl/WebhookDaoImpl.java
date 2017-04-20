@@ -135,6 +135,9 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     public List<Hook> getWithPolicies(Collection<Long> ids){
+        if(ids.size() == 0){
+            return new ArrayList<>();
+        }
         final String sql =
                 " select w.*, k.*, srp.*" +
                 " from hook.webhook w " +

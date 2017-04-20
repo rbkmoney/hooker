@@ -29,8 +29,8 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        messageDao.save(buildMessage("1234", "56678"));
-        messageDao.save(buildMessage("1234", "56678"));
+        messageDao.create(buildMessage("1234", "56678"));
+        messageDao.create(buildMessage("1234", "56678"));
     }
 
     @After

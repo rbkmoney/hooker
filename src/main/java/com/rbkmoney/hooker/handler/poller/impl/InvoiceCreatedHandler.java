@@ -44,9 +44,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         message.setEventType(eventType);
         message.setEventId(event.getId());
 
-        if (!messageDao.save(message)) {
-            throw new DaoException("Couldn't create message with invoce_id "+ message.getInvoiceId());
-        }
+        messageDao.create(message);
     }
 
     @Override
