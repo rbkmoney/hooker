@@ -17,7 +17,7 @@ import java.io.IOException;
 /**
  * @since 12.04.17
  **/
-@Ignore
+//@Ignore
 public class MockServer {
 
     Logger log = LoggerFactory.getLogger(this.getClass());

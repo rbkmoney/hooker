@@ -46,7 +46,8 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
                         " and (m.status = COALESCE(wte.invoice_status, wte.invoice_payment_status) or (wte.invoice_status is null and wte.invoice_payment_status is null))" +
                 " ON CONFLICT (message_id, hook_id) DO NOTHING";
         try {
-            getNamedParameterJdbcTemplate().update(sql,new MapSqlParameterSource("ids", messageIds));
+            int updateCount = getNamedParameterJdbcTemplate().update(sql,new MapSqlParameterSource("ids", messageIds));
+            log.info("Created tasks count : "+updateCount);
         }  catch (DataAccessException e) {
             log.error("Fail to create tasks for messages messages.", e);
             throw new DaoException(e);
@@ -58,6 +59,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         final String sql = "DELETE FROM hook.scheduled_task where hook_id=:hook_id and message_id=:message_id";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId).addValue("message_id", messageId));
+            log.info("Task with hook_id = "+hookId +" messageId = "+ messageId +" removed from hook.scheduled_task");
         } catch (DataAccessException e) {
             log.error("Fail to delete task by hook_id and message_id", e);
             throw new DaoException(e);
@@ -69,6 +71,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         final String sql = "SELECT * FROM hook.scheduled_task";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, taskRowMapper);
+            log.info("Tasks count: "+tasks.size());
             return tasks;
         }  catch (DataAccessException e) {
             log.error("Fail to get all tasks from scheduled_task", e);
@@ -90,7 +93,9 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
                     sql,
                     new MapSqlParameterSource("enabled", true).addValue("hook_ids", excludeHooksIds)
                     , taskRowMapper);
-            return splitByHooks(tasks);
+            Map<Long, List<Task>> longListMap = splitByHooks(tasks);
+            log.info("getScheduled count: "+tasks.size()+"; splittedByHooks count: "+longListMap.size());
+            return longListMap;
         }  catch (DataAccessException e) {
             log.error("Fail to get active tasks from scheduled_task", e);
             throw new DaoException(e);
