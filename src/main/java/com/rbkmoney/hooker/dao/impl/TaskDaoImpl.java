@@ -94,7 +94,6 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
                     new MapSqlParameterSource("enabled", true).addValue("hook_ids", excludeHooksIds)
                     , taskRowMapper);
             Map<Long, List<Task>> longListMap = splitByHooks(tasks);
-            log.info("getScheduled count: "+tasks.size()+"; splittedByHooks count: "+longListMap.size());
             return longListMap;
         }  catch (DataAccessException e) {
             log.error("Fail to get active tasks from scheduled_task", e);
