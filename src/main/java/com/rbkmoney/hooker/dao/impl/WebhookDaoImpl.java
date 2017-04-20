@@ -14,10 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,11 +25,14 @@ import java.util.stream.Collectors;
  * Created by inal on 28.11.2016.
  */
 
-public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements WebhookDao {
+public class WebhookDaoImpl implements WebhookDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
-    public WebhookDaoImpl(DataSource ds) {
-        this.setDataSource(ds);
+
+    private final NamedParameterJdbcTemplate jdbcTemplate;
+
+    public WebhookDaoImpl(NamedParameterJdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public static RowMapper<Hook> hookWithPolicyRowMapper = (rs, i) -> {
@@ -63,7 +66,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         params.addValue("party_id", partyId);
 
         try {
-            List<AllHookTablesRow> allHookTablesRows = getNamedParameterJdbcTemplate().query(sql, params, allHookTablesRowRowMapper);
+            List<AllHookTablesRow> allHookTablesRows = jdbcTemplate.query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
             log.info("Response getPartyWebhooks.");
             return result;
@@ -122,7 +125,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         params.addValue("id", id);
 
         try {
-            List<AllHookTablesRow> allHookTablesRows = getNamedParameterJdbcTemplate().query(sql, params, allHookTablesRowRowMapper);
+            List<AllHookTablesRow> allHookTablesRows = jdbcTemplate.query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
             if (result == null || result.isEmpty()) {
                 return null;
@@ -148,7 +151,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
         final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids);
 
         try {
-            List<Hook> hooks = getNamedParameterJdbcTemplate().query(sql, params, hookWithPolicyRowMapper);
+            List<Hook> hooks = jdbcTemplate.query(sql, params, hookWithPolicyRowMapper);
             return hooks;
         } catch (DataAccessException e) {
             throw new DaoException(e);
@@ -157,7 +160,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     @Override
-    //TODO keys, weebhook and relation between hook and events should be saved in transaction
+    @Transactional
     public Hook create(Hook hook) {
         KeyPair keyPair = createPairKey(hook.getPartyId());
         hook.setPubKey(keyPair.getPublKey());
@@ -171,7 +174,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 .addValue("url", hook.getUrl());
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
+            int updateCount = jdbcTemplate.update(sql, params, keyHolder);
             if (updateCount != 1) {
                 throw new DaoException("Couldn't insert webhook " + hook.getId() + " into table");
             }
@@ -189,7 +192,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     private void addRecordToRetryPolicy(long hookId) {
         final String sql = "insert into hook.simple_retry_policy(hook_id) VALUES (:hook_id)";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId));
+            jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId));
         } catch (DataAccessException e) {
             log.warn("Fail to create simple_retry_policy for hook: " + hookId, e);
             throw new DaoException(e);
@@ -213,7 +216,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 " :invoice_shop_id, :invoice_status, :invoice_payment_status)";
 
         try {
-            int updateCount[] = getNamedParameterJdbcTemplate().batchUpdate(sql, batchValues.toArray(new Map[size]));
+            int updateCount[] = jdbcTemplate.batchUpdate(sql, batchValues.toArray(new Map[size]));
             if (updateCount.length != size) {
                 throw new DaoException("Couldn't insert relation between hook and events.");
             }
@@ -224,14 +227,15 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
     }
 
     @Override
+    @Transactional
     public boolean delete(long id) {
         log.info("Start deleting webhook info with id = {}", id);
         final String sql =
                 " DELETE FROM hook.simple_retry_policy where hook_id=:id;" +
-                        " DELETE FROM hook.webhook_to_events where hook_id=:id;" +
-                        " DELETE FROM hook.webhook where id=:id; ";
+                " DELETE FROM hook.webhook_to_events where hook_id=:id;" +
+                " DELETE FROM hook.webhook where id=:id; ";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
+            jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (DataAccessException e) {
             log.error("WebhookDaoImpl.delete error", e);
             throw new DaoException(e);
@@ -242,9 +246,9 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
 
     @Override
     public void disable(long id) {
-        final String sql = " UPDATE hook.webhook SET enabled = FALSE where id=:id; ";
+        final String sql = " UPDATE hook.webhook SET enabled = FALSE where id=:id;";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
+            jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (DataAccessException e) {
             log.error("Fail to disable webhook: " + id, e);
             throw new DaoException(e);
@@ -266,7 +270,7 @@ public class WebhookDaoImpl extends NamedParameterJdbcDaoSupport implements Webh
                 .addValue("priv_key", keyPair.getPrivKey())
                 .addValue("pub_key", keyPair.getPublKey());
         try {
-            getNamedParameterJdbcTemplate().update(sql, params);
+            jdbcTemplate.update(sql, params);
         } catch (DataAccessException e) {
             log.warn("WebhookKeyDaoImpl.createPairKey error", e);
             throw new DaoException(e);

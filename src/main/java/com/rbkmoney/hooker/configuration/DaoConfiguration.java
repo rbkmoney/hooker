@@ -13,6 +13,7 @@ import org.jooq.impl.SchemaImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
@@ -21,8 +22,8 @@ public class DaoConfiguration {
 
     @Bean
     @DependsOn("dbInitializer")
-    public WebhookDao webhookDao(DataSource dataSource) {
-        return new WebhookDaoImpl(dataSource);
+    public WebhookDao webhookDao(NamedParameterJdbcTemplate jdbcTemplate) {
+        return new WebhookDaoImpl(jdbcTemplate);
     }
 
     @Bean
