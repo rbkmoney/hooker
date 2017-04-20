@@ -65,7 +65,8 @@ public class MessageScheduler {
 
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
         final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
-        final Map<Long, Message> messages = loadMessages(scheduledTasks).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+        final Map<Long, Message> messages = loadMessages(getMessageIds(scheduledTasks, healthyHooks.keySet()))
+                                                .stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
 
 
         for(long hookId: scheduledTasks.keySet()){
@@ -80,7 +81,6 @@ public class MessageScheduler {
             }
         }
     }
-
 
     //worker should invoke this method when it is done with scheduled messages for hookId
     public void done(Hook hook){
@@ -110,13 +110,14 @@ public class MessageScheduler {
         return retryPoliciesService.filter(hooksWaitingMessages);
     }
 
-    private List<Message> loadMessages(Map<Long, List<Task>> scheduledTasks){
-        Set<Long> messageIds = scheduledTasks.values()
-                .stream()
-                .flatMap(c -> c.stream())
-                .map(t -> t.getMessageId())
-                .collect(Collectors.toSet());
-        return loadMessages(messageIds);
+    private Set<Long> getMessageIds(Map<Long, List<Task>> scheduledTasks, Collection<Long> liveHookIds){
+        final Set<Long> messageIds = new HashSet<>();
+        for(long hookId: liveHookIds){
+            for(Task t: scheduledTasks.get(hookId)){
+                messageIds.add(t.getMessageId());
+            }
+        }
+        return messageIds;
     }
 
     private List<Message> loadMessages(Collection<Long> messageIds){
