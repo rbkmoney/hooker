@@ -11,6 +11,7 @@ public class PostRequestException extends Exception {
 
     @Override
     public String getMessage() {
-        return "Unknown error during request to merchant execution. \n" + getCause().getMessage();
+        String message = getCause() != null ? getCause().getMessage() : super.getMessage();
+        return "Unknown error during request to merchant execution. \n" + message;
     }
 }

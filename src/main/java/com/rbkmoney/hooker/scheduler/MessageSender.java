@@ -33,10 +33,10 @@ public class MessageSender implements Runnable {
 
     @Override
     public void run() {
-        try{
+        try {
             workerTaskScheduler.start(hook);
 
-            for(Message message: messages) {
+            for (Message message : messages) {
                 final String messageJson = new ObjectMapper().writeValueAsString(message);
                 final String signature = signer.sign(messageJson, hook.getPrivKey());
                 int statusCode = postSender.doPost(hook.getUrl(), messageJson, signature);
@@ -45,7 +45,7 @@ public class MessageSender implements Runnable {
                 }
                 //TODO may be other error codes
                 if (statusCode >= HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-                    throw new PostRequestException("Internal server error for message id = "+message.getId() );
+                    throw new PostRequestException("Internal server error for message id = " + message.getId());
                 }
 
                 log.info("Message: " + message.getId() + " is sent to hook: " + hook.getId());
@@ -54,8 +54,8 @@ public class MessageSender implements Runnable {
             }
 
             workerTaskScheduler.done(hook); // required after all messages processed
-        }catch (Exception e){
-            log.warn("Couldn't send message to hook: " + hook.getId(), e);
+        } catch (Exception e) {
+            log.warn("Couldn't send message to hook: " + hook.getId());
             workerTaskScheduler.fail(hook); // required if fail to send message
         }
     }

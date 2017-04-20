@@ -24,20 +24,6 @@ public class SimpleRetryPolicyDaoImpl extends NamedParameterJdbcDaoSupport imple
     }
 
     @Override
-    public void onFail(long hookId) {
-        final String sql = "update hook.simple_retry_policy " +
-                " set last_fail_time = :last_fail_time, fail_count = fail_count + 1" +
-                " where hook_id = :hook_id";
-        try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId)
-                .addValue("last_fail_time", new Date().getTime()));
-        } catch (DataAccessException e) {
-            log.error("Fail to update simple_retry_policy for hook: " + hookId, e);
-            throw new DaoException(e);
-        }
-    }
-
-    @Override
     public void update(SimpleRetryPolicyRecord record) {
         final String sql = "update hook.simple_retry_policy " +
                 " set last_fail_time = :last_fail_time, fail_count = :fail_count" +

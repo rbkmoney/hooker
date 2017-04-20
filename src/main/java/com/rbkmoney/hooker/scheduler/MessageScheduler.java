@@ -59,22 +59,22 @@ public class MessageScheduler {
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
     public void loop() throws InterruptedException {
         final List<Long> currentlyProcessedHooks;
-        synchronized (processedHooks){
+        synchronized (processedHooks) {
             currentlyProcessedHooks = new ArrayList<>(processedHooks);
         }
 
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
         final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
         final Map<Long, Message> messages = loadMessages(getMessageIds(scheduledTasks, healthyHooks.keySet()))
-                                                .stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+                .stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
 
 
-        for(long hookId: scheduledTasks.keySet()){
-            if(healthyHooks.containsKey(hookId)){
-               List<Message> messagesForHook = scheduledTasks.get(hookId)
-                       .stream()
-                       .map(t -> messages.get(t.getMessageId()))
-                       .collect(Collectors.toList());
+        for (long hookId : scheduledTasks.keySet()) {
+            if (healthyHooks.containsKey(hookId)) {
+                List<Message> messagesForHook = scheduledTasks.get(hookId)
+                        .stream()
+                        .map(t -> messages.get(t.getMessageId()))
+                        .collect(Collectors.toList());
 
                 MessageSender messageSender = new MessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this, signer, postSender);
                 executorService.submit(messageSender);
@@ -83,16 +83,16 @@ public class MessageScheduler {
     }
 
     //worker should invoke this method when it starts process
-    public void start(Hook hook){
+    public void start(Hook hook) {
         processedHooks.add(hook.getId());
     }
 
     //worker should invoke this method when it is done with scheduled messages for hookId
-    public void done(Hook hook){
+    public void done(Hook hook) {
         processedHooks.remove(hook.getId());
 
         //reset fail count for hook
-        if(hook.getRetryPolicyRecord().isFailed()){
+        if (hook.getRetryPolicyRecord().isFailed()) {
             RetryPolicyRecord record = hook.getRetryPolicyRecord();
             record.reset();
             retryPoliciesService.update(record);
@@ -100,32 +100,33 @@ public class MessageScheduler {
     }
 
     //worker should invoke this method when it is fail to send message to hookId
-    public void fail(Hook hook){
+    public void fail(Hook hook) {
+        log.warn("Hook: " + hook.getId() + " failed.");
         retryPoliciesService.getRetryPolicyByType(hook.getRetryPolicyType())
                 .onFail(hook.getRetryPolicyRecord());
         processedHooks.remove(hook.getId());
     }
 
-    private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeHooksIds){
+    private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeHooksIds) {
         return taskDao.getScheduled(excludeHooksIds);
     }
 
-    private List<Hook> loadHooks(Collection<Long> hookIds){
+    private List<Hook> loadHooks(Collection<Long> hookIds) {
         List<Hook> hooksWaitingMessages = webhookDao.getWithPolicies(hookIds);
         return retryPoliciesService.filter(hooksWaitingMessages);
     }
 
-    private Set<Long> getMessageIds(Map<Long, List<Task>> scheduledTasks, Collection<Long> liveHookIds){
+    private Set<Long> getMessageIds(Map<Long, List<Task>> scheduledTasks, Collection<Long> liveHookIds) {
         final Set<Long> messageIds = new HashSet<>();
-        for(long hookId: liveHookIds){
-            for(Task t: scheduledTasks.get(hookId)){
+        for (long hookId : liveHookIds) {
+            for (Task t : scheduledTasks.get(hookId)) {
                 messageIds.add(t.getMessageId());
             }
         }
         return messageIds;
     }
 
-    private List<Message> loadMessages(Collection<Long> messageIds){
+    private List<Message> loadMessages(Collection<Long> messageIds) {
         return messageDao.getBy(messageIds);
     }
 }
