@@ -47,7 +47,7 @@ public class SimpleRetryPolicyDaoImpl extends NamedParameterJdbcDaoSupport imple
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", record.getHookId())
                     .addValue("last_fail_time", record.getLastFailTime())
                     .addValue("fail_count", record.getFailCount()));
-            log.info("simple_retry_policy.update. hook_id = "+record.getHookId());
+            log.info("Record in table hook_id = "+record.getHookId()+" 'simple_retry_policy' updated.");
         } catch (DataAccessException e) {
             log.error("Fail to update simple_retry_policy for hook: " + record.getHookId(), e);
             throw new DaoException(e);
