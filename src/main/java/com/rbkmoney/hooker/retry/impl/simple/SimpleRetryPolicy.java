@@ -49,7 +49,7 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
         if (rp.getFailCount() == 0) {
             return true;
         } else if (rp.getFailCount() < delays.length
-                && (new Date().getTime()) > rp.getLastFailTime() + (delays[rp.getFailCount()] * 1000)) {
+                && (new Date().getTime()) > rp.getLastFailTime() + (delays[rp.getFailCount()-1] * 1000)) {
             return true;
         }
 
