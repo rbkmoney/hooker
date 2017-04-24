@@ -39,6 +39,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         message.setCreatedAt(invoice.getCreatedAt());
         message.setProduct(invoice.getDetails().getProduct());
         message.setDescription(invoice.getDetails().getDescription());
+        message.setMetadata(invoice.getContext());
         ////dynamic payment data
         message.setStatus(event.getPayload().getInvoiceEvent().getInvoiceCreated().getInvoice().getStatus().getSetField().getFieldName());
         message.setType(INVOICE);

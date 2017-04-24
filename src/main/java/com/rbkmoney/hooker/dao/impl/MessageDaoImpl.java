@@ -88,7 +88,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 .addValue("content_type", message.getMetadata().getType())
                 .addValue("content_data", message.getMetadata().getData())
                 .addValue("type", message.getType())
-                .addValue("type", message.getType())
                 .addValue("event_id", message.getEventId())
                 .addValue("event_type", message.getEventType().toString())
                 .addValue("payment_id", message.getPaymentId())
