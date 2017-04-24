@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -120,45 +119,38 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
 
     @Override
     public List<Message> getBy(Collection<Long> messageIds) {
-        if(messageIds == null || messageIds.size() == 0){
+        if(messageIds.size() == 0){
             return new ArrayList<>();
         }
         final String sql = "SELECT * FROM hook.message WHERE id in (:ids)";
         try {
             List<Message> messages = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
             return messages;
-        }  catch (DataAccessException e) {
+        }  catch (NestedRuntimeException e) {
             log.error("MessageDaoImpl.getByIds error", e);
             throw new DaoException(e);
         }
     }
 
     @Override
-    public boolean delete(String invoiceId) throws DaoException {
-        log.info("Start deleting payment info with invoiceId = {}", invoiceId);
+    public void delete(String invoiceId) throws DaoException {
         final String sql = "DELETE FROM hook.message where invoice_id=:invoice_id";
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("invoice_id", invoiceId));
-        } catch (DataAccessException e) {
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("invoice_id", invoiceId));
+        } catch (NestedRuntimeException e) {
             log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
-        log.info("Payment info with invoiceId = {} deleted from table", invoiceId);
-        return true;
     }
 
     @Override
-    public boolean delete(long id) throws DaoException {
+    public void delete(long id) throws DaoException {
         final String sql = "DELETE FROM hook.message where id = :id";
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
-            if (updateCount != 1) {
-                return false;
-            }
-        } catch (DataAccessException e) {
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
+        } catch (NestedRuntimeException e) {
             log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
-        return true;
     }
 }

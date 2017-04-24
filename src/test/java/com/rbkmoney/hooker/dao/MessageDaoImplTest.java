@@ -35,7 +35,7 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
 
     @After
     public void tearDown() throws Exception {
-        Assert.assertTrue(messageDao.delete("1234"));
+        messageDao.delete("1234");
     }
 
     @Test

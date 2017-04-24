@@ -2,7 +2,7 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.dao.WebhookDao;
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
@@ -25,13 +25,13 @@ import java.util.stream.Collectors;
  * Created by inal on 28.11.2016.
  */
 
-public class WebhookDaoImpl implements WebhookDao {
+public class HookDaoImpl implements HookDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public WebhookDaoImpl(NamedParameterJdbcTemplate jdbcTemplate) {
+    public HookDaoImpl(NamedParameterJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -50,8 +50,8 @@ public class WebhookDaoImpl implements WebhookDao {
     };
 
     @Override
-    public List<Hook> getPartyWebhooks(String partyId) {
-        log.info("New getPartyWebhooks request. partyId = {}", partyId);
+    public List<Hook> getPartyHooks(String partyId) {
+        log.info("New getPartyHooks request. partyId = {}", partyId);
         final String sql =
                 " select w.*, k.pub_key, wte.* " +
                         " from hook.webhook w " +
@@ -68,10 +68,10 @@ public class WebhookDaoImpl implements WebhookDao {
         try {
             List<AllHookTablesRow> allHookTablesRows = jdbcTemplate.query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
-            log.info("Response getPartyWebhooks.");
+            log.info("Response getPartyHooks.");
             return result;
         } catch (DataAccessException e) {
-            String message = "Couldn't getPartyWebhooks for partyId " + partyId;
+            String message = "Couldn't getPartyHooks for partyId " + partyId;
             log.warn(message, e);
             throw new DaoException(message);
         }
@@ -111,10 +111,10 @@ public class WebhookDaoImpl implements WebhookDao {
     }
 
     @Override
-    public Hook getWebhookById(long id) {
+    public Hook getHookById(long id) {
         log.info("New getWebhook request. id = {}", id);
-        final String sql = "select w.*, k.pub_key, wte.* \n" +
-                "from hook.webhook w \n" +
+        final String sql = "select w.*, k.pub_key, wte.* " +
+                "from hook.webhook w " +
                 "join hook.party_key k " +
                 "on w.party_id = k.party_id " +
                 "join hook.webhook_to_events wte " +
@@ -132,7 +132,7 @@ public class WebhookDaoImpl implements WebhookDao {
             }
             return result.get(0);
         } catch (DataAccessException e) {
-            String message = "Couldn't getWebhookById for id " + id;
+            String message = "Couldn't getHookById for id " + id;
             log.warn(message, e);
             throw new DaoException(message);
         }
@@ -182,7 +182,7 @@ public class WebhookDaoImpl implements WebhookDao {
             saveHookFilters(hook.getId(), hook.getFilters());
             addRecordToRetryPolicy(hook.getId());
         } catch (DataAccessException e) {
-            log.warn("WebhookDaoImpl.addWebhook error", e);
+            log.warn("HookDaoImpl.addWebhook error", e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} added to table", hook.getId());
@@ -221,7 +221,7 @@ public class WebhookDaoImpl implements WebhookDao {
                 throw new DaoException("Couldn't insert relation between hook and events.");
             }
         } catch (DataAccessException e) {
-            log.warn("WebhookDaoImpl.addWebhookAndEventCodesRow error", e);
+            log.warn("HookDaoImpl.addWebhookAndEventCodesRow error", e);
             throw new DaoException(e);
         }
     }
@@ -237,7 +237,7 @@ public class WebhookDaoImpl implements WebhookDao {
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (DataAccessException e) {
-            log.error("WebhookDaoImpl.delete error", e);
+            log.error("HookDaoImpl.delete error", e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} deleted from table", id);

@@ -25,10 +25,10 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class WebhookDaoImplTest extends AbstractIntegrationTest {
+public class HookDaoImplTest extends AbstractIntegrationTest {
 
     @Autowired
-    WebhookDao webhookDao;
+    HookDao hookDao;
 
     List<Long> ids = new ArrayList<>();
 
@@ -40,51 +40,51 @@ public class WebhookDaoImplTest extends AbstractIntegrationTest {
         EventFilter eventFilterByCode = EventFilterUtils.getEventFilter(webhookAdditionalFilters);
         eventFilterByCode.getInvoice().setShopId(1);
         WebhookParams webhookParams = new WebhookParams("123", eventFilterByCode, "https://google.com");
-        Hook hook = webhookDao.create(HookConverter.convert(webhookParams));
+        Hook hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
         webhookAdditionalFilters.clear();
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED, 78, "unpaid", null));
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STARTED, 78));
         webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://yandex.ru");
-        hook = webhookDao.create(HookConverter.convert(webhookParams));
+        hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
         webhookAdditionalFilters.clear();
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED));
         webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
-        hook = webhookDao.create(HookConverter.convert(webhookParams));
+        hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
     }
 
     @After
     public void tearDown() throws Exception {
-        List<Hook> list = webhookDao.getPartyWebhooks("123");
+        List<Hook> list = hookDao.getPartyHooks("123");
         for (Hook w : list) {
-            webhookDao.delete(w.getId());
+            hookDao.delete(w.getId());
         }
-        list = webhookDao.getPartyWebhooks("999");
+        list = hookDao.getPartyHooks("999");
         for (Hook w : list) {
-            webhookDao.delete(w.getId());
+            hookDao.delete(w.getId());
         }
     }
 
     @Test
     public void getPartyWebhooks() throws Exception {
-        assertEquals(webhookDao.getPartyWebhooks("123").size(), 2);
-        Assert.assertTrue(webhookDao.getPartyWebhooks("88888").isEmpty());
+        assertEquals(hookDao.getPartyHooks("123").size(), 2);
+        Assert.assertTrue(hookDao.getPartyHooks("88888").isEmpty());
     }
 
     @Test
     public void getWebhookById() throws Exception {
-        List<Hook> list = webhookDao.getPartyWebhooks("123");
+        List<Hook> list = hookDao.getPartyHooks("123");
         for (Hook w : list) {
             System.out.println(w);
-            Assert.assertNotNull(webhookDao.getWebhookById(w.getId()));
+            Assert.assertNotNull(hookDao.getHookById(w.getId()));
         }
     }
 
     @Test
     public void getByIds(){
-        List<Hook> hooks = webhookDao.getWithPolicies(ids);
+        List<Hook> hooks = hookDao.getWithPolicies(ids);
         assertEquals(3, hooks.size());
     }
 
