@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rbkmoney.damsel.base.Content;
 
 /**
@@ -114,7 +115,7 @@ public class Message {
     public Content getMetadata() {
         return metadata;
     }
-
+    @JsonIgnore
     public void setMetadata(Content metadata) {
         this.metadata = metadata;
     }

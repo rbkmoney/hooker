@@ -15,6 +15,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by jeckep on 20.04.17.
  */
-
+@Ignore
 @TestPropertySource(properties = {"message.scheduler.delay=100"})
 public class DataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(DataflowTest.class);
