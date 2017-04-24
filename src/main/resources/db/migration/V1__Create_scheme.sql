@@ -74,6 +74,8 @@ CREATE TABLE hook.message
     content_type character varying,
     content_data bytea,
     status character varying(80) NOT NULL,
+    product character varying(80) NOT NULL,
+    description character varying(512) NOT NULL,
     CONSTRAINT message_pkey PRIMARY KEY (id)
 );
 

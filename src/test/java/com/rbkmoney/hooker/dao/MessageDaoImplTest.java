@@ -64,6 +64,8 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
         metadata.setType("string");
         metadata.setData("somedata".getBytes());
         message.setMetadata(metadata);
+        message.setProduct("product");
+        message.setDescription("description");
         message.setEventType(EventType.INVOICE_CREATED);
         message.setType("invoice");
         message.setStatus("message status");

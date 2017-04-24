@@ -43,7 +43,7 @@ public class MockServer {
                 if (request.getPath().startsWith("/mock/")) {
                     return new MockResponse().setBody("xyi").setResponseCode(200);
                 }
-                return new MockResponse().setResponseCode(404);
+                return new MockResponse().setResponseCode(501);
             }
         };
         // Create a MockWebServer. These are lean enough that you can create a new

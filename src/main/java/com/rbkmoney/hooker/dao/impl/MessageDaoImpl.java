@@ -41,7 +41,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         metadata.setType(rs.getString("content_type"));
         metadata.setData(rs.getBytes("content_data"));
         message.setMetadata(metadata);
-
+        message.setProduct(rs.getString("product"));
+        message.setDescription(rs.getString("description"));
         message.setEventType(EventType.valueOf(rs.getString("event_type")));
         message.setEventId(rs.getLong("event_id"));
         message.setType(rs.getString("type"));
@@ -74,9 +75,9 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     @Transactional
     public Message create(Message message) throws DaoException {
         String invoiceId = message.getInvoiceId();
-        final String sql = "INSERT INTO hook.message(invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data, event_id, event_type, type, payment_id, status) " +
+        final String sql = "INSERT INTO hook.message(invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data, event_id, event_type, type, payment_id, status, product, description) " +
                 " VALUES (:invoice_id, :party_id, :shop_id, :amount, :currency, :created_at, :content_type, :content_data, :event_id," +
-                " CAST(:event_type as hook.eventtype), :type, :payment_id, :status) " +
+                " CAST(:event_type as hook.eventtype), :type, :payment_id, :status, :product, :description) " +
                 " RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("invoice_id", invoiceId)
@@ -92,7 +93,9 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 .addValue("event_id", message.getEventId())
                 .addValue("event_type", message.getEventType().toString())
                 .addValue("payment_id", message.getPaymentId())
-                .addValue("status", message.getStatus());
+                .addValue("status", message.getStatus())
+                .addValue("product", message.getProduct())
+                .addValue("description", message.getDescription());
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
