@@ -1,21 +1,20 @@
 package com.rbkmoney.hooker;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.damsel.base.Content;
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
+import lombok.Data;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +28,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by jeckep on 20.04.17.
  */
-@Ignore
 @TestPropertySource(properties = {"message.scheduler.delay=100"})
 public class DataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(DataflowTest.class);
@@ -50,9 +46,9 @@ public class DataflowTest extends AbstractIntegrationTest {
     @Autowired
     SimpleRetryPolicyDao simpleRetryPolicyDao;
 
-    BlockingQueue<Message> hook1Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<Message> hook2Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<Message> hookBrokenQueue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> hook1Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> hook2Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> hookBrokenQueue = new LinkedBlockingDeque<>(10);
 
     final List<Hook> hooks = new ArrayList<>();
     final String HOOK_1 = "/hook1";
@@ -84,21 +80,21 @@ public class DataflowTest extends AbstractIntegrationTest {
         sourceMessages.add(messageDao.create(message("4", "qwe", EventType.INVOICE_CREATED, "status")));
         sourceMessages.add(messageDao.create(message("5", "qwe", EventType.INVOICE_CREATED, "status")));
 
-        List<Message> hook1 = new ArrayList<>();
-        List<Message> hook2 = new ArrayList<>();
+        List<MockMessage> hook1 = new ArrayList<>();
+        List<MockMessage> hook2 = new ArrayList<>();
 
         for (int i = 0; i < 2; i++) {
             hook1.add(hook1Queue.poll(1, TimeUnit.SECONDS));
         }
-        assertEquals(sourceMessages.get(0).getInvoiceId(), hook1.get(0).getInvoiceId());
-        assertEquals(sourceMessages.get(2).getInvoiceId(), hook1.get(1).getInvoiceId());
+        assertEquals(sourceMessages.get(0).getInvoiceId(), hook1.get(0).getPayload().getInvoiceId());
+        assertEquals(sourceMessages.get(2).getInvoiceId(), hook1.get(1).getPayload().getInvoiceId());
 
 
         for (int i = 0; i < 3; i++) {
             hook2.add(hook2Queue.poll(1, TimeUnit.SECONDS));
         }
         for (int i = 0; i < 3; i++) {
-            assertEquals(sourceMessages.get(i).getInvoiceId(), hook2.get(i).getInvoiceId());
+            assertEquals(sourceMessages.get(i).getInvoiceId(), hook2.get(i).getPayload().getInvoiceId());
         }
 
         assertTrue(hook1Queue.isEmpty());
@@ -116,7 +112,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         simpleRetryPolicyDao.update(new SimpleRetryPolicyRecord(hook.getId(), 3, 0));
 
         Message message = messageDao.create(message(invoceId, partyId, EventType.INVOICE_CREATED, "status"));
-        assertEquals(message.getInvoiceId(), hookBrokenQueue.poll(1, TimeUnit.SECONDS).getInvoiceId());
+        assertEquals(message.getInvoiceId(), hookBrokenQueue.poll(1, TimeUnit.SECONDS).getPayload().getInvoiceId());
 
         Thread.sleep(1000);
 
@@ -133,7 +129,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         message.setAmount(12235);
         message.setCurrency("RUB");
         message.setCreatedAt("12.12.2008");
-        Content metadata = new Content();
+        com.rbkmoney.damsel.base.Content metadata = new com.rbkmoney.damsel.base.Content();
         metadata.setType("string");
         metadata.setData("somedata".getBytes());
         message.setMetadata(metadata);
@@ -218,14 +214,45 @@ public class DataflowTest extends AbstractIntegrationTest {
         return server.getHostName() + ":" + server.getPort();
     }
 
-    private static Message extract(RecordedRequest request) {
+    private static MockMessage extract(RecordedRequest request) {
         final ByteArrayOutputStream bout = new ByteArrayOutputStream();
         try {
             request.getBody().writeTo(bout);
-            return new ObjectMapper().readValue(bout.toByteArray(), Message.class);
+            return new ObjectMapper().readValue(bout.toByteArray(), MockMessage.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    @Data
+    private static class MockMessage {
+        private long eventId;
+        private String eventTime;
+        private String eventType;
+        private MockPayload payload;
+    }
+
+    @Data
+    private static class MockPayload {
+        private String payloadType;
+        private long amount;
+        private String createdAt;
+        private String currency;
+        private String invoiceId;
+        private Content metadata;
+        private int shopId;
+        private String partyId;
+        private String status;
+        private String product;
+        private String description;
+        private String paymentId;
+    }
+
+    @Data
+    private static class Content {
+        public String type;
+        public byte[] data;
     }
 
 }
