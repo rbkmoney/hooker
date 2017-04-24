@@ -44,9 +44,6 @@ public class MessageSender implements Runnable {
                 int statusCode = postSender.doPost(hook.getUrl(), messageJson, signature);
                 if (statusCode != HttpStatus.SC_OK) {
                     log.warn("Wrong status code " + statusCode + " from merchant. Message id = " + message.getId());
-                }
-                //TODO may be other error codes
-                if (statusCode >= HttpStatus.SC_INTERNAL_SERVER_ERROR) {
                     throw new PostRequestException("Internal server error for message id = " + message.getId());
                 }
 
