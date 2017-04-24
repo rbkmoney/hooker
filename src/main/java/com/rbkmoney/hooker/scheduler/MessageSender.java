@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.MessageJson;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import com.rbkmoney.hooker.service.err.PostRequestException;
@@ -37,7 +38,8 @@ public class MessageSender implements Runnable {
             workerTaskScheduler.start(hook);
 
             for (Message message : messages) {
-                final String messageJson = new ObjectMapper().writeValueAsString(message);
+                final String messageJson = MessageJson.buildMessageJson(    message);
+                log.debug("Message for send: " + messageJson);
                 final String signature = signer.sign(messageJson, hook.getPrivKey());
                 int statusCode = postSender.doPost(hook.getUrl(), messageJson, signature);
                 if (statusCode != HttpStatus.SC_OK) {

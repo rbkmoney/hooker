@@ -3,8 +3,9 @@ package com.rbkmoney.hooker.model;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.damsel.base.Content;
+import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class MessageJson {
         invoiceStatuses.put("unpaid", "InvoiceCreated");
         invoiceStatuses.put("paid", "InvoicePaid");
         invoiceStatuses.put("cancelled", "InvoiceCancelled");
-        invoiceStatuses.put("fullfilled", "InvoiceFulfilled");
+        invoiceStatuses.put("fulfilled", "InvoiceFulfilled");
     }
 
     private static Map<String, String> paymentStatuses = new HashMap<>();
@@ -75,13 +76,18 @@ public class MessageJson {
         MessageJson messageJson = new MessageJson();
         messageJson.eventId = message.getEventId();
         messageJson.eventTime = message.getCreatedAt();
-        boolean isInvoice = "invoice".equals(message.getType());
+        boolean isInvoice = AbstractInvoiceEventHandler.INVOICE.equals(message.getType());
         messageJson.eventType = isInvoice ?  invoiceStatuses.get(message.getStatus()) : paymentStatuses.get(message.getStatus()) ;
         AbstaractInvoicingPayload invPayload = isInvoice ? new InvoicePayload(message.getProduct(), message.getDescription()) : new PaymentPayload(message.getPaymentId());
         invPayload.setAmount(message.getAmount());
         invPayload.setCreatedAt(message.getCreatedAt());
         invPayload.setCurrency(message.getCurrency());
-        invPayload.setMetadata(message.getMetadata());
+        if (message.getMetadata() != null) {
+            Content metadata = new Content();
+            metadata.setType(message.getMetadata().getType());
+            metadata.setData(message.getMetadata().getData());
+            invPayload.setMetadata(metadata);
+        }
         invPayload.setShopId(message.getShopId());
         invPayload.setPartyId(message.getPartyId());
         invPayload.setInvoiceId(message.getInvoiceId());
@@ -92,7 +98,36 @@ public class MessageJson {
 }
 
 class Payload {
-    protected String payloadType;
+    private String payloadType;
+
+    public String getPayloadType() {
+        return payloadType;
+    }
+
+    public void setPayloadType(String payloadType) {
+        this.payloadType = payloadType;
+    }
+}
+
+class Content {
+    public String type;
+    public byte[] data;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
+    }
 }
 
 abstract class AbstaractInvoicingPayload extends Payload {
@@ -170,7 +205,7 @@ abstract class AbstaractInvoicingPayload extends Payload {
     }
 }
 
-@JsonPropertyOrder({ "amount", "createdAt", "currency", "invoiceId", "metadata", "shopId", "partyId", "status", "product", "description"})
+@JsonPropertyOrder({"payloadType", "amount", "createdAt", "currency", "invoiceId", "metadata", "shopId", "partyId", "status", "product", "description"})
 class InvoicePayload extends AbstaractInvoicingPayload{
     private String product;
     private String description;
@@ -179,7 +214,7 @@ class InvoicePayload extends AbstaractInvoicingPayload{
     }
 
     public InvoicePayload(String product, String description) {
-        this.payloadType = "InvoiceInfo";
+        this.setPayloadType("InvoiceInfo");
         this.product = product;
         this.description = description;
     }
@@ -201,7 +236,7 @@ class InvoicePayload extends AbstaractInvoicingPayload{
     }
 }
 
-@JsonPropertyOrder({ "amount", "createdAt", "currency", "invoiceId", "paymentId", "metadata", "shopId", "partyId", "status"})
+@JsonPropertyOrder({"payloadType", "amount", "createdAt", "currency", "invoiceId", "paymentId", "metadata", "shopId", "partyId", "status"})
 class PaymentPayload extends AbstaractInvoicingPayload {
     private String paymentId;
 
@@ -209,7 +244,7 @@ class PaymentPayload extends AbstaractInvoicingPayload {
     }
 
     public PaymentPayload(String paymentId) {
-        this.payloadType = "PaymentInfo";
+        this.setPayloadType("PaymentInfo");
         this.paymentId = paymentId;
     }
 

@@ -32,7 +32,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     protected void modifyMessage(Event event, Message message) {
         InvoicePayment payment = event.getPayload().getInvoiceEvent().getInvoicePaymentEvent().getInvoicePaymentStarted().getPayment();
         message.setStatus(payment.getStatus().getSetField().getFieldName());
-        message.setType("payment");
+        message.setType(PAYMENT);
         message.setPaymentId(payment.getId());
         message.setEventId(event.getId());
         message.setEventType(eventType);
