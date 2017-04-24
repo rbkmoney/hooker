@@ -5,7 +5,7 @@ import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.dao.WebhookDao;
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
@@ -41,7 +41,7 @@ public class DataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(DataflowTest.class);
 
     @Autowired
-    WebhookDao webhookDao;
+    HookDao hookDao;
 
     @Autowired
     MessageDao messageDao;
@@ -68,8 +68,8 @@ public class DataflowTest extends AbstractIntegrationTest {
         baseServerUrl = webserver(dispatcher());
         log.info("Mock server url: " + baseServerUrl);
 
-        hooks.add(webhookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
-        hooks.add(webhookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
+        hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
+        hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
     }
 
 
@@ -111,7 +111,7 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void testDisableHookPolicy() throws InterruptedException {
         final String invoceId = "asgsdhghdhtfugny648";
         final String partyId = new Random().nextInt() + "";
-        Hook hook = webhookDao.create(hook(partyId, "http://" + baseServerUrl + BROKEN_HOOK, EventType.INVOICE_CREATED));
+        Hook hook = hookDao.create(hook(partyId, "http://" + baseServerUrl + BROKEN_HOOK, EventType.INVOICE_CREATED));
         simpleRetryPolicyDao.update(new SimpleRetryPolicyRecord(hook.getId(), 3, 0));
 
         Message message = messageDao.create(message(invoceId, partyId, EventType.INVOICE_CREATED, "status"));
@@ -119,7 +119,7 @@ public class DataflowTest extends AbstractIntegrationTest {
 
         Thread.sleep(1000);
 
-        hook = webhookDao.getWebhookById(hook.getId());
+        hook = hookDao.getHookById(hook.getId());
         assertFalse(hook.isEnabled());
     }
 

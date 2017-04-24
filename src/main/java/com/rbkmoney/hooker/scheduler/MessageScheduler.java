@@ -2,7 +2,7 @@ package com.rbkmoney.hooker.scheduler;
 
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.TaskDao;
-import com.rbkmoney.hooker.dao.WebhookDao;
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;
@@ -35,7 +35,7 @@ public class MessageScheduler {
     private TaskDao taskDao;
 
     @Autowired
-    private WebhookDao webhookDao;
+    private HookDao hookDao;
 
     @Autowired
     private MessageDao messageDao;
@@ -112,7 +112,7 @@ public class MessageScheduler {
     }
 
     private List<Hook> loadHooks(Collection<Long> hookIds) {
-        List<Hook> hooksWaitingMessages = webhookDao.getWithPolicies(hookIds);
+        List<Hook> hooksWaitingMessages = hookDao.getWithPolicies(hookIds);
         return retryPoliciesService.filter(hooksWaitingMessages);
     }
 

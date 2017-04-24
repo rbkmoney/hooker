@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.retry.impl.simple;
 
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
-import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.retry.RetryPolicy;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
     SimpleRetryPolicyDao simpleRetryPolicyDao;
 
     @Autowired
-    WebhookDao webhookDao;
+    HookDao hookDao;
 
     private long[] delays = {30, 300, 900, 3600}; //in seconds
 
@@ -35,11 +35,11 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
     @Override
     public void onFail(SimpleRetryPolicyRecord rp) {
         rp.setFailCount(rp.getFailCount() + 1);
-        rp.setLastFailTime(new Date().getTime());
+        rp.setLastFailTime(System.currentTimeMillis());
         simpleRetryPolicyDao.update(rp);
 
         if (rp.getFailCount() >= delays.length) {
-            webhookDao.disable(rp.getHookId());
+            hookDao.disable(rp.getHookId());
             log.warn("Hook: " + rp.getHookId() + " was disabled according to retry policy.");
         }
     }
@@ -49,7 +49,7 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
         if (rp.getFailCount() == 0) {
             return true;
         } else if (rp.getFailCount() < delays.length
-                && (new Date().getTime()) > rp.getLastFailTime() + (delays[rp.getFailCount()-1] * 1000)) {
+                && System.currentTimeMillis() > (rp.getLastFailTime() + (delays[rp.getFailCount()-1] * 1000))) {
             return true;
         }
 

@@ -23,7 +23,7 @@ public class TaskDaoImplTest  extends AbstractIntegrationTest {
     TaskDao taskDao;
 
     @Autowired
-    WebhookDao webhookDao;
+    HookDao hookDao;
 
     @Autowired
     MessageDao messageDao;
@@ -36,7 +36,7 @@ public class TaskDaoImplTest  extends AbstractIntegrationTest {
         messageDao.create(MessageDaoImplTest.buildMessage("2345","partyId"));
         messageId = messageDao.getAny("2345").getId();
 
-        hookId = webhookDao.create(WebhookDaoImplTest.buildHook("partyId", "fake.url")).getId();
+        hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
     }
 
     @Test

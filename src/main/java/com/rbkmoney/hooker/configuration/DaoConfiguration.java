@@ -1,13 +1,13 @@
 package com.rbkmoney.hooker.configuration;
 
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.TaskDao;
-import com.rbkmoney.hooker.dao.WebhookDao;
 import com.rbkmoney.hooker.dao.impl.MessageDaoImpl;
 import com.rbkmoney.hooker.dao.impl.SimpleRetryPolicyDaoImpl;
 import com.rbkmoney.hooker.dao.impl.TaskDaoImpl;
-import com.rbkmoney.hooker.dao.impl.WebhookDaoImpl;
+import com.rbkmoney.hooker.dao.impl.HookDaoImpl;
 import org.jooq.Schema;
 import org.jooq.impl.SchemaImpl;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +22,8 @@ public class DaoConfiguration {
 
     @Bean
     @DependsOn("dbInitializer")
-    public WebhookDao webhookDao(NamedParameterJdbcTemplate jdbcTemplate) {
-        return new WebhookDaoImpl(jdbcTemplate);
+    public HookDao webhookDao(NamedParameterJdbcTemplate jdbcTemplate) {
+        return new HookDaoImpl(jdbcTemplate);
     }
 
     @Bean
