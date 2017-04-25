@@ -97,6 +97,7 @@ CREATE TABLE hook.simple_retry_policy
     CONSTRAINT simple_retry_policy_pkey PRIMARY KEY (hook_id)
 );
 
+-- CREATE INDEX message_invoice_id_idx ON hook.message(invoice_id);
 
 COMMENT ON TABLE hook.message
     IS 'Table for saving messages for POST';

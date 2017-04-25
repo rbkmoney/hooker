@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.dao.impl;
 
+import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.dao.HookDao;
@@ -11,6 +12,8 @@ import com.rbkmoney.hooker.service.crypt.Signer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -28,6 +31,8 @@ import java.util.stream.Collectors;
 public class HookDaoImpl implements HookDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
+    @Autowired
+    CacheManager cacheManager;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -139,25 +144,41 @@ public class HookDaoImpl implements HookDao {
     }
 
     public List<Hook> getWithPolicies(Collection<Long> ids) {
-        if (ids.size() == 0) {
-            return new ArrayList<>();
+        List<Hook> hooks = getFromCache(ids);
+
+        final Set<Long> hookIds = new HashSet<>();
+
+        if(hooks.size() == ids.size()){
+            return hooks;
+        }else{
+            hookIds.addAll(ids);
+            if(hooks.size() > 0){
+                for(Hook hook: hooks){
+                    hookIds.remove(hook.getId());
+                }
+            }
         }
+
         final String sql =
                 " select w.*, k.*, srp.*" +
                         " from hook.webhook w " +
                         " join hook.party_key k on k.party_id = w.party_id " +
                         " left join hook.simple_retry_policy srp on srp.hook_id = w.id" +
                         " where w.id in (:ids)";
-        final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids);
+        final MapSqlParameterSource params = new MapSqlParameterSource("ids", hookIds);
 
         try {
-            List<Hook> hooks = jdbcTemplate.query(sql, params, hookWithPolicyRowMapper);
+            List<Hook> hooksFromDb = jdbcTemplate.query(sql, params, hookWithPolicyRowMapper);
+            putToCache(hooksFromDb);
+            hooks.addAll(hooksFromDb);
             return hooks;
         } catch (DataAccessException e) {
             throw new DaoException(e);
         }
 
     }
+
+
 
     @Override
     @Transactional
@@ -292,5 +313,26 @@ public class HookDaoImpl implements HookDao {
                             rs.getString("invoice_status"),
                             rs.getString("invoice_payment_status")));
 
+
+    private List<Hook> getFromCache(Collection<Long> ids){
+        Cache cache = cacheManager.getCache(CacheConfiguration.HOOKS);
+        List<Hook> hooks = new ArrayList<>();
+
+        for(long id: ids){
+            Hook hook = cache.get(id, Hook.class);
+            if(hook != null){
+                hooks.add(hook);
+            }
+        }
+
+        return hooks;
+    }
+
+    private void putToCache(Collection<Hook> hooks){
+        Cache cache = cacheManager.getCache(CacheConfiguration.HOOKS);
+        for(Hook hook: hooks){
+            cache.put(hook.getId(), hook);
+        }
+    }
 
 }

@@ -1,14 +1,19 @@
 package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.damsel.base.Content;
+import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -26,6 +31,9 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
 
     @Autowired
     TaskDao taskDao;
+
+    @Autowired
+    CacheManager cacheManager;
 
     private static RowMapper<Message> messageRowMapper = (rs, i) -> {
         Message message = new Message();
@@ -55,6 +63,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     }
 
     @Override
+    @Cacheable(CacheConfiguration.MESSAGES_BY_INVOICE)
     public Message getAny(String invoiceId) throws DaoException {
         Message result = null;
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id LIMIT 1";
@@ -67,6 +76,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             log.warn("MessageDaoImpl.getAny error", e);
             throw new DaoException(e);
         }
+
+        putToCache(result);
         return result;
     }
 
@@ -100,6 +111,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             // create tasks
             taskDao.create(Arrays.asList(keyHolder.getKey().longValue()));
             message.setId(keyHolder.getKey().longValue());
+            putToCache(message);
             return message;
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't create message with invoce_id "+ message.getInvoiceId(), e);
@@ -118,12 +130,25 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
 
     @Override
     public List<Message> getBy(Collection<Long> messageIds) {
-        if(messageIds.size() == 0){
-            return new ArrayList<>();
+        List<Message> messages = getFromCache(messageIds);
+
+        Set<Long> ids = new HashSet<>();
+        if(messages.size() == messageIds.size()){
+            return messages;
+        }else{
+            ids.addAll(messageIds);
+            for(Message message: messages){
+                ids.remove(message.getId());
+            }
         }
+
         final String sql = "SELECT * FROM hook.message WHERE id in (:ids)";
         try {
-            List<Message> messages = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
+            List<Message> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", ids), messageRowMapper);
+            for(Message message: messagesFromDb){
+                putToCache(message);
+            }
+            messages.addAll(messagesFromDb);
             return messages;
         }  catch (NestedRuntimeException e) {
             log.error("MessageDaoImpl.getByIds error", e);
@@ -151,5 +176,22 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
+    }
+
+    private void putToCache(Message message){
+        cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS).put(message.getId(), message);
+        cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoiceId(), message);
+    }
+
+    private List<Message> getFromCache(Collection<Long> ids){
+        Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS);
+        List<Message> messages = new ArrayList<>();
+        for(long id: ids){
+            Message message = cache.get(id, Message.class);
+            if(message != null){
+                messages.add(message);
+            }
+        }
+        return messages;
     }
 }

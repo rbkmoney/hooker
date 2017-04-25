@@ -1,6 +1,8 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +35,7 @@ public class TaskDaoImplTest  extends AbstractIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        messageDao.create(MessageDaoImplTest.buildMessage("2345","partyId"));
+        messageDao.create(BuildUtils.message("2345","partyId", EventType.INVOICE_CREATED, "status"));
         messageId = messageDao.getAny("2345").getId();
 
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
