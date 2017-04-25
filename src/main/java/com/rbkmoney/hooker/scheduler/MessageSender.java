@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.scheduler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
@@ -11,7 +10,6 @@ import com.rbkmoney.hooker.service.err.PostRequestException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.http.HttpStatus;
-import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +36,7 @@ public class MessageSender implements Runnable {
             workerTaskScheduler.start(hook);
 
             for (Message message : messages) {
-                final String messageJson = MessageJson.buildMessageJson(    message);
+                final String messageJson = MessageJson.buildMessageJson(message);
                 log.debug("Message for send: " + messageJson);
                 final String signature = signer.sign(messageJson, hook.getPrivKey());
                 int statusCode = postSender.doPost(hook.getUrl(), messageJson, signature);

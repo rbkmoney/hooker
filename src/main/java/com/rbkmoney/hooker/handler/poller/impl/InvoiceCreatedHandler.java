@@ -45,7 +45,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         message.setType(INVOICE);
         message.setEventType(eventType);
         message.setEventId(event.getId());
-
+        message.setEventTime(event.getCreatedAt());
         messageDao.create(message);
     }
 

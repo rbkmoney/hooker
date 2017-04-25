@@ -34,7 +34,6 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
         message.setStatus(payment.getStatus().getSetField().getFieldName());
         message.setType(PAYMENT);
         message.setPaymentId(payment.getPaymentId());
-        message.setEventId(event.getId());
         message.setEventType(eventType);
     }
 }

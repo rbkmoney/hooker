@@ -44,6 +44,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         message.setDescription(rs.getString("description"));
         message.setEventType(EventType.valueOf(rs.getString("event_type")));
         message.setEventId(rs.getLong("event_id"));
+        message.setEventTime(rs.getString("event_time"));
         message.setType(rs.getString("type"));
         message.setStatus(rs.getString("status"));
         message.setPaymentId(rs.getString("payment_id"));
@@ -74,8 +75,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     @Transactional
     public Message create(Message message) throws DaoException {
         String invoiceId = message.getInvoiceId();
-        final String sql = "INSERT INTO hook.message(invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data, event_id, event_type, type, payment_id, status, product, description) " +
-                " VALUES (:invoice_id, :party_id, :shop_id, :amount, :currency, :created_at, :content_type, :content_data, :event_id," +
+        final String sql = "INSERT INTO hook.message(invoice_id, party_id, shop_id, amount, currency, created_at, content_type, content_data, event_id, event_time, event_type, type, payment_id, status, product, description) " +
+                " VALUES (:invoice_id, :party_id, :shop_id, :amount, :currency, :created_at, :content_type, :content_data, :event_id, :event_time, " +
                 " CAST(:event_type as hook.eventtype), :type, :payment_id, :status, :product, :description) " +
                 " RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -89,6 +90,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 .addValue("content_data", message.getMetadata().getData())
                 .addValue("type", message.getType())
                 .addValue("event_id", message.getEventId())
+                .addValue("event_time", message.getEventTime())
                 .addValue("event_type", message.getEventType().toString())
                 .addValue("payment_id", message.getPaymentId())
                 .addValue("status", message.getStatus())

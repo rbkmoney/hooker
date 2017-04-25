@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rbkmoney.damsel.base.Content;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 /**
  * Created by inalarsanukaev on 24.04.17.
  */
@@ -14,6 +12,7 @@ public class MessageJsonTest {
     public void test() throws JsonProcessingException {
         Message message = new Message();
         message.setEventId(5555);
+        message.setEventTime("12.12.2007");
         message.setInvoiceId("ffsfgsr");
         message.setPartyId("sdrgsr");
         message.setShopId(123);

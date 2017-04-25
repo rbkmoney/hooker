@@ -123,6 +123,7 @@ public class DataflowTest extends AbstractIntegrationTest {
     private static Message message(String invoceId, String partyId, EventType type, String status) {
         Message message = new Message();
         message.setEventId(5555);
+        message.setEventTime("12.12.2007");
         message.setInvoiceId(invoceId);
         message.setPartyId(partyId);
         message.setShopId(123);

@@ -21,6 +21,8 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         if (message == null) {
             throw new DaoException("Message for invoice with id "+event.getSource().getInvoice() + " not exist");
         }
+        message.setEventId(event.getId());
+        message.setEventTime(event.getCreatedAt());
         modifyMessage(event, message);
 
         messageDao.create(message);

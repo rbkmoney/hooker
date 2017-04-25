@@ -5,7 +5,6 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +53,7 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     public static Message buildMessage(String invoceId, String partyId){
         Message message = new Message();
         message.setEventId(5555);
+        message.setEventTime("12.12.2007");
         message.setInvoiceId(invoceId);
         message.setPartyId(partyId);
         message.setShopId(123);
