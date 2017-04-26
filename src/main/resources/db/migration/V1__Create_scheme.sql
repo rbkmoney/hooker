@@ -65,6 +65,7 @@ CREATE TABLE hook.message
     type character varying(40) NOT NULL,
     invoice_id character varying(40) NOT NULL,
     event_id int NOT NULL,
+    event_time character varying(80) NOT NULL,
     party_id character varying(40) NOT NULL,
     payment_id character varying(40),
     shop_id int NOT NULL,

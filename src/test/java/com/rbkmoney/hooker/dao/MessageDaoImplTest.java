@@ -1,12 +1,9 @@
 package com.rbkmoney.hooker.dao;
 
-import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
-import com.rbkmoney.hooker.DataflowTest;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,8 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.message;
 import static org.junit.Assert.assertEquals;
-import static com.rbkmoney.hooker.utils.BuildUtils.*;
 
 /**
  * Created by inalarsanukaev on 09.04.17.

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,7 +74,7 @@ public class MessageJson {
     public static String buildMessageJson(Message message) throws JsonProcessingException {
         MessageJson messageJson = new MessageJson();
         messageJson.eventId = message.getEventId();
-        messageJson.eventTime = message.getCreatedAt();
+        messageJson.eventTime = message.getEventTime();
         boolean isInvoice = AbstractInvoiceEventHandler.INVOICE.equals(message.getType());
         messageJson.eventType = isInvoice ?  invoiceStatuses.get(message.getStatus()) : paymentStatuses.get(message.getStatus()) ;
         AbstaractInvoicingPayload invPayload = isInvoice ? new InvoicePayload(message.getProduct(), message.getDescription()) : new PaymentPayload(message.getPaymentId());
@@ -236,7 +235,7 @@ class InvoicePayload extends AbstaractInvoicingPayload{
     }
 }
 
-@JsonPropertyOrder({"payloadType", "amount", "createdAt", "currency", "invoiceId", "paymentId", "metadata", "shopId", "partyId", "status"})
+@JsonPropertyOrder({"payloadType", "amount", "createdAt", "currency", "invoiceId", "metadata", "paymentId", "shopId", "partyId", "status"})
 class PaymentPayload extends AbstaractInvoicingPayload {
     private String paymentId;
 

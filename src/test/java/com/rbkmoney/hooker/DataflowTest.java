@@ -28,8 +28,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.message;
 import static org.junit.Assert.*;
-import static com.rbkmoney.hooker.utils.BuildUtils.*;
 
 /**
  * Created by jeckep on 20.04.17.
@@ -120,7 +120,6 @@ public class DataflowTest extends AbstractIntegrationTest {
         hook = hookDao.getHookById(hook.getId());
         assertFalse(hook.isEnabled());
     }
-
 
     private static Hook hook(String partyId, String url, EventType... types) {
         Hook hook = new Hook();

@@ -32,7 +32,6 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     protected void modifyMessage(Event event, Message message) {
         message.setStatus(event.getPayload().getInvoiceEvent().getInvoiceStatusChanged().getStatus().getSetField().getFieldName());
         message.setType(INVOICE);
-        message.setEventId(event.getId());
         message.setEventType(eventType);
     }
 }

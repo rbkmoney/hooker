@@ -1,8 +1,8 @@
 package com.rbkmoney.hooker.scheduler;
 
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.TaskDao;
-import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;

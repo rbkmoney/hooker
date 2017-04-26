@@ -10,6 +10,7 @@ import com.rbkmoney.damsel.base.Content;
 public class Message {
     private long id;
     private long eventId;
+    private String eventTime;
     private String type;
     private String invoiceId;
     private String paymentId;
@@ -54,6 +55,15 @@ public class Message {
     public void setEventId(long eventId) {
         this.eventId = eventId;
     }
+
+    public String getEventTime() {
+        return eventTime;
+    }
+
+    public void setEventTime(String eventTime) {
+        this.eventTime = eventTime;
+    }
+
     public String getStatus() {
         return status;
     }

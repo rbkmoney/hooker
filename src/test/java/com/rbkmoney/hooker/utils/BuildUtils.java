@@ -26,6 +26,7 @@ public class BuildUtils {
         message.setType("invoice");
         message.setStatus(status);
         message.setPaymentId("paymentId");
+        message.setEventTime("time");
         return message;
     }
 }
