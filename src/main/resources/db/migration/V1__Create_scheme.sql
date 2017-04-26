@@ -98,6 +98,7 @@ CREATE TABLE hook.simple_retry_policy
     CONSTRAINT simple_retry_policy_pkey PRIMARY KEY (hook_id)
 );
 
+CREATE INDEX hook_idx ON hook.webhook(party_id, id) WHERE enabled;
 
 COMMENT ON TABLE hook.message
     IS 'Table for saving messages for POST';

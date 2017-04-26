@@ -36,15 +36,15 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         }
         final String sql =
                 " insert into hook.scheduled_task(message_id, hook_id)" +
-                        " select m.id, w.id " +
-                        " from hook.message m" +
-                        " join hook.webhook w on m.party_id = w.party_id and w.enabled = TRUE " +
-                        " join hook.webhook_to_events wte on wte.hook_id = w.id" +
-                        " where m.id in (:ids) " +
-                        " and m.event_type = wte.event_type " +
-                        " and (wte.invoice_shop_id is null or m.shop_id = wte.invoice_shop_id) " +
-                        " and (m.status = COALESCE(wte.invoice_status, wte.invoice_payment_status) or (wte.invoice_status is null and wte.invoice_payment_status is null))" +
-                        " ON CONFLICT (message_id, hook_id) DO NOTHING";
+                " select m.id, w.id " +
+                " from hook.message m" +
+                " join hook.webhook w on m.party_id = w.party_id and w.enabled" +
+                " join hook.webhook_to_events wte on wte.hook_id = w.id" +
+                " where m.id in (:ids) " +
+                " and m.event_type = wte.event_type " +
+                " and (wte.invoice_shop_id is null or m.shop_id = wte.invoice_shop_id) " +
+                " and (m.status = COALESCE(wte.invoice_status, wte.invoice_payment_status) or (wte.invoice_status is null and wte.invoice_payment_status is null))" +
+                " ON CONFLICT (message_id, hook_id) DO NOTHING";
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("ids", messageIds));
             log.info("Created tasks count : " + updateCount);
@@ -67,6 +67,17 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
     }
 
     @Override
+    public void removeAll(long hookId) {
+        final String sql = "DELETE FROM hook.scheduled_task where hook_id=:hook_id";
+        try {
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId));
+        } catch (DataAccessException e) {
+            log.error("Fail to delete tasks for hook:" + hookId, e);
+            throw new DaoException(e);
+        }
+    }
+
+    @Override
     public List<Task> getAll() {
         final String sql = "SELECT * FROM hook.scheduled_task";
         try {
@@ -84,10 +95,9 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
     public Map<Long, List<Task>> getScheduled(Collection<Long> excludeHooksIds) {
         final String sql =
                 " SELECT DISTINCT * " +
-                        " FROM hook.scheduled_task st" +
-                        " JOIN hook.webhook w on w.id = st.hook_id and w.enabled = :enabled" +
-                        (excludeHooksIds.size() > 0 ? " WHERE st.hook_id not in (:hook_ids)" : "") +
-                        " ORDER BY hook_id ASC , message_id ASC";
+                " FROM hook.scheduled_task st" +
+                (excludeHooksIds.size() > 0 ? " WHERE st.hook_id not in (:hook_ids)" : "") +
+                " ORDER BY hook_id ASC , message_id ASC";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(
                     sql,
