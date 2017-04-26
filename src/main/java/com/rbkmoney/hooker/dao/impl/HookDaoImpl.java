@@ -12,11 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -263,7 +263,7 @@ public class HookDaoImpl implements HookDao {
     private String createOrGetPubKey(String partyId) {
         final String sql = "INSERT INTO hook.party_key(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +
-                "ON CONFLICT(party_id) DO UPDATE SET party_id = :party_id RETURNING pub_key";
+                "ON CONFLICT(party_id) DO UPDATE SET party_id=:party_id RETURNING pub_key";
 
         KeyPair keyPair = signer.generateKeys();
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -272,8 +272,10 @@ public class HookDaoImpl implements HookDao {
                 .addValue("pub_key", keyPair.getPublKey());
         String pubKey = null;
         try {
-            pubKey = jdbcTemplate.queryForObject(sql, params, String.class);
-        } catch (DataAccessException e) {
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            jdbcTemplate.update(sql, params, keyHolder);
+            pubKey = (String) ((Map) keyHolder.getKeyList().get(0)).values().iterator().next();
+        } catch (DataAccessException | NullPointerException | ClassCastException e) {
             log.warn("WebhookKeyDaoImpl.createOrGetPubKey error", e);
             throw new DaoException(e);
         }
