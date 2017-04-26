@@ -26,4 +26,14 @@ public class Hook {
     private boolean enabled;
     private RetryPolicyType retryPolicyType;
     private RetryPolicyRecord retryPolicyRecord;
+
+    @Override
+    public String toString() {
+        return "Hook{" +
+                "id=" + id +
+                ", partyId='" + partyId + '\'' +
+                ", url='" + url + '\'' +
+                ", enabled=" + enabled +
+                '}';
+    }
 }

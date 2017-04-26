@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.damsel.webhooker.WebhookManagerSrv;
 import com.rbkmoney.damsel.webhooker.WebhookNotFound;
 import com.rbkmoney.damsel.webhooker.WebhookParams;
-import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.HookConverter;
@@ -24,13 +23,23 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public List<Webhook> getList(String s) throws TException {
-        List<Hook> hooks = hookDao.getPartyHooks(s);
+        List<Hook> hooks;
+        try {
+            hooks = hookDao.getPartyHooks(s);
+        } catch (Exception e) {
+            throw new TException(e);
+        }
         return HookConverter.convert(hooks);
     }
 
     @Override
     public Webhook get(long id) throws WebhookNotFound, TException {
-        Hook hook = hookDao.getHookById(id);
+        Hook hook;
+        try {
+            hook = hookDao.getHookById(id);
+        } catch (Exception e) {
+            throw new TException(e);
+        }
         if (hook == null) {
             throw new WebhookNotFound();
         }
@@ -39,21 +48,24 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public Webhook create(WebhookParams webhookParams) throws TException {
-        Hook hook = hookDao.create(HookConverter.convert(webhookParams));
-        if (hook == null) {
-            throw new TException("Webhookparams.EventFilter is empty.");
+        try {
+            Hook hook = hookDao.create(HookConverter.convert(webhookParams));
+            return HookConverter.convert(hook);
+        } catch (Exception e) {
+            throw new TException(e);
         }
-        return HookConverter.convert(hook);
     }
 
     @Override
     public void delete(long id) throws WebhookNotFound, TException {
+        boolean isDeleted;
         try {
-            if (!hookDao.delete(id)) {
-                throw new WebhookNotFound();
-            }
-        } catch (DaoException e) {
-            throw new TException();
+            isDeleted = hookDao.delete(id);
+        } catch (Exception e) {
+            throw new TException(e);
+        }
+        if (!isDeleted) {
+            throw new WebhookNotFound();
         }
     }
 }

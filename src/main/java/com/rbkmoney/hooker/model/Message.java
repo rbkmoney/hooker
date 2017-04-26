@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rbkmoney.damsel.base.Content;
 
 /**

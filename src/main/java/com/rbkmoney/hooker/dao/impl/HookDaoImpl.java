@@ -57,7 +57,7 @@ public class HookDaoImpl implements HookDao {
 
     @Override
     public List<Hook> getPartyHooks(String partyId) {
-        log.info("New getPartyHooks request. partyId = {}", partyId);
+        log.info("getPartyHooks request. PartyId = {}", partyId);
         final String sql =
                 " select w.*, k.pub_key, wte.* " +
                         " from hook.webhook w " +
@@ -74,7 +74,7 @@ public class HookDaoImpl implements HookDao {
         try {
             List<AllHookTablesRow> allHookTablesRows = jdbcTemplate.query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
-            log.info("Response getPartyHooks.");
+            log.info("getPartyHooks response. Hooks: " + result);
             return result;
         } catch (DataAccessException e) {
             String message = "Couldn't getPartyHooks for partyId " + partyId;
@@ -118,7 +118,7 @@ public class HookDaoImpl implements HookDao {
 
     @Override
     public Hook getHookById(long id) {
-        log.info("New getWebhook request. id = {}", id);
+        log.info("getHookById request. Id = {}", id);
         final String sql = "select w.*, k.pub_key, wte.* " +
                 "from hook.webhook w " +
                 "join hook.party_key k " +
@@ -134,8 +134,13 @@ public class HookDaoImpl implements HookDao {
             List<AllHookTablesRow> allHookTablesRows = jdbcTemplate.query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
             if (result == null || result.isEmpty()) {
+                log.warn("Hook with id " + id + " not found.");
                 return null;
             }
+            if (result.size() > 1) {
+                throw new DaoException("Found more than one hook with id " + id);
+            }
+            log.info("getHookById response. " + result.get(0));
             return result.get(0);
         } catch (DataAccessException e) {
             String message = "Couldn't getHookById for id " + id;
@@ -146,19 +151,11 @@ public class HookDaoImpl implements HookDao {
 
     public List<Hook> getWithPolicies(Collection<Long> ids) {
         List<Hook> hooks = getFromCache(ids);
-
-        final Set<Long> hookIds = new HashSet<>();
-
-        if(hooks.size() == ids.size()){
+        if (hooks.size() == ids.size()) {
             return hooks;
-        }else{
-            hookIds.addAll(ids);
-            if(hooks.size() > 0){
-                for(Hook hook: hooks){
-                    hookIds.remove(hook.getId());
-                }
-            }
         }
+        Set<Long> hookIds = new HashSet<>(ids);
+        hooks.stream().forEach(h -> hookIds.remove(h.getId()));
 
         final String sql =
                 " select w.*, k.*, srp.*" +
@@ -219,7 +216,6 @@ public class HookDaoImpl implements HookDao {
             log.warn("Fail to create simple_retry_policy for hook: " + hookId, e);
             throw new DaoException(e);
         }
-
     }
 
     private void saveHookFilters(long hookId, Collection<WebhookAdditionalFilter> webhookAdditionalFilters) {
@@ -300,7 +296,7 @@ public class HookDaoImpl implements HookDao {
             log.warn("WebhookKeyDaoImpl.createOrGetPubKey error", e);
             throw new DaoException(e);
         }
-        log.info("Key with party_id = {} added to table. PubKey {}", partyId, pubKey);
+        log.info("Key with party_id = {} added to table hook.party_key.", partyId);
         return pubKey;
     }
 

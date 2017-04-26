@@ -35,7 +35,7 @@ public class PostSender {
                 .build();
 
         Response response = httpClient.newCall(request).execute();
-        log.info("WebhookHttpPostSender.doPost webhook send with code "+response.code());
+        log.info("WebhookHttpPostSender.doPost webhook send with code "+response.code() +"; body: "+response.body().string());
         return response.code();
     }
 }

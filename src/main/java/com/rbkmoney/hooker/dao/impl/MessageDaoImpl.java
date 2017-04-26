@@ -6,7 +6,6 @@ import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +14,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.NestedRuntimeException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
@@ -152,7 +153,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             }
             messages.addAll(messagesFromDb);
             return messages;
-        }  catch (NestedRuntimeException e) {
+        }  catch (DataAccessException e) {
             log.error("MessageDaoImpl.getByIds error", e);
             throw new DaoException(e);
         }
@@ -163,7 +164,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         final String sql = "DELETE FROM hook.message where invoice_id=:invoice_id";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("invoice_id", invoiceId));
-        } catch (NestedRuntimeException e) {
+        } catch (DataAccessException e) {
             log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
@@ -174,7 +175,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         final String sql = "DELETE FROM hook.message where id = :id";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
-        } catch (NestedRuntimeException e) {
+        } catch (DataAccessException e) {
             log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
@@ -185,15 +186,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoiceId(), message);
     }
 
-    private List<Message> getFromCache(Collection<Long> ids){
+    private List<Message> getFromCache(Collection<Long> ids) {
         Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS);
-        List<Message> messages = new ArrayList<>();
-        for(long id: ids){
-            Message message = cache.get(id, Message.class);
-            if(message != null){
-                messages.add(message);
-            }
-        }
-        return messages;
+        return ids.stream().map(id -> cache.get(id, Message.class)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }
