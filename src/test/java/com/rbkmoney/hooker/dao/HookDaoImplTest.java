@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class HookDaoImplTest extends AbstractIntegrationTest {
+public class HookDaoImplTest {
 
     @Autowired
     HookDao hookDao;

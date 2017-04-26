@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -162,8 +163,8 @@ public class HookDaoImpl implements HookDao {
     @Override
     @Transactional
     public Hook create(Hook hook) {
-        KeyPair keyPair = createPairKey(hook.getPartyId());
-        hook.setPubKey(keyPair.getPublKey());
+        String pubKey = createOrGetPubKey(hook.getPartyId());
+        hook.setPubKey(pubKey);
         hook.setEnabled(true);
 
         final String sql = "INSERT INTO hook.webhook(party_id, url) " +
@@ -259,24 +260,25 @@ public class HookDaoImpl implements HookDao {
     @Autowired
     Signer signer;
 
-    private KeyPair createPairKey(String partyId) {
+    private String createOrGetPubKey(String partyId) {
         final String sql = "INSERT INTO hook.party_key(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +
-                "ON CONFLICT(party_id) DO NOTHING";
+                "ON CONFLICT(party_id) DO UPDATE SET party_id = :party_id RETURNING pub_key";
 
         KeyPair keyPair = signer.generateKeys();
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("party_id", partyId)
                 .addValue("priv_key", keyPair.getPrivKey())
                 .addValue("pub_key", keyPair.getPublKey());
+        String pubKey = null;
         try {
-            jdbcTemplate.update(sql, params);
+            pubKey = jdbcTemplate.queryForObject(sql, params, String.class);
         } catch (DataAccessException e) {
-            log.warn("WebhookKeyDaoImpl.createPairKey error", e);
+            log.warn("WebhookKeyDaoImpl.createOrGetPubKey error", e);
             throw new DaoException(e);
         }
-        log.info("Key with party_id = {} added to table", partyId);
-        return keyPair;
+        log.info("Key with party_id = {} added to table. PubKey {}", partyId, pubKey);
+        return pubKey;
     }
 
 
