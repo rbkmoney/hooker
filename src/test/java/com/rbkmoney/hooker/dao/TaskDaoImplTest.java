@@ -1,6 +1,9 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.utils.BuildUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
