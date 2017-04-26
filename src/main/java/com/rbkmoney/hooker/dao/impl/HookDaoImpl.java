@@ -274,7 +274,7 @@ public class HookDaoImpl implements HookDao {
         try {
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(sql, params, keyHolder);
-            pubKey = (String) ((Map) keyHolder.getKeyList().get(0)).values().iterator().next();
+            pubKey = (String) keyHolder.getKeys().get("pub_key");
         } catch (DataAccessException | NullPointerException | ClassCastException e) {
             log.warn("WebhookKeyDaoImpl.createOrGetPubKey error", e);
             throw new DaoException(e);
