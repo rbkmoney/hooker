@@ -51,4 +51,12 @@ public class TaskDaoImplTest  extends AbstractIntegrationTest {
 
     }
 
+    @Test
+    public void removeAll() {
+        taskDao.create(Arrays.asList(messageId));
+        assertEquals(1, taskDao.getAll().size());
+
+        taskDao.removeAll(hookId);
+        assertEquals(0, taskDao.getAll().size());
+    }
 }

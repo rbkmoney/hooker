@@ -2,14 +2,13 @@ package com.rbkmoney.hooker.retry.impl.simple;
 
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
+import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.retry.RetryPolicy;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 
 /**
  * Created by jeckep on 17.04.17.
@@ -24,6 +23,9 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
 
     @Autowired
     HookDao hookDao;
+
+    @Autowired
+    TaskDao taskDao;
 
     private long[] delays = {30, 300, 900, 3600}; //in seconds
 
@@ -40,6 +42,7 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
 
         if (rp.getFailCount() >= delays.length) {
             hookDao.disable(rp.getHookId());
+            taskDao.removeAll(rp.getHookId());
             log.warn("Hook: " + rp.getHookId() + " was disabled according to retry policy.");
         }
     }

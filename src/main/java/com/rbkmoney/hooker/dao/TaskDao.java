@@ -13,6 +13,7 @@ import java.util.Map;
 public interface TaskDao {
     void create(Collection<Long> messageIds);
     void remove(long hookId, long messageId);
+    void removeAll(long hookId);
     List<Task> getAll();
     Map<Long, List<Task>> getScheduled(Collection<Long> excludeHooksIds);
 }
