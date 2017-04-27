@@ -134,13 +134,10 @@ public class HookDaoImpl implements HookDao {
             List<AllHookTablesRow> allHookTablesRows = jdbcTemplate.query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
             if (result == null || result.isEmpty()) {
-                log.warn("Hook with id " + id + " not found.");
+                log.warn("Hook with id {} not found.", id);
                 return null;
             }
-            if (result.size() > 1) {
-                throw new DaoException("Found more than one hook with id " + id);
-            }
-            log.info("getHookById response. " + result.get(0));
+            log.info("getHookById response. {}", result.get(0));
             return result.get(0);
         } catch (NestedRuntimeException e) {
             String message = "Couldn't getHookById for id " + id;
@@ -155,7 +152,7 @@ public class HookDaoImpl implements HookDao {
             return hooks;
         }
         Set<Long> hookIds = new HashSet<>(ids);
-        hooks.stream().forEach(h -> hookIds.remove(h.getId()));
+        hooks.forEach(h -> hookIds.remove(h.getId()));
 
         final String sql =
                 " select w.*, k.*, srp.*" +
@@ -213,7 +210,7 @@ public class HookDaoImpl implements HookDao {
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId));
         } catch (NestedRuntimeException e) {
-            log.warn("Fail to create simple_retry_policy for hook: " + hookId, e);
+            log.warn("Fail to create simple_retry_policy for hook: {}", hookId, e);
             throw new DaoException(e);
         }
     }
@@ -268,7 +265,7 @@ public class HookDaoImpl implements HookDao {
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (NestedRuntimeException e) {
-            log.error("Fail to disable webhook: " + id, e);
+            log.error("Fail to disable webhook: {}", id, e);
             throw new DaoException(e);
         }
         log.debug("Webhook with id = {} disabled", id);
