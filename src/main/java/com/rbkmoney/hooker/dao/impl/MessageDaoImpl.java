@@ -187,6 +187,9 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
 
     private List<Message> getFromCache(Collection<Long> ids) {
         Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS);
-        return ids.stream().map(id -> cache.get(id, Message.class)).filter(Objects::nonNull).collect(Collectors.toList());
+        return ids.stream()
+                .map(id -> cache.get(id, Message.class))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }
