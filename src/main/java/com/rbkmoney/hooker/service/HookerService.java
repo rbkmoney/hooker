@@ -23,23 +23,12 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public List<Webhook> getList(String s) throws TException {
-        List<Hook> hooks;
-        try {
-            hooks = hookDao.getPartyHooks(s);
-        } catch (Exception e) {
-            throw new TException(e);
-        }
-        return HookConverter.convert(hooks);
+        return HookConverter.convert(hookDao.getPartyHooks(s));
     }
 
     @Override
     public Webhook get(long id) throws WebhookNotFound, TException {
-        Hook hook;
-        try {
-            hook = hookDao.getHookById(id);
-        } catch (Exception e) {
-            throw new TException(e);
-        }
+        Hook hook = hookDao.getHookById(id);
         if (hook == null) {
             throw new WebhookNotFound();
         }
@@ -48,23 +37,12 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public Webhook create(WebhookParams webhookParams) throws TException {
-        try {
-            Hook hook = hookDao.create(HookConverter.convert(webhookParams));
-            return HookConverter.convert(hook);
-        } catch (Exception e) {
-            throw new TException(e);
-        }
+        return HookConverter.convert(hookDao.create(HookConverter.convert(webhookParams)));
     }
 
     @Override
     public void delete(long id) throws WebhookNotFound, TException {
-        boolean isDeleted;
-        try {
-            isDeleted = hookDao.delete(id);
-        } catch (Exception e) {
-            throw new TException(e);
-        }
-        if (!isDeleted) {
+        if (!hookDao.delete(id)) {
             throw new WebhookNotFound();
         }
     }

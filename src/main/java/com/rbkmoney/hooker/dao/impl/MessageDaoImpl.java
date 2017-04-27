@@ -14,7 +14,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.NestedRuntimeException;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -153,7 +152,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             }
             messages.addAll(messagesFromDb);
             return messages;
-        }  catch (DataAccessException e) {
+        }  catch (NestedRuntimeException e) {
             log.error("MessageDaoImpl.getByIds error", e);
             throw new DaoException(e);
         }
@@ -164,7 +163,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         final String sql = "DELETE FROM hook.message where invoice_id=:invoice_id";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("invoice_id", invoiceId));
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
@@ -175,7 +174,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         final String sql = "DELETE FROM hook.message where id = :id";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }

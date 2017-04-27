@@ -5,7 +5,7 @@ import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 
@@ -32,7 +32,7 @@ public class SimpleRetryPolicyDaoImpl extends NamedParameterJdbcDaoSupport imple
                     .addValue("last_fail_time", record.getLastFailTime())
                     .addValue("fail_count", record.getFailCount()));
             log.info("Record in table hook_id = "+record.getHookId()+" 'simple_retry_policy' updated.");
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.error("Fail to update simple_retry_policy for hook: " + record.getHookId(), e);
             throw new DaoException(e);
         }

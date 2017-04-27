@@ -5,7 +5,7 @@ import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
@@ -48,7 +48,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("ids", messageIds));
             log.info("Created tasks count : " + updateCount);
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.error("Fail to create tasks for messages messages.", e);
             throw new DaoException(e);
         }
@@ -60,7 +60,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId).addValue("message_id", messageId));
             log.info("Task with hook_id = " + hookId + " messageId = " + messageId + " removed from hook.scheduled_task");
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.error("Fail to delete task by hook_id and message_id", e);
             throw new DaoException(e);
         }
@@ -71,7 +71,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         final String sql = "DELETE FROM hook.scheduled_task where hook_id=:hook_id";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId));
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.error("Fail to delete tasks for hook:" + hookId, e);
             throw new DaoException(e);
         }
@@ -84,7 +84,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
             List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, taskRowMapper);
             log.info("Tasks count: " + tasks.size());
             return tasks;
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.error("Fail to get all tasks from scheduled_task", e);
             throw new DaoException(e);
         }
@@ -105,7 +105,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
                     , taskRowMapper);
             Map<Long, List<Task>> longListMap = splitByHooks(tasks);
             return longListMap;
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.error("Fail to get active tasks from scheduled_task", e);
             throw new DaoException(e);
         }

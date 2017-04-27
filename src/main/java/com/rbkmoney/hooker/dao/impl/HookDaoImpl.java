@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.dao.DataAccessException;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -76,7 +76,7 @@ public class HookDaoImpl implements HookDao {
             List<Hook> result = squashToWebhooks(allHookTablesRows);
             log.info("getPartyHooks response. Hooks: " + result);
             return result;
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             String message = "Couldn't getPartyHooks for partyId " + partyId;
             log.warn(message, e);
             throw new DaoException(message);
@@ -142,7 +142,7 @@ public class HookDaoImpl implements HookDao {
             }
             log.info("getHookById response. " + result.get(0));
             return result.get(0);
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             String message = "Couldn't getHookById for id " + id;
             log.warn(message, e);
             throw new DaoException(message);
@@ -170,7 +170,7 @@ public class HookDaoImpl implements HookDao {
             putToCache(hooksFromDb);
             hooks.addAll(hooksFromDb);
             return hooks;
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             throw new DaoException(e);
         }
 
@@ -200,7 +200,7 @@ public class HookDaoImpl implements HookDao {
             hook.setId(keyHolder.getKey().longValue());
             saveHookFilters(hook.getId(), hook.getFilters());
             addRecordToRetryPolicy(hook.getId());
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.warn("HookDaoImpl.addWebhook error", e);
             throw new DaoException(e);
         }
@@ -212,7 +212,7 @@ public class HookDaoImpl implements HookDao {
         final String sql = "insert into hook.simple_retry_policy(hook_id) VALUES (:hook_id)";
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId));
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.warn("Fail to create simple_retry_policy for hook: " + hookId, e);
             throw new DaoException(e);
         }
@@ -238,7 +238,7 @@ public class HookDaoImpl implements HookDao {
             if (updateCount.length != size) {
                 throw new DaoException("Couldn't insert relation between hook and events.");
             }
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.warn("HookDaoImpl.addWebhookAndEventCodesRow error", e);
             throw new DaoException(e);
         }
@@ -254,7 +254,7 @@ public class HookDaoImpl implements HookDao {
                 " DELETE FROM hook.webhook where id=:id; ";
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.error("HookDaoImpl.delete error", e);
             throw new DaoException(e);
         }
@@ -267,7 +267,7 @@ public class HookDaoImpl implements HookDao {
         final String sql = " UPDATE hook.webhook SET enabled = FALSE where id=:id;";
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
-        } catch (DataAccessException e) {
+        } catch (NestedRuntimeException e) {
             log.error("Fail to disable webhook: " + id, e);
             throw new DaoException(e);
         }
@@ -292,7 +292,7 @@ public class HookDaoImpl implements HookDao {
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(sql, params, keyHolder);
             pubKey = (String) keyHolder.getKeys().get("pub_key");
-        } catch (DataAccessException | NullPointerException | ClassCastException e) {
+        } catch (NestedRuntimeException | NullPointerException | ClassCastException e) {
             log.warn("WebhookKeyDaoImpl.createOrGetPubKey error", e);
             throw new DaoException(e);
         }
