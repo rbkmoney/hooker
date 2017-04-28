@@ -181,8 +181,10 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     }
 
     private void putToCache(Message message){
-        cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS).put(message.getId(), message);
-        cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoiceId(), message);
+        if(message != null) {
+            cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS).put(message.getId(), message);
+            cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoiceId(), message);
+        }
     }
 
     private List<Message> getFromCache(Collection<Long> ids) {
