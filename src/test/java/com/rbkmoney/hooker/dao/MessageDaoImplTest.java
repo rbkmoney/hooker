@@ -3,7 +3,6 @@ package com.rbkmoney.hooker.dao;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,15 +28,15 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     @Autowired
     MessageDao messageDao;
 
+    private static boolean messagesCreated = false;
+
     @Before
     public void setUp() throws Exception {
-        messageDao.create(message("1234", "56678", EventType.INVOICE_CREATED, "status"));
-        messageDao.create(message("1234", "56678", EventType.INVOICE_CREATED, "status"));
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        messageDao.delete("1234");
+        if(!messagesCreated){
+            messageDao.create(message("1234", "56678", EventType.INVOICE_CREATED, "status"));
+            messageDao.create(message("1234", "56678", EventType.INVOICE_CREATED, "status"));
+            messagesCreated = true;
+        }
     }
 
     @Test

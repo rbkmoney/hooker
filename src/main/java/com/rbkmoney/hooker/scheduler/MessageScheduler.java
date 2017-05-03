@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
  */
 
 @Service
-//TODO find appropriate name
 public class MessageScheduler {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -64,7 +63,14 @@ public class MessageScheduler {
         }
 
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
+        int numberOfTasks = numberOfTasks(scheduledTasks.values());
+        if(numberOfTasks > 0){
+            log.info("Number of not done tasks(message->hook): {}", numberOfTasks);
+        }
+
         final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+        processedHooks.addAll(healthyHooks.keySet());
+
         final Map<Long, Message> messages = loadMessages(getMessageIds(scheduledTasks, healthyHooks.keySet()))
                 .stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
 
@@ -82,11 +88,6 @@ public class MessageScheduler {
         }
     }
 
-    //worker should invoke this method when it starts process
-    public void start(Hook hook) {
-        processedHooks.add(hook.getId());
-    }
-
     //worker should invoke this method when it is done with scheduled messages for hookId
     public void done(Hook hook) {
         processedHooks.remove(hook.getId());
@@ -101,10 +102,11 @@ public class MessageScheduler {
 
     //worker should invoke this method when it is fail to send message to hookId
     public void fail(Hook hook) {
+        processedHooks.remove(hook.getId());
+
         log.warn("Hook: " + hook.getId() + " failed.");
         retryPoliciesService.getRetryPolicyByType(hook.getRetryPolicyType())
                 .onFail(hook.getRetryPolicyRecord());
-        processedHooks.remove(hook.getId());
     }
 
     private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeHooksIds) {
@@ -124,6 +126,14 @@ public class MessageScheduler {
             }
         }
         return messageIds;
+    }
+
+    private int numberOfTasks(Collection<List<Task>> tasks){
+        int count = 0;
+        for(List<Task> taskList: tasks){
+            count += taskList.size();
+        }
+        return count;
     }
 
     private List<Message> loadMessages(Collection<Long> messageIds) {

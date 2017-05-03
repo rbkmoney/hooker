@@ -33,7 +33,6 @@ public class MessageSender implements Runnable {
     @Override
     public void run() {
         try {
-            workerTaskScheduler.start(hook);
             for (Message message : messages) {
                 final String messageJson = MessageJson.buildMessageJson(message);
                 final String signature = signer.sign(messageJson, hook.getPrivKey());

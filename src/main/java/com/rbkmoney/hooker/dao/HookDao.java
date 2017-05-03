@@ -12,7 +12,7 @@ public interface HookDao {
     List<Hook> getPartyHooks(String partyId);
     Hook getHookById(long id);
     Hook create(Hook hook);
-    boolean delete(long id);
+    void delete(long id);
     void disable(long id);
     List<Hook> getWithPolicies(Collection<Long> ids);
 }

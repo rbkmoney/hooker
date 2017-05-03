@@ -11,7 +11,7 @@ import java.util.Map;
  * Created by jeckep on 13.04.17.
  */
 public interface TaskDao {
-    void create(Collection<Long> messageIds);
+    void create(long messageId);
     void remove(long hookId, long messageId);
     void removeAll(long hookId);
     List<Task> getAll();

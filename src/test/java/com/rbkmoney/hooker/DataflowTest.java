@@ -63,11 +63,13 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         //start mock web server
         //create hooks
-        baseServerUrl = webserver(dispatcher());
-        log.info("Mock server url: " + baseServerUrl);
+        if (baseServerUrl == null) {
+            baseServerUrl = webserver(dispatcher());
+            log.info("Mock server url: " + baseServerUrl);
 
-        hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
-        hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
+            hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
+            hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
+        }
     }
 
 

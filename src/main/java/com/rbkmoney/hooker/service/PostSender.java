@@ -25,7 +25,7 @@ public class PostSender {
     }
 
     public int doPost(String url, String paramsAsString, String signature) throws IOException {
-        log.info("WebhookHttpPostSender.doPost start sending webhook to merchant. Url " + url);
+        log.debug("Sending message to hook: {}", url);
         log.debug("Body: "+paramsAsString);
         RequestBody body = RequestBody.create(JSON, paramsAsString);
         final Request request = new Request.Builder()
@@ -35,7 +35,7 @@ public class PostSender {
                 .build();
 
         Response response = httpClient.newCall(request).execute();
-        log.info("WebhookHttpPostSender.doPost webhook send with code {}; body: {}", +response.code(), response.body().string());
+        log.debug("Response from hook:  code {}; body: {}", +response.code(), response.body().string());
         return response.code();
     }
 }

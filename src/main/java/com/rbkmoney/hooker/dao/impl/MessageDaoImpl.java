@@ -74,7 +74,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         } catch (EmptyResultDataAccessException e) {
             log.warn("Message with invoice id "+invoiceId+" not exist!");
         } catch (NestedRuntimeException e) {
-            log.warn("MessageDaoImpl.getAny error", e);
+            log.error("MessageDaoImpl.getAny error", e);
             throw new DaoException(e);
         }
 
@@ -110,9 +110,11 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
-            // create tasks
-            taskDao.create(Arrays.asList(keyHolder.getKey().longValue()));
             message.setId(keyHolder.getKey().longValue());
+            log.debug("Message {} save to db.", message.getId());
+
+            // create tasks
+            taskDao.create(message.getId());
             putToCache(message);
             return message;
         } catch (NestedRuntimeException e) {
@@ -154,17 +156,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             return messages;
         }  catch (NestedRuntimeException e) {
             log.error("MessageDaoImpl.getByIds error", e);
-            throw new DaoException(e);
-        }
-    }
-
-    @Override
-    public void delete(String invoiceId) throws DaoException {
-        final String sql = "DELETE FROM hook.message where invoice_id=:invoice_id";
-        try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("invoice_id", invoiceId));
-        } catch (NestedRuntimeException e) {
-            log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
     }

@@ -30,24 +30,21 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
             new Task(rs.getLong("hook_id"), rs.getLong("message_id"));
 
     @Override
-    public void create(Collection<Long> messageIds) {
-        if (messageIds == null || messageIds.size() == 0) {
-            return;
-        }
+    public void create(long messageId) {
         final String sql =
                 " insert into hook.scheduled_task(message_id, hook_id)" +
                 " select m.id, w.id " +
                 " from hook.message m" +
                 " join hook.webhook w on m.party_id = w.party_id and w.enabled" +
                 " join hook.webhook_to_events wte on wte.hook_id = w.id" +
-                " where m.id in (:ids) " +
+                " where m.id = :id " +
                 " and m.event_type = wte.event_type " +
                 " and (wte.invoice_shop_id is null or m.shop_id = wte.invoice_shop_id) " +
                 " and (m.status = COALESCE(wte.invoice_status, wte.invoice_payment_status) or (wte.invoice_status is null and wte.invoice_payment_status is null))" +
                 " ON CONFLICT (message_id, hook_id) DO NOTHING";
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("ids", messageIds));
-            log.info("Created tasks count : " + updateCount);
+            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId));
+            log.debug("Created tasks count : " + updateCount);
         } catch (NestedRuntimeException e) {
             log.error("Fail to create tasks for messages messages.", e);
             throw new DaoException(e);
@@ -59,7 +56,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         final String sql = "DELETE FROM hook.scheduled_task where hook_id=:hook_id and message_id=:message_id";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId).addValue("message_id", messageId));
-            log.info("Task with hook_id = " + hookId + " messageId = " + messageId + " removed from hook.scheduled_task");
+            log.debug("Task with hook_id = " + hookId + " messageId = " + messageId + " removed from hook.scheduled_task");
         } catch (NestedRuntimeException e) {
             log.error("Fail to delete task by hook_id and message_id", e);
             throw new DaoException(e);
@@ -82,7 +79,7 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
         final String sql = "SELECT * FROM hook.scheduled_task";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, taskRowMapper);
-            log.info("Tasks count: " + tasks.size());
+            log.debug("Tasks count: " + tasks.size());
             return tasks;
         } catch (NestedRuntimeException e) {
             log.error("Fail to get all tasks from scheduled_task", e);

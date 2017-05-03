@@ -57,7 +57,7 @@ public class HookDaoImpl implements HookDao {
 
     @Override
     public List<Hook> getPartyHooks(String partyId) {
-        log.info("getPartyHooks request. PartyId = {}", partyId);
+        log.debug("getPartyHooks request. PartyId = {}", partyId);
         final String sql =
                 " select w.*, k.pub_key, wte.* " +
                         " from hook.webhook w " +
@@ -74,11 +74,11 @@ public class HookDaoImpl implements HookDao {
         try {
             List<AllHookTablesRow> allHookTablesRows = jdbcTemplate.query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
-            log.info("getPartyHooks response. Hooks: " + result);
+            log.debug("getPartyHooks response. Hooks: " + result);
             return result;
         } catch (NestedRuntimeException e) {
             String message = "Couldn't getPartyHooks for partyId " + partyId;
-            log.warn(message, e);
+            log.error(message, e);
             throw new DaoException(message);
         }
     }
@@ -118,7 +118,6 @@ public class HookDaoImpl implements HookDao {
 
     @Override
     public Hook getHookById(long id) {
-        log.info("getHookById request. Id = {}", id);
         final String sql = "select w.*, k.pub_key, wte.* " +
                 "from hook.webhook w " +
                 "join hook.party_key k " +
@@ -134,15 +133,12 @@ public class HookDaoImpl implements HookDao {
             List<AllHookTablesRow> allHookTablesRows = jdbcTemplate.query(sql, params, allHookTablesRowRowMapper);
             List<Hook> result = squashToWebhooks(allHookTablesRows);
             if (result == null || result.isEmpty()) {
-                log.warn("Hook with id {} not found.", id);
                 return null;
             }
-            log.info("getHookById response. {}", result.get(0));
             return result.get(0);
         } catch (NestedRuntimeException e) {
-            String message = "Couldn't getHookById for id " + id;
-            log.warn(message, e);
-            throw new DaoException(message);
+            log.error("Fail to get hook: " + id, e);
+            throw new DaoException(e);
         }
     }
 
@@ -173,8 +169,6 @@ public class HookDaoImpl implements HookDao {
 
     }
 
-
-
     @Override
     @Transactional
     public Hook create(Hook hook) {
@@ -198,10 +192,10 @@ public class HookDaoImpl implements HookDao {
             saveHookFilters(hook.getId(), hook.getFilters());
             addRecordToRetryPolicy(hook.getId());
         } catch (NestedRuntimeException e) {
-            log.warn("HookDaoImpl.addWebhook error", e);
+            log.error("Fail to create hook: " + hook, e);
             throw new DaoException(e);
         }
-        log.info("Webhook with id = {} added to table", hook.getId());
+        log.debug("Webhook with id = {} created.", hook.getId());
         return hook;
     }
 
@@ -210,7 +204,7 @@ public class HookDaoImpl implements HookDao {
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId));
         } catch (NestedRuntimeException e) {
-            log.warn("Fail to create simple_retry_policy for hook: {}", hookId, e);
+            log.error("Fail to create simple_retry_policy for hook: " + hookId, e);
             throw new DaoException(e);
         }
     }
@@ -236,15 +230,14 @@ public class HookDaoImpl implements HookDao {
                 throw new DaoException("Couldn't insert relation between hook and events.");
             }
         } catch (NestedRuntimeException e) {
-            log.warn("HookDaoImpl.addWebhookAndEventCodesRow error", e);
+            log.error("Fail to save hook filters.", e);
             throw new DaoException(e);
         }
     }
 
     @Override
     @Transactional
-    public boolean delete(long id) {
-        log.info("Start deleting webhook info with id = {}", id);
+    public void delete(long id) {
         final String sql =
                 " DELETE FROM hook.simple_retry_policy where hook_id=:id;" +
                 " DELETE FROM hook.webhook_to_events where hook_id=:id;" +
@@ -252,11 +245,8 @@ public class HookDaoImpl implements HookDao {
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (NestedRuntimeException e) {
-            log.error("HookDaoImpl.delete error", e);
             throw new DaoException(e);
         }
-        log.info("Webhook with id = {} deleted from table", id);
-        return true;
     }
 
     @Override
@@ -268,7 +258,6 @@ public class HookDaoImpl implements HookDao {
             log.error("Fail to disable webhook: {}", id, e);
             throw new DaoException(e);
         }
-        log.debug("Webhook with id = {} disabled", id);
     }
 
     @Autowired
@@ -290,10 +279,9 @@ public class HookDaoImpl implements HookDao {
             jdbcTemplate.update(sql, params, keyHolder);
             pubKey = (String) keyHolder.getKeys().get("pub_key");
         } catch (NestedRuntimeException | NullPointerException | ClassCastException e) {
-            log.warn("WebhookKeyDaoImpl.createOrGetPubKey error", e);
+            log.error("Fail to create security keys for party: " + partyId,  e);
             throw new DaoException(e);
         }
-        log.info("Key with party_id = {} added to table hook.party_key.", partyId);
         return pubKey;
     }
 
