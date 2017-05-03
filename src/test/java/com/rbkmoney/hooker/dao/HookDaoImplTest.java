@@ -74,6 +74,16 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testConstraint(){
+        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, 34, null, "failed"));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, 34, null, "pending"));
+        WebhookParams webhookParams  = new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
+        Hook hook = hookDao.create(HookConverter.convert(webhookParams));
+        ids.add(hook.getId());
+    }
+
+    @Test
     public void getPartyWebhooks() throws Exception {
         assertEquals(hookDao.getPartyHooks("123").size(), 2);
         Assert.assertTrue(hookDao.getPartyHooks("88888").isEmpty());
