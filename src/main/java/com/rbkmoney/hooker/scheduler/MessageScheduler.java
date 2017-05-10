@@ -63,15 +63,18 @@ public class MessageScheduler {
         }
 
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
-        int numberOfTasks = numberOfTasks(scheduledTasks.values());
+        final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+
+        //ready task means - not delayed by failed hook
+        int numberOfTasks = numberOfReadyTasks(scheduledTasks, healthyHooks.keySet());
         if(numberOfTasks > 0){
-            log.info("Number of not done tasks(message->hook): {}", numberOfTasks);
+            log.info("Number of not done ready tasks(message->hook): {}", numberOfTasks);
         }
 
-        final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
         processedHooks.addAll(healthyHooks.keySet());
 
-        final Map<Long, Message> messages = loadMessages(getMessageIds(scheduledTasks, healthyHooks.keySet()));
+        final Set<Long> messageIdsToSend = getMessageIdsFilteredByHooks(scheduledTasks, healthyHooks.keySet());
+        final Map<Long, Message> messages = loadMessages(messageIdsToSend);
 
         for (long hookId : scheduledTasks.keySet()) {
             if (healthyHooks.containsKey(hookId)) {
@@ -116,7 +119,7 @@ public class MessageScheduler {
         return retryPoliciesService.filter(hooksWaitingMessages);
     }
 
-    private Set<Long> getMessageIds(Map<Long, List<Task>> scheduledTasks, Collection<Long> liveHookIds) {
+    private Set<Long> getMessageIdsFilteredByHooks(Map<Long, List<Task>> scheduledTasks, Collection<Long> liveHookIds) {
         final Set<Long> messageIds = new HashSet<>();
         for (long hookId : liveHookIds) {
             for (Task t : scheduledTasks.get(hookId)) {
@@ -126,10 +129,10 @@ public class MessageScheduler {
         return messageIds;
     }
 
-    private int numberOfTasks(Collection<List<Task>> tasks){
+    private int numberOfReadyTasks(Map<Long, List<Task>> tasks, Collection<Long> liveHookIds){
         int count = 0;
-        for(List<Task> taskList: tasks){
-            count += taskList.size();
+        for(long hookId: liveHookIds){
+            count += tasks.get(hookId).size();
         }
         return count;
     }
