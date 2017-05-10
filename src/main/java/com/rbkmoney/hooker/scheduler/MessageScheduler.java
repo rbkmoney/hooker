@@ -71,9 +71,7 @@ public class MessageScheduler {
         final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
         processedHooks.addAll(healthyHooks.keySet());
 
-        final Map<Long, Message> messages = loadMessages(getMessageIds(scheduledTasks, healthyHooks.keySet()))
-                .stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
-
+        final Map<Long, Message> messages = loadMessages(getMessageIds(scheduledTasks, healthyHooks.keySet()));
 
         for (long hookId : scheduledTasks.keySet()) {
             if (healthyHooks.containsKey(hookId)) {
@@ -136,7 +134,12 @@ public class MessageScheduler {
         return count;
     }
 
-    private List<Message> loadMessages(Collection<Long> messageIds) {
-        return messageDao.getBy(messageIds);
+    private Map<Long, Message> loadMessages(Collection<Long> messageIds) {
+        List<Message> messages =  messageDao.getBy(messageIds);
+        Map<Long, Message> map = new HashMap<>();
+        for(Message message: messages){
+            map.put(message.getId(), message);
+        }
+        return map;
     }
 }

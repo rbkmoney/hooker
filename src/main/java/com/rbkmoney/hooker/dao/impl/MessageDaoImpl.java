@@ -146,7 +146,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             }
         }
 
-        final String sql = "SELECT * FROM hook.message WHERE id in (:ids)";
+        final String sql = "SELECT DISTINCT * FROM hook.message WHERE id in (:ids)";
         try {
             List<Message> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", ids), messageRowMapper);
             for(Message message: messagesFromDb){
