@@ -76,19 +76,19 @@ public class MessageScheduler {
         final Set<Long> messageIdsToSend = getMessageIdsFilteredByHooks(scheduledTasks, healthyHooks.keySet());
         final Map<Long, Message> messagesMap = loadMessages(messageIdsToSend);
 
-        for (long hookId : scheduledTasks.keySet()) {
-            if (healthyHooks.containsKey(hookId)) {
-                List<Task> tasks = scheduledTasks.get(hookId);
-                List<Message> messagesForHook = new ArrayList<>();
-                for (Task task : tasks) {
-                    Message e = messagesMap.get(task.getMessageId());
-                    if (e != null) {
-                        messagesForHook.add(e);
-                    }
+        for (long hookId : healthyHooks.keySet()) {
+            List<Task> tasks = scheduledTasks.get(hookId);
+            List<Message> messagesForHook = new ArrayList<>();
+            for (Task task : tasks) {
+                Message e = messagesMap.get(task.getMessageId());
+                if (e != null) {
+                    messagesForHook.add(e);
+                } else {
+                    log.error("Message with id {} couldn't be null", task.getMessageId());
                 }
-                MessageSender messageSender = new MessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this, signer, postSender);
-                executorService.submit(messageSender);
             }
+            MessageSender messageSender = new MessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this, signer, postSender);
+            executorService.submit(messageSender);
         }
     }
 
