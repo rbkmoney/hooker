@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.model;
 
 import com.rbkmoney.damsel.base.Content;
+import org.springframework.beans.BeanUtils;
 
 /**
  * Created by inalarsanukaev on 07.04.17.
@@ -163,8 +164,24 @@ public class Message {
         return id == message.id;
     }
 
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", eventId=" + eventId +
+                ", eventType=" + eventType +
+                '}';
+    }
+
     @Override
     public int hashCode() {
         return (int) (id ^ (id >>> 32));
+    }
+
+    public Message copy(){
+        Message message = new Message();
+        BeanUtils.copyProperties(this, message);
+        return message;
     }
 }

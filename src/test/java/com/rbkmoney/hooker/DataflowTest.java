@@ -72,6 +72,17 @@ public class DataflowTest extends AbstractIntegrationTest {
         }
     }
 
+    @Test
+    public void testCache(){
+        final String invoceId = "asgsdhghdhtfugny78989";
+        final String partyId = new Random().nextInt() + "";
+        Message message1 = messageDao.create(message(invoceId, partyId, EventType.INVOICE_CREATED, "status"));
+        Message message2 = messageDao.getAny(invoceId);
+        Message message3 = messageDao.getAny(invoceId);
+        assertTrue(message1 != message2);
+        assertTrue(message2 != message3);
+        assertTrue(message1 != message3);
+    }
 
     @Test
     public void testMessageSend() throws InterruptedException {

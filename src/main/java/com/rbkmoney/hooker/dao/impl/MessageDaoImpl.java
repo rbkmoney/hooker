@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -20,11 +19,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.sql.DataSource;
 import java.util.*;
-import java.util.stream.Collectors;
-
 
 public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
@@ -64,8 +60,11 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     }
 
     @Override
-    @Cacheable(CacheConfiguration.MESSAGES_BY_INVOICE)
     public Message getAny(String invoiceId) throws DaoException {
+        Message message = getFromCache(invoiceId);
+        if (message != null) {
+            return message.copy();
+        }
         Message result = null;
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id LIMIT 1";
         MapSqlParameterSource params = new MapSqlParameterSource("invoice_id", invoiceId);
@@ -136,19 +135,19 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     public List<Message> getBy(Collection<Long> messageIds) {
         List<Message> messages = getFromCache(messageIds);
 
-        Set<Long> ids = new HashSet<>();
-        if(messages.size() == messageIds.size()){
+        if (messages.size() == messageIds.size()) {
             return messages;
-        }else{
-            ids.addAll(messageIds);
-            for(Message message: messages){
-                ids.remove(message.getId());
-            }
+        }
+
+        Set<Long> ids = new HashSet<>(messageIds);
+        for (Message message : messages) {
+            ids.remove(message.getId());
         }
 
         final String sql = "SELECT DISTINCT * FROM hook.message WHERE id in (:ids)";
         try {
             List<Message> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", ids), messageRowMapper);
+            log.debug("messagesFromDb {}", messagesFromDb);
             for(Message message: messagesFromDb){
                 putToCache(message);
             }
@@ -178,11 +177,20 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         }
     }
 
+    private Message getFromCache(String invoiceId) {
+        Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE);
+        return cache.get(invoiceId, Message.class);
+    }
+
     private List<Message> getFromCache(Collection<Long> ids) {
         Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS);
-        return ids.stream()
-                .map(id -> cache.get(id, Message.class))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<Message> messages = new ArrayList<>();
+        for (Long id : ids) {
+            Message e = cache.get(id, Message.class);
+            if (e != null) {
+                messages.add(e);
+            }
+        }
+        return messages;
     }
 }
