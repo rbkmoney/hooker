@@ -20,6 +20,8 @@ public class BuildUtils {
         invoice.setCreatedAt("12.12.2008");
         if (message.isInvoice()) {
             invoice.setStatus(status);
+        } else {
+            invoice.setStatus("unpaid");
         }
         invoice.setDueDate("12.12.2008");
         invoice.setAmount(12235);
