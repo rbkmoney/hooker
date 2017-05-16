@@ -13,7 +13,7 @@ import java.util.Base64;
 public class AsymSigner implements Signer {
     public static final String KEY_ALGORITHM = "RSA";
     public static final String HASH_ALGORITHM = "SHA256withRSA";
-    public static final int KEYSIZE = 1024;
+    public static final int KEYSIZE = 2048;
 
     private KeyFactory keyFactory;
     private Signature sig;
