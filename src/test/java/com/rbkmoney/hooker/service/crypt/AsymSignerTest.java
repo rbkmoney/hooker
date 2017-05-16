@@ -20,9 +20,9 @@ public class AsymSignerTest {
     public void test() throws Exception {
         AsymSigner asymSigner = new AsymSigner();
         KeyPair keyPair = asymSigner.generateKeys();
-        String data = "{\"invoice_id\":\"2Dbs4d4Dw\",\"amount\":120000,\"currency\":\"RUB\",\"created_at\":\"2011-07-01T09:00:00Z\",\"context\":{\"type\":null,\"data\":\"eyJvcmRlcl9pZCI6Im15X29yZGVyX2lkIn0=\",\"setType\":false,\"setData\":true},\"status\":\"PAID\"}";
+        String data = "{\"eventID\":27,\"occuredAt\":\"2017-05-16T13:49:34.935099Z\",\"topic\":\"InvoicesTopic\",\"eventType\":\"PaymentCaptured\",\"invoice\":{\"id\":\"qXMiygTqb2\",\"shopID\":1,\"createdAt\":\"2017-05-16T13:49:32.753723Z\",\"status\":\"unpaid\",\"reason\":null,\"dueDate\":\"2017-05-16T13:59:32Z\",\"amount\":100000,\"currency\":\"RUB\",\"metadata\":{\"type\":\"application/json\",\"data\":\"eyJpbnZvaWNlX2R1bW15X2NvbnRleHQiOiJ0ZXN0X3ZhbHVlIn0=\"},\"product\":\"test_product\",\"description\":\"test_invoice_description\"},\"payment\":{\"id\":\"1\",\"createdAt\":\"2017-05-16T13:49:33.182195Z\",\"status\":\"captured\",\"error\":null,\"amount\":100000,\"currency\":\"RUB\",\"paymentToolToken\":\"5Gz2nhE1eleFGBAcGe9SrA\",\"paymentSession\":\"2nTYVgk6h85O7vIVV9j4pA\",\"contactInfo\":{\"email\":\"bla@bla.ru\",\"phoneNumber\":null},\"ip\":\"10.100.2.1\",\"fingerprint\":\"test fingerprint\"}}";
         String sign = asymSigner.sign(data, keyPair.getPrivKey());
-        byte[] sigBytes = Base64.getDecoder().decode(sign);
+        byte[] sigBytes = Base64.getUrlDecoder().decode(sign);
 
         byte[] publicBytes = Base64.getDecoder().decode(keyPair.getPublKey());
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);

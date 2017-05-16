@@ -17,7 +17,7 @@
 ```
 curl -v -X POST 
 -H "Content-Type: application/json; charset=utf-8" 
--H "Content-Signature: alg=RS256; digest=eTvz+ddLwEkTQtb3U9bbouDtH68A95SXEuF0Yey6NwszQ8ihADOaqmNqWsuOJ3SHU7Lltl6Ji0fCnWFE/x1WolDbXnIpzdtOBFkrdlKL7iQTUq5QtC5TNGRKIpd82zS2lMwEvOtJ7J7R7+WgtSTjBVNN/6wKSIqB4+GEI8AYowY=" 
+-H "Content-Signature: alg=RS256; digest=QydtAwZ8jmmrX1wP87vAJIXVBiRZe3Zo5xRYnzMQIsDxxsVn26XGMBeD4op8_9LmXIAirYWd53gfX638ZR83D2pTSCXkNpzHyqiyzhPlH2asaC9qiiOOWaQ-kHk9xFlOcMa1Qtt0BaVst-tbGDsFhgjl6tvGuN4JHRq5khzl_iIJ_ZQniEuzGOYReWn8wCLmaspX0MPyACMTo8HDwyihOHB1_RQBliBFYyvw523xvSQ6WxWYjYhFsjglIg1wdKUMyaiScw0kmKm53OdxDAnjl4MPQmtryuANjbklN8_EatOrQAqGwRUp1ayR_3WMlayhpxaEHlG1sAHQaaO3ulI35g==" 
 -d '{"eventID":27,"occuredAt":"2017-05-16T13:49:34.935099Z","topic":"InvoicesTopic","eventType":"PaymentCaptured","invoice":{"id":"qXMiygTqb2","shopID":1,"createdAt":"2017-05-16T13:49:32.753723Z","status":"unpaid","reason":null,"dueDate":"2017-05-16T13:59:32Z","amount":100000,"currency":"RUB","metadata":{"type":"application/json","data":"eyJpbnZvaWNlX2R1bW15X2NvbnRleHQiOiJ0ZXN0X3ZhbHVlIn0="},"product":"test_product","description":"test_invoice_description"},"payment":{"id":"1","createdAt":"2017-05-16T13:49:33.182195Z","status":"captured","error":null,"amount":100000,"currency":"RUB","paymentToolToken":"5Gz2nhE1eleFGBAcGe9SrA","paymentSession":"2nTYVgk6h85O7vIVV9j4pA","contactInfo":{"email":"bla@bla.ru","phoneNumber":null},"ip":"10.100.2.1","fingerprint":"test fingerprint"}}
 ' https://{host}:{port}/{path}
 ```
