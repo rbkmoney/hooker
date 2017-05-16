@@ -41,7 +41,7 @@ public class MessageSender implements Runnable {
                     log.warn("Wrong status code " + statusCode + " from merchant. Message id = " + message.getId());
                     throw new PostRequestException("Internal server error for message id = " + message.getId());
                 }
-                log.info("Message: " + message.getId() + " is sent to hook: " + hook.getId());
+                log.info("{} is sent to {}", message, hook);
                 taskDao.remove(hook.getId(), message.getId()); //required after message is sent
             }
             workerTaskScheduler.done(hook); // required after all messages processed

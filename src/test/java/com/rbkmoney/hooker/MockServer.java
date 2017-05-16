@@ -42,7 +42,7 @@ public class MockServer {
                     e.printStackTrace();
                 }
                 log.info("\nRequest: " + request.getRequestLine() + "\nBody: " + byteArrayOutputStream.toString());
-                return new MockResponse().setBody("xyi").setResponseCode(402);
+                return new MockResponse().setBody("xyi").setResponseCode(200);
             }
         };
         // Create a MockWebServer. These are lean enough that you can create a new

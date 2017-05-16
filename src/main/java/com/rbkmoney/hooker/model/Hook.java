@@ -33,7 +33,6 @@ public class Hook {
                 "id=" + id +
                 ", partyId='" + partyId + '\'' +
                 ", url='" + url + '\'' +
-                ", enabled=" + enabled +
                 '}';
     }
 }

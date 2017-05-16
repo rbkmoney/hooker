@@ -56,6 +56,17 @@ public class Message {
     }
 
     @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", eventId=" + eventId +
+                ", eventTime='" + eventTime + '\'' +
+                ", invoiceId=" + invoice.getId() +
+                (isPayment() ? ", paymentId=" + payment.getId() : "") +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return (int) (id ^ (id >>> 32));
     }
