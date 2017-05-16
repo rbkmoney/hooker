@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import org.junit.Before;
@@ -33,8 +34,8 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         if(!messagesCreated){
-            messageDao.create(message("1234", "56678", EventType.INVOICE_CREATED, "status"));
-            messageDao.create(message("1234", "56678", EventType.INVOICE_CREATED, "status"));
+            messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
+            messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
             messagesCreated = true;
         }
     }
@@ -59,7 +60,7 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void get() throws Exception {
         Message message = messageDao.getAny("1234");
-        assertEquals(message.getAmount(), 12235);
+        assertEquals(message.getInvoice().getAmount(), 12235);
 
         assertEquals(1, messageDao.getBy(Arrays.asList(message.getId())).size());
     }

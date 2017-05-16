@@ -25,7 +25,7 @@ public class EventStockHandler implements EventHandler<StockEvent> {
                 try {
                     pollingEventHandler.handle(stockEvent);
                 } catch (PollingException e) {
-                    log.error("Error when poller handling", e);
+                    log.error("PaymentStatusError when poller handling", e);
                     //TODO what should I do?
                 }
                 break;

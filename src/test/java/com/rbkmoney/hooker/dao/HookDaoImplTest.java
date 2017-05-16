@@ -93,7 +93,6 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
     public void getWebhookById() throws Exception {
         List<Hook> list = hookDao.getPartyHooks("123");
         for (Hook w : list) {
-            System.out.println(w);
             Assert.assertNotNull(hookDao.getHookById(w.getId()));
         }
     }

@@ -5,15 +5,17 @@ import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Hook;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -76,7 +78,7 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void testCache(){
         final String invoceId = "asgsdhghdhtfugny78989";
         final String partyId = new Random().nextInt() + "";
-        Message message1 = messageDao.create(message(invoceId, partyId, EventType.INVOICE_CREATED, "status"));
+        Message message1 = messageDao.create(message(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status"));
         Message message2 = messageDao.getAny(invoceId);
         Message message3 = messageDao.getAny(invoceId);
         assertTrue(message1 != message2);
@@ -87,12 +89,12 @@ public class DataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<Message> sourceMessages = new ArrayList<>();
-        sourceMessages.add(messageDao.create(message("1", "partyId1", EventType.INVOICE_CREATED, "status")));
-        sourceMessages.add(messageDao.create(message("2", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status")));
-        sourceMessages.add(messageDao.create(message("3", "partyId1", EventType.INVOICE_CREATED, "status")));
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_CREATED, "status")));
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"2", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status")));
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status")));
 
-        sourceMessages.add(messageDao.create(message("4", "qwe", EventType.INVOICE_CREATED, "status")));
-        sourceMessages.add(messageDao.create(message("5", "qwe", EventType.INVOICE_CREATED, "status")));
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"4", "qwe", EventType.INVOICE_CREATED, "status")));
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"5", "qwe", EventType.INVOICE_CREATED, "status")));
 
         List<MockMessage> hook1 = new ArrayList<>();
         List<MockMessage> hook2 = new ArrayList<>();
@@ -100,15 +102,17 @@ public class DataflowTest extends AbstractIntegrationTest {
         for (int i = 0; i < 2; i++) {
             hook1.add(hook1Queue.poll(1, TimeUnit.SECONDS));
         }
-        assertEquals(sourceMessages.get(0).getInvoiceId(), hook1.get(0).getPayload().getInvoiceId());
-        assertEquals(sourceMessages.get(2).getInvoiceId(), hook1.get(1).getPayload().getInvoiceId());
+        Assert.assertNotNull(hook1.get(0));
+        Assert.assertNotNull(hook1.get(1));
+        assertEquals(sourceMessages.get(0).getInvoice().getId(), hook1.get(0).getInvoice().getId());
+        assertEquals(sourceMessages.get(2).getInvoice().getId(), hook1.get(1).getInvoice().getId());
 
 
         for (int i = 0; i < 3; i++) {
             hook2.add(hook2Queue.poll(1, TimeUnit.SECONDS));
         }
         for (int i = 0; i < 3; i++) {
-            assertEquals(sourceMessages.get(i).getInvoiceId(), hook2.get(i).getPayload().getInvoiceId());
+            assertEquals(sourceMessages.get(i).getInvoice().getId(), hook2.get(i).getInvoice().getId());
         }
 
         assertTrue(hook1Queue.isEmpty());
@@ -125,8 +129,8 @@ public class DataflowTest extends AbstractIntegrationTest {
         Hook hook = hookDao.create(hook(partyId, "http://" + baseServerUrl + BROKEN_HOOK, EventType.INVOICE_CREATED));
         simpleRetryPolicyDao.update(new SimpleRetryPolicyRecord(hook.getId(), 3, 0));
 
-        Message message = messageDao.create(message(invoceId, partyId, EventType.INVOICE_CREATED, "status"));
-        assertEquals(message.getInvoiceId(), hookBrokenQueue.poll(1, TimeUnit.SECONDS).getPayload().getInvoiceId());
+        Message message = messageDao.create(message(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status"));
+        assertEquals(message.getInvoice().getId(), hookBrokenQueue.poll(1, TimeUnit.SECONDS).getInvoice().getId());
 
         Thread.sleep(1000);
 
@@ -218,33 +222,14 @@ public class DataflowTest extends AbstractIntegrationTest {
 
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     private static class MockMessage {
-        private long eventId;
-        private String eventTime;
+        private long eventID;
+        private String occuredAt;
+        private String topic;
         private String eventType;
-        private MockPayload payload;
+        private Invoice invoice;
+        private Payment payment;
     }
-
-    @Data
-    private static class MockPayload {
-        private String payloadType;
-        private long amount;
-        private String createdAt;
-        private String currency;
-        private String invoiceId;
-        private Content metadata;
-        private int shopId;
-        private String partyId;
-        private String status;
-        private String product;
-        private String description;
-        private String paymentId;
-    }
-
-    @Data
-    private static class Content {
-        public String type;
-        public byte[] data;
-    }
-
 }

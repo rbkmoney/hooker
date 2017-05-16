@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl;
 
+import com.rbkmoney.damsel.domain.InvoiceStatus;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.EventType;
@@ -30,7 +31,13 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
 
     @Override
     protected void modifyMessage(Event event, Message message) {
-        message.setStatus(event.getPayload().getInvoiceEvent().getInvoiceStatusChanged().getStatus().getSetField().getFieldName());
+        InvoiceStatus statusOrigin = event.getPayload().getInvoiceEvent().getInvoiceStatusChanged().getStatus();
+        message.getInvoice().setStatus(statusOrigin.getSetField().getFieldName());
+        if (statusOrigin.isSetCancelled()) {
+            message.getInvoice().setReason(statusOrigin.getCancelled().getDetails());
+        } else if (statusOrigin.isSetFulfilled()) {
+            message.getInvoice().setReason(statusOrigin.getFulfilled().getDetails());
+        }
         message.setType(INVOICE);
         message.setEventType(eventType);
     }

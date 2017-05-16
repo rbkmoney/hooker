@@ -1,10 +1,12 @@
 package com.rbkmoney.hooker.handler.poller.impl;
 
+import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
 import com.rbkmoney.damsel.payment_processing.Event;
-import com.rbkmoney.damsel.payment_processing.InvoicePaymentStatusChanged;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.PaymentStatusError;
 import com.rbkmoney.thrift.filter.Filter;
 import com.rbkmoney.thrift.filter.PathConditionFilter;
 import com.rbkmoney.thrift.filter.rule.PathConditionRule;
@@ -30,10 +32,12 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
 
     @Override
     protected void modifyMessage(Event event, Message message) {
-        InvoicePaymentStatusChanged payment = event.getPayload().getInvoiceEvent().getInvoicePaymentEvent().getInvoicePaymentStatusChanged();
-        message.setStatus(payment.getStatus().getSetField().getFieldName());
-        message.setType(PAYMENT);
-        message.setPaymentId(payment.getPaymentId());
+        InvoicePaymentStatus paymentOriginStatus = event.getPayload().getInvoiceEvent().getInvoicePaymentEvent().getInvoicePaymentStatusChanged().getStatus();
+        Payment payment = message.getPayment();
+        payment.setStatus(paymentOriginStatus.getSetField().getFieldName());
+        if (paymentOriginStatus.isSetFailed()) {
+            payment.setError(new PaymentStatusError(paymentOriginStatus.getFailed().getFailure().getCode(), paymentOriginStatus.getFailed().getFailure().getDescription()));
+        }
         message.setEventType(eventType);
     }
 }

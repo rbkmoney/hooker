@@ -2,6 +2,9 @@ package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rbkmoney.damsel.base.Content;
+import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.utils.BuildUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -10,24 +13,12 @@ import org.junit.Test;
 public class MessageJsonTest {
     @Test
     public void test() throws JsonProcessingException {
-        Message message = new Message();
-        message.setEventId(5555);
-        message.setEventTime("12.12.2007");
-        message.setInvoiceId("ffsfgsr");
-        message.setPartyId("sdrgsr");
-        message.setShopId(123);
-        message.setAmount(12235);
-        message.setCurrency("RUB");
-        message.setCreatedAt("12.12.2008");
-        message.setType("invoice");
-        message.setProduct("product");
-        message.setDescription("description");
-        message.setEventType(EventType.INVOICE_CREATED);
-        message.setStatus("paid");
-        Content metadata = new Content();
-        metadata.setType("string");
-        metadata.setData("somedata".getBytes());
-        message.setMetadata(metadata);
-        System.out.print(MessageJson.buildMessageJson(message));
+        Message message = BuildUtils.message(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled");
+        System.out.println(MessageJson.buildMessageJson(message));
+        Message copy = message.copy();
+        message.getInvoice().setAmount(99988);
+        System.out.println(message);
+        System.out.println(copy);
+        Assert.assertNotEquals(message.getInvoice().getAmount(), copy.getInvoice().getAmount());
     }
 }
