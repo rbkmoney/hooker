@@ -30,7 +30,7 @@ public class PostSender {
         RequestBody body = RequestBody.create(JSON, paramsAsString);
         final Request request = new Request.Builder()
                 .url(url)
-                .addHeader(SIGNATURE_HEADER, signature)
+                .addHeader(SIGNATURE_HEADER, "alg=RS256; digest="+signature)
                 .post(body)
                 .build();
 
