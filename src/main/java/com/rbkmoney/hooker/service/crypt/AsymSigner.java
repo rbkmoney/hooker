@@ -44,7 +44,7 @@ public class AsymSigner implements Signer {
                 sig.update(data.getBytes());
                 signatureBytes = sig.sign();
             }
-            return Base64.getEncoder().encodeToString(signatureBytes);
+            return "alg=RS256; digest="+Base64.getEncoder().encodeToString(signatureBytes);
         } catch (InvalidKeySpecException | InvalidKeyException | SignatureException e) {
             throw new UnknownCryptoException(e);
         }
