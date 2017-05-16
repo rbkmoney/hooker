@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 /**
  * Created by inalarsanukaev on 15.05.17.
  */
@@ -14,7 +12,12 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonPropertyOrder({"type", "data"})
-public class InvoiceContent implements Serializable {
+public class InvoiceContent {
     public String type;
     public byte[] data;
+
+    public InvoiceContent(InvoiceContent other) {
+        this.type = other.type;
+        this.data = other.data;
+    }
 }

@@ -4,9 +4,6 @@ import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.SerializationUtils;
-
-import java.io.Serializable;
 
 
 /**
@@ -15,7 +12,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Message implements Serializable {
+public class Message {
     private long id;
     private long eventId;
     private String eventTime;
@@ -24,6 +21,21 @@ public class Message implements Serializable {
     private EventType eventType;
     private Invoice invoice;
     private Payment payment;
+
+    public Message(Message other) {
+        this.id = other.id;
+        this.eventId = other.eventId;
+        this.eventTime = other.eventTime;
+        this.type = other.type;
+        this.partyId = other.partyId;
+        this.eventType = other.eventType;
+        if (other.invoice != null) {
+            this.invoice = new Invoice(other.invoice);
+        }
+        if (other.payment != null) {
+            this.payment = new Payment(other.payment);
+        }
+    }
 
     public boolean isInvoice() {
         return AbstractInvoiceEventHandler.INVOICE.equals(getType());
@@ -49,6 +61,6 @@ public class Message implements Serializable {
     }
 
     public Message copy(){
-        return SerializationUtils.clone(this);
+        return new Message(this);
     }
 }

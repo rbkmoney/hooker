@@ -14,7 +14,12 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Data
 @JsonPropertyOrder({"email", "phoneNumber"})
-public class PaymentContactInfo implements Serializable {
+public class PaymentContactInfo {
     private String email;
     private String phoneNumber;
+
+    public PaymentContactInfo(PaymentContactInfo other) {
+        this.email = other.email;
+        this.phoneNumber = other.phoneNumber;
+    }
 }

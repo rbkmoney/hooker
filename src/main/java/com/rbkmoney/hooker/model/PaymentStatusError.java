@@ -14,7 +14,12 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Data
 @JsonPropertyOrder({"code", "message"})
-public class PaymentStatusError implements Serializable {
+public class PaymentStatusError {
     private String code;
     private String message;
+
+    public PaymentStatusError(PaymentStatusError other) {
+        this.code = other.code;
+        this.message = other.message;
+    }
 }
