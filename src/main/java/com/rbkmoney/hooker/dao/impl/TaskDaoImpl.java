@@ -39,8 +39,9 @@ public class TaskDaoImpl extends NamedParameterJdbcDaoSupport implements TaskDao
                 " join hook.webhook_to_events wte on wte.hook_id = w.id" +
                 " where m.id = :id " +
                 " and m.event_type = wte.event_type " +
-                " and (wte.invoice_shop_id is null or m.shop_id = wte.invoice_shop_id) " +
-                " and ((m.invoice_status = wte.invoice_status or wte.invoice_status is null) or (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null))" +
+                " and (m.shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
+                " and (m.invoice_status = wte.invoice_status or wte.invoice_status is null) " +
+                " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
                 " ON CONFLICT (message_id, hook_id) DO NOTHING";
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId));
