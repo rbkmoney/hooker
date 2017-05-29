@@ -51,7 +51,7 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
     public boolean isActive(SimpleRetryPolicyRecord rp) {
         if (rp.getFailCount() == 0) {
             return true;
-        } else if (rp.getFailCount() < delays.length
+        } else if (rp.getFailCount() <= delays.length
                 && System.currentTimeMillis() > (rp.getLastFailTime() + (delays[rp.getFailCount()-1] * 1000))) {
             return true;
         }

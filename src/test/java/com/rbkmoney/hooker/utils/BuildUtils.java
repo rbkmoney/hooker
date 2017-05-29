@@ -28,7 +28,7 @@ public class BuildUtils {
         invoice.setCurrency("RUB");
         InvoiceContent metadata = new InvoiceContent();
         metadata.setType("fff");
-        metadata.setData("somedata".getBytes());
+        metadata.setData("{\"cms\":\"drupal\",\"cms_version\":\"7.50\",\"module\":\"uc_rbkmoney\",\"order_id\":\"118\"}".getBytes());
         invoice.setMetadata(metadata);
         invoice.setProduct("product");
         invoice.setDescription("description");
