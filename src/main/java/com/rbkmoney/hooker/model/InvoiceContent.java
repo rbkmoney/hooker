@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonPropertyOrder({"type", "data"})
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InvoiceContent {
     public String type;
     public byte[] data;

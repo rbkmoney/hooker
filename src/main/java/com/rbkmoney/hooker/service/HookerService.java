@@ -53,7 +53,7 @@ public class HookerService implements WebhookManagerSrv.Iface {
             hookDao.delete(id);
             log.info("Webhook deleted: {}", id);
         } catch (Exception e){
-            log.error("Fail to delete webhook: {}", id);
+            log.error("Fail to delete webhook: {}", id, e);
             throw new WebhookNotFound();
         }
     }

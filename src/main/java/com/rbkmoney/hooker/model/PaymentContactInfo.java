@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +16,9 @@ import java.io.Serializable;
 @Data
 @JsonPropertyOrder({"email", "phoneNumber"})
 public class PaymentContactInfo {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String email;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String phoneNumber;
 
     public PaymentContactInfo(PaymentContactInfo other) {

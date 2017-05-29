@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,13 +19,16 @@ public class Payment {
     private String id;
     private String createdAt;
     private String status;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private PaymentStatusError error;
     private long amount;
     private String currency;
     private String paymentToolToken;
     private String paymentSession;
     private PaymentContactInfo contactInfo;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String ip;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String fingerprint;
 
     public Payment(Payment other) {

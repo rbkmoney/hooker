@@ -40,7 +40,7 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
         rp.setLastFailTime(System.currentTimeMillis());
         simpleRetryPolicyDao.update(rp);
 
-        if (rp.getFailCount() >= delays.length) {
+        if (rp.getFailCount() > delays.length) {
             hookDao.disable(rp.getHookId());
             taskDao.removeAll(rp.getHookId());
             log.warn("Hook: " + rp.getHookId() + " was disabled according to retry policy.");

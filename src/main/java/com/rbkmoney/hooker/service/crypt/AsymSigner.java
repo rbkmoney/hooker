@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.service.crypt;
 import com.rbkmoney.hooker.service.err.UnknownCryptoException;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -41,7 +42,7 @@ public class AsymSigner implements Signer {
             byte[] signatureBytes;
             synchronized (sig) {
                 sig.initSign(privateKey);
-                sig.update(data.getBytes());
+                sig.update(data.getBytes(StandardCharsets.UTF_8));
                 signatureBytes = sig.sign();
             }
             return Base64.getUrlEncoder().encodeToString(signatureBytes);
