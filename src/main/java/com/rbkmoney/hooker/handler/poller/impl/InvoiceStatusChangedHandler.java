@@ -2,12 +2,14 @@ package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.domain.InvoiceStatus;
 import com.rbkmoney.damsel.payment_processing.Event;
+import com.rbkmoney.damsel.payment_processing.InvoiceChange;
+import com.rbkmoney.geck.filter.Filter;
+import com.rbkmoney.geck.filter.PathConditionFilter;
+import com.rbkmoney.geck.filter.condition.IsNullCondition;
+import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
-import com.rbkmoney.thrift.filter.Filter;
-import com.rbkmoney.thrift.filter.PathConditionFilter;
-import com.rbkmoney.thrift.filter.rule.PathConditionRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +23,7 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     MessageDao messageDao;
 
     public InvoiceStatusChangedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule()));
+        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
     }
 
     @Override
@@ -30,8 +32,8 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected void modifyMessage(Event event, Message message) {
-        InvoiceStatus statusOrigin = event.getPayload().getInvoiceEvent().getInvoiceStatusChanged().getStatus();
+    protected void modifyMessage(InvoiceChange ic, Event event, Message message) {
+        InvoiceStatus statusOrigin = ic.getInvoiceStatusChanged().getStatus();
         message.getInvoice().setStatus(statusOrigin.getSetField().getFieldName());
         if (statusOrigin.isSetCancelled()) {
             message.getInvoice().setReason(statusOrigin.getCancelled().getDetails());

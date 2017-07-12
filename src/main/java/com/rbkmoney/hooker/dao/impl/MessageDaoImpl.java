@@ -73,7 +73,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         Invoice invoice = new Invoice();
         message.setInvoice(invoice);
         invoice.setId(rs.getString(INVOICE_ID));
-        invoice.setShopID(rs.getInt(SHOP_ID));
+        invoice.setShopID(rs.getString(SHOP_ID));
         invoice.setCreatedAt(rs.getString(INVOICE_CREATED_AT));
         invoice.setStatus(rs.getString(INVOICE_STATUS));
         invoice.setReason(rs.getString(INVOICE_REASON));

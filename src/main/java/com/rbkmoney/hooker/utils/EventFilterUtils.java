@@ -22,7 +22,7 @@ public class EventFilterUtils {
         invoiceEventFilter.setTypes(invoiceEventTypes);
         eventFilter.setInvoice(invoiceEventFilter);
         for (WebhookAdditionalFilter webhookAdditionalFilter : webhookAdditionalFilters) {
-            Integer shopId = webhookAdditionalFilter.getInvoiceShopId();
+            String shopId = webhookAdditionalFilter.getInvoiceShopId();
             if (shopId != null) {
                 eventFilter.getInvoice().setShopId(shopId);
             }

@@ -2,14 +2,16 @@ package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.payment_processing.Event;
+import com.rbkmoney.damsel.payment_processing.InvoiceChange;
+import com.rbkmoney.geck.filter.Filter;
+import com.rbkmoney.geck.filter.PathConditionFilter;
+import com.rbkmoney.geck.filter.condition.IsNullCondition;
+import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoiceContent;
 import com.rbkmoney.hooker.model.Message;
-import com.rbkmoney.thrift.filter.Filter;
-import com.rbkmoney.thrift.filter.PathConditionFilter;
-import com.rbkmoney.thrift.filter.rule.PathConditionRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,12 +26,12 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
     private EventType eventType = EventType.INVOICE_CREATED;
 
     public InvoiceCreatedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule()));
+        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
     }
 
     @Override
-    protected void saveEvent(Event event) throws DaoException {
-        Invoice invoiceOrigin = event.getPayload().getInvoiceEvent().getInvoiceCreated().getInvoice();
+    protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
+        Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         Message message = new Message();
         message.setEventId(event.getId());

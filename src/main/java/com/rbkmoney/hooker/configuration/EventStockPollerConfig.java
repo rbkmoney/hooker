@@ -3,7 +3,6 @@ package com.rbkmoney.hooker.configuration;
 import com.rbkmoney.eventstock.client.*;
 import com.rbkmoney.eventstock.client.poll.EventFlowFilter;
 import com.rbkmoney.eventstock.client.poll.PollingEventPublisherBuilder;
-import com.rbkmoney.hooker.handler.poller.EventStockErrorHandler;
 import com.rbkmoney.hooker.handler.poller.EventStockHandler;
 import com.rbkmoney.hooker.handler.poller.PollingEventHandler;
 import com.rbkmoney.hooker.service.EventService;
@@ -39,7 +38,6 @@ public class EventStockPollerConfig {
         return new PollingEventPublisherBuilder()
                 .withURI(bmUri.getURI())
                 .withEventHandler(new EventStockHandler(pollingEventHandlers))
-                .withErrorHandler(new EventStockErrorHandler())
                 .withMaxPoolSize(maxPoolSize)
                 .withPollDelay(pollDelay)
                 .build();

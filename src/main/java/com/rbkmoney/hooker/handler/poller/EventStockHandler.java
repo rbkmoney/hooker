@@ -1,8 +1,9 @@
 package com.rbkmoney.hooker.handler.poller;
 
 import com.rbkmoney.damsel.event_stock.StockEvent;
+import com.rbkmoney.damsel.payment_processing.InvoiceChange;
+import com.rbkmoney.eventstock.client.EventAction;
 import com.rbkmoney.eventstock.client.EventHandler;
-import com.rbkmoney.hooker.handler.PollingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,22 +20,22 @@ public class EventStockHandler implements EventHandler<StockEvent> {
     }
 
     @Override
-    public void handleEvent(StockEvent stockEvent, String subsKey) {
-        for (PollingEventHandler pollingEventHandler : pollingEventHandlers) {
-            if (pollingEventHandler.accept(stockEvent)) {
-                try {
-                    pollingEventHandler.handle(stockEvent);
-                } catch (PollingException e) {
-                    log.error("PaymentStatusError when poller handling", e);
-                    //TODO what should I do?
+    public EventAction handle(StockEvent stockEvent, String subsKey) {
+        if (stockEvent.getSourceEvent().getProcessingEvent().getPayload().isSetInvoiceChanges()) {
+            List<InvoiceChange> invoiceChanges = stockEvent.getSourceEvent().getProcessingEvent().getPayload().getInvoiceChanges();
+            for (InvoiceChange ic : invoiceChanges) {
+                for (PollingEventHandler pollingEventHandler : pollingEventHandlers) {
+                    if (pollingEventHandler.accept(ic)) {
+                        try {
+                            pollingEventHandler.handle(ic, stockEvent);
+                        } catch (Exception e) {
+                            log.error("Error when poller handling", e);
+                        }
+                        break;
+                    }
                 }
-                break;
             }
         }
-    }
-
-    @Override
-    public void handleNoMoreElements(String subsKey) {
-        log.info("HandleNoMoreElements with subsKey {}", subsKey);
+        return EventAction.CONTINUE;
     }
 }

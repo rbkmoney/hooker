@@ -295,7 +295,7 @@ public class HookDaoImpl implements HookDao {
                     rs.getString("pub_key"),
                     rs.getBoolean("enabled"),
                     new WebhookAdditionalFilter(EventType.valueOf(rs.getString("event_type")),
-                            rs.getInt("invoice_shop_id"),
+                            rs.getString("invoice_shop_id"),
                             rs.getString("invoice_status"),
                             rs.getString("invoice_payment_status")));
 

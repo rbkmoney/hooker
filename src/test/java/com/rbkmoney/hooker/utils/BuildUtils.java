@@ -16,7 +16,7 @@ public class BuildUtils {
         Invoice invoice = new Invoice();
         message.setInvoice(invoice);
         invoice.setId(invoiceId);
-        invoice.setShopID(123);
+        invoice.setShopID("123");
         invoice.setCreatedAt("12.12.2008");
         if (message.isInvoice()) {
             invoice.setStatus(status);

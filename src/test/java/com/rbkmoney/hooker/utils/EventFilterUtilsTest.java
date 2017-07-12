@@ -22,7 +22,7 @@ public class EventFilterUtilsTest {
     private EventFilter getEventFilter() {
         Collection<WebhookAdditionalFilter> eventTypeCodeSet = new HashSet<>();
         eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_CREATED));
-        eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STARTED, 77));
+        eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STARTED, "77"));
         eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED));
         eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED));
         return EventFilterUtils.getEventFilter(eventTypeCodeSet);

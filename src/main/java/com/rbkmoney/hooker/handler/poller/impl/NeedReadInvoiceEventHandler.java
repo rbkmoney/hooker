@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.payment_processing.Event;
+import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.Message;
@@ -14,20 +15,20 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
     MessageDao messageDao;
 
     @Override
-    protected void saveEvent(Event event) throws DaoException {
-        final String invoiceId = event.getSource().getInvoice();
+    protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
+        final String invoiceId = event.getSource().getInvoiceId();
         //getAny any saved message for related invoice
         Message message = messageDao.getAny(invoiceId);
         if (message == null) {
-            throw new DaoException("Message for invoice with id "+event.getSource().getInvoice() + " not exist");
+            throw new DaoException("Message for invoice with id " + invoiceId + " not exist");
         }
         message.setEventId(event.getId());
         message.setEventTime(event.getCreatedAt());
-        modifyMessage(event, message);
+        modifyMessage(ic, event, message);
 
         messageDao.create(message);
         //TODO getAny message id and write to logs
     }
 
-    protected abstract void modifyMessage(Event event, Message message);
+    protected abstract void modifyMessage(InvoiceChange ic, Event event, Message message);
 }

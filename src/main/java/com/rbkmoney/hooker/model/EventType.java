@@ -4,10 +4,10 @@ package com.rbkmoney.hooker.model;
  * Created by inal on 30.11.2016.
  */
 public enum EventType {
-    INVOICE_CREATED               ("source_event.processing_event.payload.invoice_event.invoice_created.invoice"),
-    INVOICE_STATUS_CHANGED        ("source_event.processing_event.payload.invoice_event.invoice_status_changed.status"),
-    INVOICE_PAYMENT_STARTED       ("source_event.processing_event.payload.invoice_event.invoice_payment_event.invoice_payment_started.payment"),
-    INVOICE_PAYMENT_STATUS_CHANGED("source_event.processing_event.payload.invoice_event.invoice_payment_event.invoice_payment_status_changed.status");
+    INVOICE_CREATED("invoice_created"),
+    INVOICE_STATUS_CHANGED("invoice_status_changed"),
+    INVOICE_PAYMENT_STARTED("invoice_payment_change.payload.invoice_payment_started"),
+    INVOICE_PAYMENT_STATUS_CHANGED("invoice_payment_change.payload.invoice_payment_status_changed");
 
     private String thriftFilterPathCoditionRule;
 

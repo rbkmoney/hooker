@@ -1,16 +1,11 @@
 package com.rbkmoney.hooker.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.MapSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by inalarsanukaev on 15.05.17.
@@ -21,7 +16,7 @@ import java.util.Map;
 @JsonPropertyOrder({"id", "shopID", "createdAt", "status", "reason", "dueDate", "amount", "currency", "metadata", "product", "description"})
 public class Invoice {
     private String id;
-    private int shopID;
+    private String shopID;
     private String createdAt;
     private String status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
