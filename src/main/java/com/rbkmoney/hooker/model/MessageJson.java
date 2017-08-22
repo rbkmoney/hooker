@@ -34,6 +34,7 @@ public class MessageJson {
         paymentStatusesMapping.put("processed", "PaymentProcessed");
         paymentStatusesMapping.put("captured", "PaymentCaptured");
         paymentStatusesMapping.put("cancelled", "PaymentCancelled");
+        paymentStatusesMapping.put("refunded", "PaymentRefunded");
         paymentStatusesMapping.put("failed", "PaymentFailed");
     }
 
