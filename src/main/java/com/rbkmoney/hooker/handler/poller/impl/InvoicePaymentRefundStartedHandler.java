@@ -45,8 +45,8 @@ public class InvoicePaymentRefundStartedHandler extends NeedReadInvoiceEventHand
 
     public static long getAmount(List<FinalCashFlowPosting> finalCashFlow) {
         return finalCashFlow.stream()
-                .filter(c -> c.getSource().getAccountType().isSetProvider() &&
-                        c.getDestination().getAccountType().isSetMerchant())
+                .filter(c -> c.getSource().getAccountType().isSetMerchant() &&
+                        c.getDestination().getAccountType().isSetProvider())
                 .mapToLong(c -> c.getVolume().getAmount())
                 .sum();
     }
