@@ -38,7 +38,7 @@ public class InvoicePaymentRefundStartedHandler extends NeedReadInvoiceEventHand
         Payment payment = message.getPayment();
         payment.setCreatedAt(refundCreated.getRefund().getCreatedAt());
         payment.setStatus("refund_created");
-        List<FinalCashFlowPosting> cashFlow = refundCreated.getRefund().getCashFlow();
+        List<FinalCashFlowPosting> cashFlow = refundCreated.getCashFlow();
         payment.setAmount(getAmount(cashFlow));
         payment.setCurrency(cashFlow.get(0).getVolume().getCurrency().getSymbolicCode());
     }
