@@ -32,6 +32,16 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
+    protected String getMessageType() {
+        return INVOICE;
+    }
+
+    @Override
+    protected EventType getEventType() {
+        return eventType;
+    }
+
+    @Override
     protected void modifyMessage(InvoiceChange ic, Event event, Message message) {
         InvoiceStatus statusOrigin = ic.getInvoiceStatusChanged().getStatus();
         message.getInvoice().setStatus(statusOrigin.getSetField().getFieldName());
@@ -40,7 +50,5 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
         } else if (statusOrigin.isSetFulfilled()) {
             message.getInvoice().setReason(statusOrigin.getFulfilled().getDetails());
         }
-        message.setType(INVOICE);
-        message.setEventType(eventType);
     }
 }

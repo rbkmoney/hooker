@@ -31,9 +31,17 @@ public class InvoicePaymentRefundStartedHandler extends NeedReadInvoiceEventHand
     }
 
     @Override
+    protected String getMessageType() {
+        return PAYMENT;
+    }
+
+    @Override
+    protected EventType getEventType() {
+        return EventType.INVOICE_PAYMENT_STATUS_CHANGED;
+    }
+
+    @Override
     protected void modifyMessage(InvoiceChange ic, Event event, Message message) {
-        message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
-        message.setType(PAYMENT);
         InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getPayload().getInvoicePaymentRefundCreated();
         Payment payment = message.getPayment();
         payment.setCreatedAt(refundCreated.getRefund().getCreatedAt());
