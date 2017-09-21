@@ -184,7 +184,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
-            log.debug("Message {} save to db.", message.getId());
+            log.info("Message {} save to db.", message);
 
             // create tasks
             taskDao.create(message.getId());

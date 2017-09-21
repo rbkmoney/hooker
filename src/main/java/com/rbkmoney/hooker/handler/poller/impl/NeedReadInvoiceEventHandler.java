@@ -19,7 +19,7 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
     protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
         final String invoiceId = event.getSource().getInvoiceId();
         //getAny any saved message for related invoice
-        Message message = messageDao.getAny(invoiceId, getMessageType());
+        Message message = getMessage(invoiceId);
         if (message == null) {
             throw new DaoException("Message for invoice with id " + invoiceId + " not exist");
         }
@@ -31,6 +31,10 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
 
         messageDao.create(message);
         //TODO getAny message id and write to logs
+    }
+
+    protected Message getMessage(String invoiceId) {
+        return messageDao.getAny(invoiceId, getMessageType());
     }
 
     protected abstract String getMessageType();

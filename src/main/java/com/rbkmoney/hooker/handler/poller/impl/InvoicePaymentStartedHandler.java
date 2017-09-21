@@ -54,4 +54,9 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         payment.setIp(paymentOrigin.getPayer().getClientInfo().getIpAddress());
         payment.setFingerprint(paymentOrigin.getPayer().getClientInfo().getFingerprint());
     }
+
+    @Override
+    protected Message getMessage(String invoiceId) {
+        return messageDao.getAny(invoiceId, INVOICE);
+    }
 }

@@ -62,7 +62,9 @@ public class Message {
                 ", eventId=" + eventId +
                 ", eventTime='" + eventTime + '\'' +
                 ", invoiceId=" + invoice.getId() +
+                ", invoiceStatus=" + invoice.getStatus() +
                 (isPayment() ? ", paymentId=" + payment.getId() : "") +
+                (isPayment() ? ", paymentStatus=" + payment.getStatus() : "") +
                 '}';
     }
 
