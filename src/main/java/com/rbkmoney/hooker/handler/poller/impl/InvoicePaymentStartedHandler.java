@@ -29,9 +29,17 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
+    protected String getMessageType() {
+        return PAYMENT;
+    }
+
+    @Override
+    protected EventType getEventType() {
+        return eventType;
+    }
+
+    @Override
     protected void modifyMessage(InvoiceChange ic, Event event, Message message) {
-        message.setEventType(eventType);
-        message.setType(PAYMENT);
         InvoicePayment paymentOrigin = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
         Payment payment = new Payment();
         message.setPayment(payment);
@@ -45,5 +53,10 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         payment.setContactInfo(new PaymentContactInfo(paymentOrigin.getPayer().getContactInfo().getEmail(), paymentOrigin.getPayer().getContactInfo().getPhoneNumber()));
         payment.setIp(paymentOrigin.getPayer().getClientInfo().getIpAddress());
         payment.setFingerprint(paymentOrigin.getPayer().getClientInfo().getFingerprint());
+    }
+
+    @Override
+    protected Message getMessage(String invoiceId) {
+        return messageDao.getAny(invoiceId, INVOICE);
     }
 }

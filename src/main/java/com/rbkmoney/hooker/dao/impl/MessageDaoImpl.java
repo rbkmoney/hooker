@@ -111,14 +111,14 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     }
 
     @Override
-    public Message getAny(String invoiceId) throws DaoException {
-        Message message = getFromCache(invoiceId);
+    public Message getAny(String invoiceId, String type) throws DaoException {
+        Message message = getFromCache(invoiceId, type);
         if (message != null) {
             return message.copy();
         }
         Message result = null;
-        final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id ORDER BY id DESC LIMIT 1";
-        MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, invoiceId);
+        final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id AND type =:type ORDER BY id DESC LIMIT 1";
+        MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, invoiceId).addValue(TYPE, type);
         try {
             result = getNamedParameterJdbcTemplate().queryForObject(sql, params, messageRowMapper);
         } catch (EmptyResultDataAccessException e) {
@@ -184,7 +184,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
-            log.debug("Message {} save to db.", message.getId());
+            log.info("Message {} save to db.", message);
 
             // create tasks
             taskDao.create(message.getId());
@@ -247,13 +247,13 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     private void putToCache(Message message){
         if(message != null) {
             cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS).put(message.getId(), message);
-            cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoice().getId(), message);
+            cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoice().getId() + message.getType(), message);
         }
     }
 
-    private Message getFromCache(String invoiceId) {
+    private Message getFromCache(String invoiceId, String type) {
         Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE);
-        return cache.get(invoiceId, Message.class);
+        return cache.get(invoiceId + type, Message.class);
     }
 
     private List<Message> getFromCache(Collection<Long> ids) {

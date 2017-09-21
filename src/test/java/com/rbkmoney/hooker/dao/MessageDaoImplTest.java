@@ -44,7 +44,7 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     public void testGetAny() {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {
-            messageDao.getAny("1234");
+            messageDao.getAny("1234", AbstractInvoiceEventHandler.INVOICE);
         }
 
         long executionTime = System.currentTimeMillis() - startTime;
@@ -59,7 +59,7 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void get() throws Exception {
-        Message message = messageDao.getAny("1234");
+        Message message = messageDao.getAny("1234", AbstractInvoiceEventHandler.INVOICE);
         assertEquals(message.getInvoice().getAmount(), 12235);
 
         assertEquals(1, messageDao.getBy(Arrays.asList(message.getId())).size());

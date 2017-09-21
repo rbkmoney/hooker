@@ -79,8 +79,8 @@ public class DataflowTest extends AbstractIntegrationTest {
         final String invoceId = "asgsdhghdhtfugny78989";
         final String partyId = new Random().nextInt() + "";
         Message message1 = messageDao.create(message(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status"));
-        Message message2 = messageDao.getAny(invoceId);
-        Message message3 = messageDao.getAny(invoceId);
+        Message message2 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
+        Message message3 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
         assertTrue(message1 != message2);
         assertTrue(message2 != message3);
         assertTrue(message1 != message3);
