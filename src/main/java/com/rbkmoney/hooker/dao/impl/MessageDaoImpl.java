@@ -62,6 +62,19 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     public static final String PAYMENT_IP = "payment_ip";
     public static final String PAYMENT_FINGERPRINT = "payment_fingerprint";
 
+    private static RowMapper<InvoiceCartPosition> cartPositionRowMapper = (rs, i) -> {
+        InvoiceCartPosition invoiceCartPosition = new InvoiceCartPosition();
+        invoiceCartPosition.setProduct(rs.getString("product"));
+        invoiceCartPosition.setPrice(rs.getLong("price"));
+        invoiceCartPosition.setQuantity(rs.getInt("quantity"));
+        invoiceCartPosition.setCost(rs.getLong("cost"));
+        String rate = rs.getString("rate");
+        if (rate != null) {
+            invoiceCartPosition.setTaxMode(new TaxMode(rate));
+        }
+        return invoiceCartPosition;
+    };
+
     private static RowMapper<Message> messageRowMapper = (rs, i) -> {
         Message message = new Message();
         message.setId(rs.getLong(ID));
@@ -92,7 +105,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             payment.setId(rs.getString(PAYMENT_ID));
             payment.setCreatedAt(rs.getString(PAYMENT_CREATED_AT));
             payment.setStatus(rs.getString(PAYMENT_STATUS));
-            if (rs.getString(PAYMENT_ERROR_CODE) != null) {
+            if (rs.getString(PAYMENT_ERROR_CODE) != null && "failed".equals(rs.getString(PAYMENT_STATUS))) {
                 payment.setError(new PaymentStatusError(rs.getString(PAYMENT_ERROR_CODE), rs.getString(PAYMENT_ERROR_MESSAGE)));
             }
             payment.setAmount(rs.getLong(PAYMENT_AMOUNT));
@@ -121,6 +134,12 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, invoiceId).addValue(TYPE, type);
         try {
             result = getNamedParameterJdbcTemplate().queryForObject(sql, params, messageRowMapper);
+            final String sqlCarts = "SELECT * FROM hook.cart_position WHERE message_id =:message_id";
+            MapSqlParameterSource paramsCarts = new MapSqlParameterSource("message_id", result.getId());
+            List<InvoiceCartPosition> cart = getNamedParameterJdbcTemplate().query(sqlCarts, paramsCarts, cartPositionRowMapper);
+            if (!cart.isEmpty()) {
+                result.getInvoice().setCart(cart);
+            }
         } catch (EmptyResultDataAccessException e) {
             log.warn("Message with invoice id "+invoiceId+" not exist!");
         } catch (NestedRuntimeException e) {
@@ -131,6 +150,35 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         putToCache(result);
         return result;
     }
+
+    private void saveCart(Long messageId, Collection<InvoiceCartPosition> cart) {
+        if (cart == null || cart.isEmpty()) return;
+        int size = cart.size();
+        List<Map<String, Object>> batchValues = new ArrayList<>(size);
+        for (InvoiceCartPosition cartPosition : cart) {
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
+                    .addValue("message_id", messageId)
+                    .addValue("product", cartPosition.getProduct())
+                    .addValue("price", cartPosition.getPrice())
+                    .addValue("quantity", cartPosition.getQuantity())
+                    .addValue("cost", cartPosition.getCost())
+                    .addValue("rate", cartPosition.getTaxMode() == null ? null : cartPosition.getTaxMode().getRate());
+            batchValues.add(mapSqlParameterSource.getValues());
+        }
+
+        final String sql = "INSERT INTO hook.cart_position(message_id, product, price, quantity, cost, rate) VALUES (:message_id, :product, :price, :quantity, :cost, :rate) ";
+
+        try {
+            int updateCount[] = getNamedParameterJdbcTemplate().batchUpdate(sql, batchValues.toArray(new Map[size]));
+            if (updateCount.length != size) {
+                throw new DaoException("Couldn't insert cart. ");
+            }
+        } catch (NestedRuntimeException e) {
+            log.error("Fail to save cart.", e);
+            throw new DaoException(e);
+        }
+    }
+
 
     @Override
     @Transactional
@@ -184,6 +232,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
+            saveCart(message.getId(), message.getInvoice().getCart());
             log.info("Message {} save to db.", message);
 
             // create tasks
@@ -229,17 +278,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             return messages;
         }  catch (NestedRuntimeException e) {
             log.error("MessageDaoImpl.getByIds error", e);
-            throw new DaoException(e);
-        }
-    }
-
-    @Override
-    public void delete(long id) throws DaoException {
-        final String sql = "DELETE FROM hook.message where id = :id";
-        try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
-        } catch (NestedRuntimeException e) {
-            log.warn("MessageDaoImpl.delete error", e);
             throw new DaoException(e);
         }
     }

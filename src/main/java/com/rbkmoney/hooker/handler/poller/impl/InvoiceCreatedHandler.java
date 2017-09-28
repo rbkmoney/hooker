@@ -1,6 +1,9 @@
 package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.domain.Invoice;
+import com.rbkmoney.damsel.domain.InvoiceCart;
+import com.rbkmoney.damsel.domain.InvoiceLine;
+import com.rbkmoney.damsel.msgpack.Value;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
@@ -9,11 +12,15 @@ import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.InvoiceContent;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
@@ -54,6 +61,24 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         invoice.setMetadata(metadata);
         invoice.setProduct(invoiceOrigin.getDetails().getProduct());
         invoice.setDescription(invoiceOrigin.getDetails().getDescription());
+        InvoiceCart cart = invoiceOrigin.getDetails().getCart();
+        if (cart != null && !cart.getLines().isEmpty()) {
+            invoice.setCart(new ArrayList<>());
+            for (InvoiceLine l : cart.getLines()) {
+                InvoiceCartPosition icp = new InvoiceCartPosition();
+                icp.setProduct(l.getProduct());
+                icp.setPrice(l.getPrice().getAmount());
+                icp.setQuantity(l.getQuantity());
+                icp.setCost(l.getPrice().getAmount() * l.getQuantity());
+                if (l.getMetadata() != null) {
+                    Value v = l.getMetadata().get("TaxMode");
+                    if (v != null) {
+                        icp.setTaxMode(new TaxMode(v.getStr()));
+                    }
+                }
+                invoice.getCart().add(icp);
+            }
+        }
         messageDao.create(message);
     }
 

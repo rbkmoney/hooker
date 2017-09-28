@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by inalarsanukaev on 15.05.17.
  */
@@ -29,6 +32,8 @@ public class Invoice {
     private String product;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String description;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<InvoiceCartPosition> cart;
 
     public Invoice(Invoice other) {
         this.id = other.id;
@@ -44,5 +49,9 @@ public class Invoice {
         }
         this.product = other.product;
         this.description = other.description;
+        if (other.cart != null && !other.cart.isEmpty()) {
+            this.cart = new ArrayList<>();
+            other.cart.forEach(c -> this.cart.add(new InvoiceCartPosition(c)));
+        }
     }
 }
