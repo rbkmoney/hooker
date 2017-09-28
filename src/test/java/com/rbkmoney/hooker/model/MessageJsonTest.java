@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.Assert;
@@ -17,8 +16,14 @@ public class MessageJsonTest {
         System.out.println(MessageJson.buildMessageJson(message));
         Message copy = message.copy();
         message.getInvoice().setAmount(99988);
-        System.out.println(message);
-        System.out.println(copy);
         Assert.assertNotEquals(message.getInvoice().getAmount(), copy.getInvoice().getAmount());
+    }
+
+    @Test
+    public void testCart() throws JsonProcessingException {
+        Message message = BuildUtils.message(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart());
+        String messageJson = MessageJson.buildMessageJson(message);
+        System.out.println(messageJson);
+        Assert.assertTrue(messageJson.contains("taxMode"));
     }
 }

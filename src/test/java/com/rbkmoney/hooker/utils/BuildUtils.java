@@ -2,11 +2,18 @@ package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.hooker.model.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by jeckep on 25.04.17.
  */
 public class BuildUtils {
     public static Message message(String type, String invoiceId, String partyId, EventType eventType, String status) {
+        return message(type, invoiceId, partyId, eventType, status, null);
+    }
+
+    public static Message message(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart) {
         Message message = new Message();
         message.setEventId(5555);
         message.setEventTime("time");
@@ -32,6 +39,7 @@ public class BuildUtils {
         invoice.setMetadata(metadata);
         invoice.setProduct("product");
         invoice.setDescription("description");
+        invoice.setCart(cart);
         if (message.isPayment()) {
             Payment payment = new Payment();
             message.setPayment(payment);
@@ -48,5 +56,12 @@ public class BuildUtils {
             payment.setFingerprint("fingerbox");
         }
         return message;
+    }
+
+    public static ArrayList<InvoiceCartPosition> cart() {
+        ArrayList<InvoiceCartPosition> cart = new ArrayList<>();
+        cart.add(new InvoiceCartPosition("Зверушка",123L, 5, 5 * 123L, new TaxMode("18%")));
+        cart.add(new InvoiceCartPosition("Квакушка", 456L,6, 6 * 456L, null));
+        return cart;
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -36,14 +37,13 @@ public class TaskDaoImplTest  extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.create(BuildUtils.message(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status"));
+        messageDao.create(BuildUtils.message(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart()));
         messageId = messageDao.getAny("2345", AbstractInvoiceEventHandler.INVOICE).getId();
     }
 
     @After
     public void after() throws Exception {
         hookDao.delete(hookId);
-        messageDao.delete(messageId);
     }
 
     @Test
