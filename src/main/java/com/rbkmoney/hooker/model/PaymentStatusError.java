@@ -1,16 +1,10 @@
 package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Created by inalarsanukaev on 16.05.17.
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@Data
 @JsonPropertyOrder({"code", "message"})
 public class PaymentStatusError {
     private String code;
@@ -19,5 +13,29 @@ public class PaymentStatusError {
     public PaymentStatusError(PaymentStatusError other) {
         this.code = other.code;
         this.message = other.message;
+    }
+
+    public PaymentStatusError(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    public PaymentStatusError() {
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

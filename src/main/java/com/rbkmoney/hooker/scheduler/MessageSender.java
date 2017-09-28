@@ -7,8 +7,6 @@ import com.rbkmoney.hooker.model.MessageJson;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import com.rbkmoney.hooker.service.err.PostRequestException;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +16,6 @@ import java.util.List;
 /**
  * Created by jeckep on 18.04.17.
  */
-@Data
-@AllArgsConstructor
 public class MessageSender implements Runnable {
     public static Logger log = LoggerFactory.getLogger(MessageSender.class);
 
@@ -29,6 +25,15 @@ public class MessageSender implements Runnable {
     private MessageScheduler workerTaskScheduler;
     private Signer signer;
     private PostSender postSender;
+
+    public MessageSender(Hook hook, List<Message> messages, TaskDao taskDao, MessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
+        this.hook = hook;
+        this.messages = messages;
+        this.taskDao = taskDao;
+        this.workerTaskScheduler = workerTaskScheduler;
+        this.signer = signer;
+        this.postSender = postSender;
+    }
 
     @Override
     public void run() {

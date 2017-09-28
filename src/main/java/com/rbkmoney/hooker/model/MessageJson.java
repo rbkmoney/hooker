@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,9 +11,6 @@ import java.util.Map;
 /**
  * Created by inalarsanukaev on 07.04.17.
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @JsonPropertyOrder({"eventID", "occuredAt", "topic", "eventType", "invoice"})
 public class MessageJson {
     public static final String INVOICES_TOPIC = "InvoicesTopic";
@@ -44,6 +38,49 @@ public class MessageJson {
     private String eventType;
     private Invoice invoice;
 
+    public MessageJson() {
+    }
+
+    public long getEventID() {
+        return eventID;
+    }
+
+    public void setEventID(long eventID) {
+        this.eventID = eventID;
+    }
+
+    public String getOccuredAt() {
+        return occuredAt;
+    }
+
+    public void setOccuredAt(String occuredAt) {
+        this.occuredAt = occuredAt;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
+    }
+
     public static String buildMessageJson(Message message) throws JsonProcessingException {
         boolean isInvoice = AbstractInvoiceEventHandler.INVOICE.equals(message.getType());
         MessageJson messageJson = isInvoice ?  new InvoiceMessageJson() : new PaymentMessageJson(message.getPayment());
@@ -56,16 +93,26 @@ public class MessageJson {
         return new ObjectMapper().writeValueAsString(messageJson);
     }
 
-    @Data
-    @AllArgsConstructor
     static class InvoiceMessageJson extends MessageJson{
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
     static class PaymentMessageJson extends MessageJson {
         Payment payment;
+
+        public PaymentMessageJson(Payment payment) {
+            this.payment = payment;
+        }
+
+        public PaymentMessageJson() {
+        }
+
+        public Payment getPayment() {
+            return payment;
+        }
+
+        public void setPayment(Payment payment) {
+            this.payment = payment;
+        }
     }
 }
 

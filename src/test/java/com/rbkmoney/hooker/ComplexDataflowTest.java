@@ -7,9 +7,6 @@ import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -24,7 +21,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -180,10 +180,6 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
         }
     }
 
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     private static class MockMessage {
         private long eventID;
         private String occuredAt;
@@ -191,5 +187,65 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
         private String eventType;
         private Invoice invoice;
         private Payment payment;
+
+        public MockMessage() {
+        }
+
+        public MockMessage(long eventID, String occuredAt, String topic, String eventType, Invoice invoice, Payment payment) {
+            this.eventID = eventID;
+            this.occuredAt = occuredAt;
+            this.topic = topic;
+            this.eventType = eventType;
+            this.invoice = invoice;
+            this.payment = payment;
+        }
+
+        public long getEventID() {
+            return eventID;
+        }
+
+        public void setEventID(long eventID) {
+            this.eventID = eventID;
+        }
+
+        public String getOccuredAt() {
+            return occuredAt;
+        }
+
+        public void setOccuredAt(String occuredAt) {
+            this.occuredAt = occuredAt;
+        }
+
+        public String getTopic() {
+            return topic;
+        }
+
+        public void setTopic(String topic) {
+            this.topic = topic;
+        }
+
+        public String getEventType() {
+            return eventType;
+        }
+
+        public void setEventType(String eventType) {
+            this.eventType = eventType;
+        }
+
+        public Invoice getInvoice() {
+            return invoice;
+        }
+
+        public void setInvoice(Invoice invoice) {
+            this.invoice = invoice;
+        }
+
+        public Payment getPayment() {
+            return payment;
+        }
+
+        public void setPayment(Payment payment) {
+            this.payment = payment;
+        }
     }
 }

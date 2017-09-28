@@ -18,7 +18,6 @@ import java.util.Arrays;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static com.rbkmoney.hooker.utils.BuildUtils.message;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by inalarsanukaev on 09.04.17.

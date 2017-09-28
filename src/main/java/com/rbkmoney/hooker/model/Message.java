@@ -1,19 +1,11 @@
 package com.rbkmoney.hooker.model;
 
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 
 /**
  * Created by inalarsanukaev on 07.04.17.
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Message {
     private long id;
     private long eventId;
@@ -37,6 +29,84 @@ public class Message {
         if (other.payment != null) {
             this.payment = new Payment(other.payment);
         }
+    }
+
+    public Message(long id, long eventId, String eventTime, String type, String partyId, EventType eventType, Invoice invoice, Payment payment) {
+        this.id = id;
+        this.eventId = eventId;
+        this.eventTime = eventTime;
+        this.type = type;
+        this.partyId = partyId;
+        this.eventType = eventType;
+        this.invoice = invoice;
+        this.payment = payment;
+    }
+
+    public Message() {
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(long eventId) {
+        this.eventId = eventId;
+    }
+
+    public String getEventTime() {
+        return eventTime;
+    }
+
+    public void setEventTime(String eventTime) {
+        this.eventTime = eventTime;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getPartyId() {
+        return partyId;
+    }
+
+    public void setPartyId(String partyId) {
+        this.partyId = partyId;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
     }
 
     public boolean isInvoice() {

@@ -8,9 +8,6 @@ import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -221,10 +218,6 @@ public class DataflowTest extends AbstractIntegrationTest {
         }
     }
 
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     private static class MockMessage {
         private long eventID;
         private String occuredAt;
@@ -232,5 +225,65 @@ public class DataflowTest extends AbstractIntegrationTest {
         private String eventType;
         private Invoice invoice;
         private Payment payment;
+
+        public MockMessage(long eventID, String occuredAt, String topic, String eventType, Invoice invoice, Payment payment) {
+            this.eventID = eventID;
+            this.occuredAt = occuredAt;
+            this.topic = topic;
+            this.eventType = eventType;
+            this.invoice = invoice;
+            this.payment = payment;
+        }
+
+        public MockMessage() {
+        }
+
+        public long getEventID() {
+            return eventID;
+        }
+
+        public void setEventID(long eventID) {
+            this.eventID = eventID;
+        }
+
+        public String getOccuredAt() {
+            return occuredAt;
+        }
+
+        public void setOccuredAt(String occuredAt) {
+            this.occuredAt = occuredAt;
+        }
+
+        public String getTopic() {
+            return topic;
+        }
+
+        public void setTopic(String topic) {
+            this.topic = topic;
+        }
+
+        public String getEventType() {
+            return eventType;
+        }
+
+        public void setEventType(String eventType) {
+            this.eventType = eventType;
+        }
+
+        public Invoice getInvoice() {
+            return invoice;
+        }
+
+        public void setInvoice(Invoice invoice) {
+            this.invoice = invoice;
+        }
+
+        public Payment getPayment() {
+            return payment;
+        }
+
+        public void setPayment(Payment payment) {
+            this.payment = payment;
+        }
     }
 }
