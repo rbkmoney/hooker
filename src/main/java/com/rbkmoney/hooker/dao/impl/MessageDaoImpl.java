@@ -141,10 +141,9 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 result.getInvoice().setCart(cart);
             }
         } catch (EmptyResultDataAccessException e) {
-            log.warn("Message with invoice id "+invoiceId+" not exist!");
+            log.warn("Message with invoiceId {} not exist!", invoiceId);
         } catch (NestedRuntimeException e) {
-            log.error("MessageDaoImpl.getAny error", e);
-            throw new DaoException(e);
+            throw new DaoException("MessageDaoImpl.getAny error with invoiceId " + invoiceId, e);
         }
 
         putToCache(result);
@@ -171,11 +170,10 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         try {
             int updateCount[] = getNamedParameterJdbcTemplate().batchUpdate(sql, batchValues.toArray(new Map[size]));
             if (updateCount.length != size) {
-                throw new DaoException("Couldn't insert cart. ");
+                throw new DaoException("Couldn't insert cart for messageId " + messageId);
             }
         } catch (NestedRuntimeException e) {
-            log.error("Fail to save cart.", e);
-            throw new DaoException(e);
+            throw new DaoException("Fail to save cart for messageId " + messageId, e);
         }
     }
 
@@ -277,8 +275,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             messages.addAll(messagesFromDb);
             return messages;
         }  catch (NestedRuntimeException e) {
-            log.error("MessageDaoImpl.getByIds error", e);
-            throw new DaoException(e);
+            throw new DaoException("MessageDaoImpl.getByIds error", e);
         }
     }
 

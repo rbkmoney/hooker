@@ -15,7 +15,7 @@ public abstract class AbstractInvoiceEventHandler implements PollingEventHandler
     public static final String PAYMENT = "payment";
 
     @Override
-    public void handle(InvoiceChange ic, StockEvent value){
+    public void handle(InvoiceChange ic, StockEvent value) throws DaoException{
         Event event = value.getSourceEvent().getProcessingEvent();
         saveEvent(ic, event);
     }

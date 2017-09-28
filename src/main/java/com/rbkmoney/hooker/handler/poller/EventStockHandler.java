@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.eventstock.client.EventAction;
 import com.rbkmoney.eventstock.client.EventHandler;
+import com.rbkmoney.hooker.dao.DaoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,9 @@ public class EventStockHandler implements EventHandler<StockEvent> {
                     if (pollingEventHandler.accept(ic)) {
                         try {
                             pollingEventHandler.handle(ic, stockEvent);
-                        } catch (Exception e) {
+                        } catch (DaoException e) {
+                            log.error("DaoException when poller handling", e);
+                        }catch (Exception e) {
                             log.error("Error when poller handling", e);
                         }
                         break;
