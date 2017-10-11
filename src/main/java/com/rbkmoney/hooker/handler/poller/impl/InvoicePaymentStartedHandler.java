@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.handler.poller.impl;
 
 import com.rbkmoney.damsel.domain.InvoicePayment;
+import com.rbkmoney.damsel.domain.PaymentResourcePayer;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
@@ -11,6 +12,8 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
+import com.rbkmoney.swag_webhook_events.ClientInfo;
+import com.rbkmoney.swag_webhook_events.InvoiceCartLine;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -48,11 +51,16 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         payment.setStatus(paymentOrigin.getStatus().getSetField().getFieldName());
         payment.setAmount(paymentOrigin.getCost().getAmount());
         payment.setCurrency(paymentOrigin.getCost().getCurrency().getSymbolicCode());
-        payment.setPaymentToolToken(paymentOrigin.getPayer().getPaymentTool().getBankCard().getToken());
-        payment.setPaymentSession(paymentOrigin.getPayer().getSessionId());
-        payment.setContactInfo(new PaymentContactInfo(paymentOrigin.getPayer().getContactInfo().getEmail(), paymentOrigin.getPayer().getContactInfo().getPhoneNumber()));
-        payment.setIp(paymentOrigin.getPayer().getClientInfo().getIpAddress());
-        payment.setFingerprint(paymentOrigin.getPayer().getClientInfo().getFingerprint());
+        if (paymentOrigin.getPayer().isSetPaymentResource()) {
+            PaymentResourcePayer payer = paymentOrigin.getPayer().getPaymentResource();
+            payment.setPaymentToolToken(payer.getResource().getPaymentTool().getBankCard().getToken());
+            payment.setPaymentSession(payer.getResource().getPaymentSessionId());
+            payment.setContactInfo(new PaymentContactInfo(payer.getContactInfo().getEmail(), payer.getContactInfo().getPhoneNumber()));
+            payment.setIp(payer.getResource().getClientInfo().getIpAddress());
+            payment.setFingerprint(payer.getResource().getClientInfo().getFingerprint());
+        } else if (paymentOrigin.getPayer().isSetPaymentResource()) {
+            //TODO
+        }
     }
 
     @Override
