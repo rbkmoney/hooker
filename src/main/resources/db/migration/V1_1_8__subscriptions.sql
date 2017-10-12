@@ -1,6 +1,9 @@
 CREATE TYPE hook.customer_status AS ENUM ('ready','unready');
 CREATE TYPE hook.customer_binding_status AS ENUM ('created','succeeded','failed');
 CREATE TYPE hook.message_topic AS ENUM ('InvoicesTopic','CustomersTopic');
+CREATE TYPE hook.payment_payer_type AS ENUM ('CustomerPayer','PaymentResourcePayer');
+CREATE TYPE hook.payment_tool_details_type AS ENUM ('PaymentToolDetailsBankCard', 'PaymentToolDetailsPaymentTerminal');
+CREATE TYPE hook.payment_terminal_provider AS ENUM ('euroset');
 CREATE TABLE hook.customer
 (
     id bigserial not null,
@@ -13,10 +16,10 @@ CREATE TABLE hook.customer
     binding_id character varying,
     payment_tool_token character varying,
     payment_session character varying,
-    payment_tool_details character varying,
+    payment_tool_details_type hook.payment_tool_details_type,
     payment_card_number_mask character varying,
     payment_system character varying,
-    payment_terminal_provider character varying,
+    payment_terminal_provider hook.payment_terminal_provider,
     ip character varying,
     fingerprint character varying,
     binding_status hook.customer_binding_status,
@@ -27,5 +30,10 @@ CREATE TABLE hook.customer
 );
 
 ALTER TABLE hook.message ADD COLUMN payment_customer_id character varying;
+ALTER TABLE hook.message ADD COLUMN payment_payer_type hook.payment_payer_type;
+ALTER TABLE hook.message ADD COLUMN payment_tool_details_type hook.payment_tool_details_type;
+ALTER TABLE hook.message ADD COLUMN payment_card_number_mask character varying;
+ALTER TABLE hook.message ADD COLUMN payment_system character varying;
+ALTER TABLE hook.message ADD COLUMN payment_terminal_provider hook.payment_terminal_provider;
 ALTER TABLE hook.message ADD COLUMN topic message_topic;
 UPDATE hook.message SET topic='InvoicesTopic';

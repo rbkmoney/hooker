@@ -1,27 +1,18 @@
 package com.rbkmoney.hooker.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.rbkmoney.swag_webhook_events.Payer;
 
 /**
  * Created by inalarsanukaev on 15.05.17.
  */
-@JsonPropertyOrder({"id", "createdAt", "status", "error", "amount", "currency", "paymentToolToken", "paymentSession", "contactInfo", "ip", "fingerprint"})
 public class Payment {
     private String id;
     private String createdAt;
     private String status;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private PaymentStatusError error;
     private long amount;
     private String currency;
-    private String paymentToolToken;
-    private String paymentSession;
-    private PaymentContactInfo contactInfo;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String ip;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String fingerprint;
+    private Payer payer;
 
     public Payment(Payment other) {
         this.id = other.id;
@@ -32,13 +23,7 @@ public class Payment {
         }
         this.amount = other.amount;
         this.currency = other.currency;
-        this.paymentToolToken = other.paymentToolToken;
-        this.paymentSession = other.paymentSession;
-        if (other.contactInfo != null) {
-            this.contactInfo = new PaymentContactInfo(other.contactInfo);
-        }
-        this.ip = other.ip;
-        this.fingerprint = other.fingerprint;
+        this.payer = other.payer;
     }
 
     public Payment() {
@@ -92,43 +77,11 @@ public class Payment {
         this.currency = currency;
     }
 
-    public String getPaymentToolToken() {
-        return paymentToolToken;
+    public Payer getPayer() {
+        return payer;
     }
 
-    public void setPaymentToolToken(String paymentToolToken) {
-        this.paymentToolToken = paymentToolToken;
-    }
-
-    public String getPaymentSession() {
-        return paymentSession;
-    }
-
-    public void setPaymentSession(String paymentSession) {
-        this.paymentSession = paymentSession;
-    }
-
-    public PaymentContactInfo getContactInfo() {
-        return contactInfo;
-    }
-
-    public void setContactInfo(PaymentContactInfo contactInfo) {
-        this.contactInfo = contactInfo;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public String getFingerprint() {
-        return fingerprint;
-    }
-
-    public void setFingerprint(String fingerprint) {
-        this.fingerprint = fingerprint;
+    public void setPayer(Payer payer) {
+        this.payer = payer;
     }
 }

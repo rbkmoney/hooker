@@ -1,8 +1,10 @@
 package com.rbkmoney.hooker.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 
 import java.util.HashMap;
@@ -13,7 +15,6 @@ import java.util.Map;
  */
 @JsonPropertyOrder({"eventID", "occuredAt", "topic", "eventType", "invoice"})
 public class MessageJson {
-    public static final String INVOICES_TOPIC = "InvoicesTopic";
     private static Map<String, String> invoiceStatusesMapping = new HashMap<>();
     static {
         invoiceStatusesMapping.put("unpaid", "InvoiceCreated");
@@ -86,11 +87,14 @@ public class MessageJson {
         MessageJson messageJson = isInvoice ?  new InvoiceMessageJson() : new PaymentMessageJson(message.getPayment());
         messageJson.eventID = message.getEventId();
         messageJson.occuredAt = message.getEventTime();
-        messageJson.topic = INVOICES_TOPIC;
+        messageJson.topic = message.getTopic();
         messageJson.invoice = message.getInvoice();
 
         messageJson.eventType = isInvoice ? invoiceStatusesMapping.get(message.getInvoice().getStatus()) : paymentStatusesMapping.get(message.getPayment().getStatus()) ;
-        return new ObjectMapper().writeValueAsString(messageJson);
+        return new ObjectMapper()
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true)
+                .writeValueAsString(messageJson);
     }
 
     static class InvoiceMessageJson extends MessageJson{

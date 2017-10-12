@@ -1,12 +1,13 @@
 package com.rbkmoney.hooker;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.Hook;
+import com.rbkmoney.hooker.model.Message;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,7 +30,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.message;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by jeckep on 20.04.17.
@@ -48,8 +49,8 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     @Autowired
     SimpleRetryPolicyDao simpleRetryPolicyDao;
 
-    BlockingQueue<MockMessage> hook1Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<MockMessage> hook2Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<DataflowTest.MockMessage> hook1Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<DataflowTest.MockMessage> hook2Queue = new LinkedBlockingDeque<>(10);
 
     final List<Hook> hooks = new ArrayList<>();
     final String HOOK_1 = "/hook1";
@@ -90,7 +91,7 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed")));
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed")));
 
-        List<MockMessage> hooks = new ArrayList<>();
+        List<DataflowTest.MockMessage> hooks = new ArrayList<>();
 
         hooks.add(hook1Queue.poll(1, TimeUnit.SECONDS));
         hooks.add(hook1Queue.poll(1, TimeUnit.SECONDS));
@@ -124,12 +125,12 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
                 if (request.getPath().startsWith(HOOK_1)) {
-                    hook1Queue.put(extract(request));
+                    hook1Queue.put(DataflowTest.extractPaymentResourcePayer(request));
                     Thread.sleep(100);
                     return new MockResponse().setBody(HOOK_1).setResponseCode(200);
                 }
                 if (request.getPath().startsWith(HOOK_2)) {
-                    hook2Queue.put(extract(request));
+                    hook2Queue.put(DataflowTest.extractPaymentResourcePayer(request));
                     Thread.sleep(100);
                     return new MockResponse().setBody(HOOK_2).setResponseCode(200);
                 }
@@ -168,84 +169,5 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
 
 
         return server.getHostName() + ":" + server.getPort();
-    }
-
-    private static MockMessage extract(RecordedRequest request) {
-        final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        try {
-            request.getBody().writeTo(bout);
-            return new ObjectMapper().readValue(bout.toByteArray(), MockMessage.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static class MockMessage {
-        private long eventID;
-        private String occuredAt;
-        private String topic;
-        private String eventType;
-        private Invoice invoice;
-        private Payment payment;
-
-        public MockMessage() {
-        }
-
-        public MockMessage(long eventID, String occuredAt, String topic, String eventType, Invoice invoice, Payment payment) {
-            this.eventID = eventID;
-            this.occuredAt = occuredAt;
-            this.topic = topic;
-            this.eventType = eventType;
-            this.invoice = invoice;
-            this.payment = payment;
-        }
-
-        public long getEventID() {
-            return eventID;
-        }
-
-        public void setEventID(long eventID) {
-            this.eventID = eventID;
-        }
-
-        public String getOccuredAt() {
-            return occuredAt;
-        }
-
-        public void setOccuredAt(String occuredAt) {
-            this.occuredAt = occuredAt;
-        }
-
-        public String getTopic() {
-            return topic;
-        }
-
-        public void setTopic(String topic) {
-            this.topic = topic;
-        }
-
-        public String getEventType() {
-            return eventType;
-        }
-
-        public void setEventType(String eventType) {
-            this.eventType = eventType;
-        }
-
-        public Invoice getInvoice() {
-            return invoice;
-        }
-
-        public void setInvoice(Invoice invoice) {
-            this.invoice = invoice;
-        }
-
-        public Payment getPayment() {
-            return payment;
-        }
-
-        public void setPayment(Payment payment) {
-            this.payment = payment;
-        }
     }
 }

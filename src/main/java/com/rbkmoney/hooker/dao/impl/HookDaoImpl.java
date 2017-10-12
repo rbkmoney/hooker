@@ -195,7 +195,7 @@ public class HookDaoImpl implements HookDao {
             log.error("Fail to create hook: " + hook, e);
             throw new DaoException(e);
         }
-        log.debug("Webhook with id = {} created.", hook.getId());
+        log.info("Webhook with id = {} created.", hook.getId());
         return hook;
     }
 

@@ -1,5 +1,7 @@
 package com.rbkmoney.hooker.handler.poller.impl;
 
+import com.rbkmoney.damsel.domain.BankCard;
+import com.rbkmoney.damsel.domain.DisposablePaymentResource;
 import com.rbkmoney.damsel.domain.InvoicePayment;
 import com.rbkmoney.damsel.domain.PaymentResourcePayer;
 import com.rbkmoney.damsel.payment_processing.Event;
@@ -11,9 +13,7 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Payment;
-import com.rbkmoney.hooker.model.PaymentContactInfo;
-import com.rbkmoney.swag_webhook_events.ClientInfo;
-import com.rbkmoney.swag_webhook_events.InvoiceCartLine;
+import com.rbkmoney.swag_webhook_events.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -52,14 +52,35 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         payment.setAmount(paymentOrigin.getCost().getAmount());
         payment.setCurrency(paymentOrigin.getCost().getCurrency().getSymbolicCode());
         if (paymentOrigin.getPayer().isSetPaymentResource()) {
-            PaymentResourcePayer payer = paymentOrigin.getPayer().getPaymentResource();
-            payment.setPaymentToolToken(payer.getResource().getPaymentTool().getBankCard().getToken());
-            payment.setPaymentSession(payer.getResource().getPaymentSessionId());
-            payment.setContactInfo(new PaymentContactInfo(payer.getContactInfo().getEmail(), payer.getContactInfo().getPhoneNumber()));
-            payment.setIp(payer.getResource().getClientInfo().getIpAddress());
-            payment.setFingerprint(payer.getResource().getClientInfo().getFingerprint());
-        } else if (paymentOrigin.getPayer().isSetPaymentResource()) {
-            //TODO
+            PaymentResourcePayer payerOrigin = paymentOrigin.getPayer().getPaymentResource();
+            DisposablePaymentResource resourceOrigin = payerOrigin.getResource();
+            com.rbkmoney.swag_webhook_events.PaymentResourcePayer payer = new com.rbkmoney.swag_webhook_events.PaymentResourcePayer()
+                    .paymentSession(resourceOrigin.getPaymentSessionId())
+                    .contactInfo(new ContactInfo()
+                            .email(payerOrigin.getContactInfo().getEmail())
+                            .phoneNumber(payerOrigin.getContactInfo().getPhoneNumber()))
+                    .clientInfo(new ClientInfo()
+                            .ip(resourceOrigin.getClientInfo().getIpAddress())
+                            .fingerprint(resourceOrigin.getClientInfo().getFingerprint()));
+            payer.payerType(Payer.PayerTypeEnum.PAYMENTRESOURCEPAYER);
+            payment.setPayer(payer);
+
+            if (resourceOrigin.getPaymentTool().isSetPaymentTerminal()) {
+                payer.setPaymentToolDetails(new PaymentToolDetailsPaymentTerminal()
+                        .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(resourceOrigin.getPaymentTool().getPaymentTerminal().getTerminalType().name()))
+                        .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL));
+            } else if (resourceOrigin.getPaymentTool().isSetBankCard()) {
+                BankCard bankCard = resourceOrigin.getPaymentTool().getBankCard();
+                payer.paymentToolToken(bankCard.getToken());
+                payer.setPaymentToolDetails(new PaymentToolDetailsBankCard()
+                        .cardNumberMask(bankCard.getMaskedPan())
+                        .paymentSystem(bankCard.getPaymentSystem().name())
+                        .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD));
+            }
+        } else if (paymentOrigin.getPayer().isSetCustomer()) {
+            payment.setPayer(new CustomerPayer()
+                    .customerID(paymentOrigin.getPayer().getCustomer().getCustomerId())
+                    .payerType(Payer.PayerTypeEnum.CUSTOMERPAYER));
         }
     }
 
