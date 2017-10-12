@@ -165,6 +165,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                     setPaymentToolDetails(rs, payer);
                     payment.setPayer(payer);
                     break;
+                default:
+                    throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));
             }
             payment.getPayer().setPayerType(payerType);
         }
@@ -183,6 +185,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 payer.setPaymentToolDetails(new PaymentToolDetailsPaymentTerminal()
                         .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(rs.getString(PAYMENT_TERMINAL_PROVIDER))));
                 break;
+            default:
+                throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
         }
         payer.getPaymentToolDetails().detailsType(detailsType);
     }
@@ -312,6 +316,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                             .addValue(PAYMENT_FINGERPRINT, payer.getClientInfo().getFingerprint());
                     setPaymentToolDetailsParam(params, payer);
                     break;
+                default:
+                    throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));
             }
         }
         try {
@@ -343,6 +349,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 PaymentToolDetailsPaymentTerminal pTerminal = (PaymentToolDetailsPaymentTerminal) payer.getPaymentToolDetails();
                 params.addValue(PAYMENT_TERMINAL_PROVIDER, pTerminal.getProvider().getValue());
                 break;
+            default:
+                throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
         }
     }
 
