@@ -4,6 +4,7 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.swag_webhook_events.CustomerPayer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static com.rbkmoney.hooker.utils.BuildUtils.message;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by inalarsanukaev on 09.04.17.
@@ -36,7 +38,8 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         if(!messagesCreated){
             messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
-            messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status", cart()));
+            messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), true));
+            messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false));
             messagesCreated = true;
         }
     }
@@ -65,6 +68,9 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
         assertEquals(message.getInvoice().getCart().size(), 2);
 
         assertEquals(1, messageDao.getBy(Arrays.asList(message.getId())).size());
+
+        Message payment = messageDao.getAny("1234", AbstractInvoiceEventHandler.PAYMENT);
+        assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);
     }
 
     @Test

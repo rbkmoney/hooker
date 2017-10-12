@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
@@ -8,6 +9,8 @@ import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
+import com.rbkmoney.swag_webhook_events.CustomerPayer;
+import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -49,11 +52,13 @@ public class DataflowTest extends AbstractIntegrationTest {
 
     BlockingQueue<MockMessage> hook1Queue = new LinkedBlockingDeque<>(10);
     BlockingQueue<MockMessage> hook2Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> hook3Queue = new LinkedBlockingDeque<>(10);
     BlockingQueue<MockMessage> hookBrokenQueue = new LinkedBlockingDeque<>(10);
 
     final List<Hook> hooks = new ArrayList<>();
     final String HOOK_1 = "/hook1";
     final String HOOK_2 = "/hook2";
+    final String HOOK_3 = "/hook3";
     final String BROKEN_HOOK = "/brokenhook";
 
     String baseServerUrl;
@@ -69,6 +74,7 @@ public class DataflowTest extends AbstractIntegrationTest {
 
             hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
             hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
+            hooks.add(hookDao.create(hook("partyId2", "http://" + baseServerUrl + HOOK_3, EventType.INVOICE_PAYMENT_STATUS_CHANGED)));
         }
     }
 
@@ -87,15 +93,18 @@ public class DataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<Message> sourceMessages = new ArrayList<>();
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_CREATED, "status", cart())));
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true)));
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"2", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status")));
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status")));
 
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"4", "qwe", EventType.INVOICE_CREATED, "status")));
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"5", "qwe", EventType.INVOICE_CREATED, "status")));
 
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"6", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false)));
+
         List<MockMessage> hook1 = new ArrayList<>();
         List<MockMessage> hook2 = new ArrayList<>();
+        List<MockMessage> hook3 = new ArrayList<>();
 
         for (int i = 0; i < 2; i++) {
             hook1.add(hook1Queue.poll(1, TimeUnit.SECONDS));
@@ -113,8 +122,14 @@ public class DataflowTest extends AbstractIntegrationTest {
             assertEquals(sourceMessages.get(i).getInvoice().getId(), hook2.get(i).getInvoice().getId());
         }
 
+        for (int i = 0; i < 1; i++) {
+            hook3.add(hook3Queue.poll(1, TimeUnit.SECONDS));
+        }
+        assertTrue(hook3.get(0).getPayment().getPayer() instanceof CustomerPayer);
+
         assertTrue(hook1Queue.isEmpty());
         assertTrue(hook2Queue.isEmpty());
+        assertTrue(hook3Queue.isEmpty());
 
         Thread.currentThread().sleep(1000);
 
@@ -156,18 +171,22 @@ public class DataflowTest extends AbstractIntegrationTest {
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
                 if (request.getPath().startsWith(HOOK_1)) {
-                    hook1Queue.put(extract(request));
+                    hook1Queue.put(extractPaymentResourcePayer(request));
                     Thread.sleep(100);
                     return new MockResponse().setBody(HOOK_1).setResponseCode(200);
                 }
                 if (request.getPath().startsWith(HOOK_2)) {
-                    hook2Queue.put(extract(request));
+                    hook2Queue.put(extractPaymentResourcePayer(request));
                     Thread.sleep(100);
                     return new MockResponse().setBody(HOOK_2).setResponseCode(200);
                 }
-
+                if (request.getPath().startsWith(HOOK_3)) {
+                    hook3Queue.put(extractCustomerPayer(request));
+                    Thread.sleep(100);
+                    return new MockResponse().setBody(HOOK_3).setResponseCode(200);
+                }
                 if (request.getPath().startsWith(BROKEN_HOOK)) {
-                    hookBrokenQueue.put(extract(request));
+                    hookBrokenQueue.put(extractPaymentResourcePayer(request));
                     Thread.sleep(100);
                     return new MockResponse().setBody(BROKEN_HOOK).setResponseCode(500);
                 }
@@ -208,35 +227,102 @@ public class DataflowTest extends AbstractIntegrationTest {
         return server.getHostName() + ":" + server.getPort();
     }
 
-    private static MockMessage extract(RecordedRequest request) {
+    public static MockMessage extractPaymentResourcePayer(RecordedRequest request) {
         final ByteArrayOutputStream bout = new ByteArrayOutputStream();
         try {
             request.getBody().writeTo(bout);
-            return new ObjectMapper().readValue(bout.toByteArray(), MockMessage.class);
+            return new ObjectMapper()
+                    .configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true)
+                    .readValue(bout.toByteArray(), MockMessagePaymentResource.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static class MockMessage {
+    public static MockMessage extractCustomerPayer(RecordedRequest request) {
+        final ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        try {
+            request.getBody().writeTo(bout);
+            return new ObjectMapper()
+                    .configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true)
+                    .readValue(bout.toByteArray(), MockMessageCustomer.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static class MockMessagePaymentResource extends MockMessage {
+        private Payment payment;
+
+        @Override
+        public Payment getPayment() {
+            return payment;
+        }
+
+        public void setPayment(Payment payment) {
+            this.payment = payment;
+        }
+
+        public class Payment extends com.rbkmoney.hooker.model.Payment{
+            private PaymentResourcePayer payer;
+
+            @Override
+            public PaymentResourcePayer getPayer() {
+                return payer;
+            }
+
+            public void setPayer(PaymentResourcePayer payer) {
+                this.payer = payer;
+            }
+
+            public class PaymentResourcePayer extends com.rbkmoney.swag_webhook_events.PaymentResourcePayer {
+                private PaymentToolDetailsBankCard paymentToolDetails;
+
+                @Override
+                public PaymentToolDetailsBankCard getPaymentToolDetails() {
+                    return paymentToolDetails;
+                }
+
+                public void setPaymentToolDetails(PaymentToolDetailsBankCard paymentToolDetails) {
+                    this.paymentToolDetails = paymentToolDetails;
+                }
+            }
+        }
+    }
+
+    public static class MockMessageCustomer extends MockMessage {
+        private Payment payment;
+
+        @Override
+        public Payment getPayment() {
+            return payment;
+        }
+
+        public void setPayment(Payment payment) {
+            this.payment = payment;
+        }
+
+        public class Payment extends com.rbkmoney.hooker.model.Payment{
+            private CustomerPayer payer;
+
+            @Override
+            public CustomerPayer getPayer() {
+                return payer;
+            }
+
+            public void setPayer(CustomerPayer payer) {
+                this.payer = payer;
+            }
+        }
+    }
+
+    public static class MockMessage {
         private long eventID;
         private String occuredAt;
         private String topic;
         private String eventType;
         private Invoice invoice;
         private Payment payment;
-
-        public MockMessage(long eventID, String occuredAt, String topic, String eventType, Invoice invoice, Payment payment) {
-            this.eventID = eventID;
-            this.occuredAt = occuredAt;
-            this.topic = topic;
-            this.eventType = eventType;
-            this.invoice = invoice;
-            this.payment = payment;
-        }
-
-        public MockMessage() {
-        }
 
         public long getEventID() {
             return eventID;

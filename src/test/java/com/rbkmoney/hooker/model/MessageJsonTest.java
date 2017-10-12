@@ -21,9 +21,17 @@ public class MessageJsonTest {
 
     @Test
     public void testCart() throws JsonProcessingException {
-        Message message = BuildUtils.message(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart());
+        Message message = BuildUtils.message(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), true);
         String messageJson = MessageJson.buildMessageJson(message);
         System.out.println(messageJson);
         Assert.assertTrue(messageJson.contains("taxMode"));
+    }
+
+    @Test
+    public void testCustomer() throws JsonProcessingException {
+        Message message = BuildUtils.message(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), false);
+        String messageJson = MessageJson.buildMessageJson(message);
+        System.out.println(messageJson);
+        Assert.assertTrue(messageJson.contains("CustomerPayer"));
     }
 }

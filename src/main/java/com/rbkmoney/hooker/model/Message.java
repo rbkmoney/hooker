@@ -13,6 +13,7 @@ public class Message {
     private String type;
     private String partyId;
     private EventType eventType;
+    private String topic;
     private Invoice invoice;
     private Payment payment;
 
@@ -23,6 +24,7 @@ public class Message {
         this.type = other.type;
         this.partyId = other.partyId;
         this.eventType = other.eventType;
+        this.topic = other.topic;
         if (other.invoice != null) {
             this.invoice = new Invoice(other.invoice);
         }
@@ -91,6 +93,14 @@ public class Message {
 
     public void setEventType(EventType eventType) {
         this.eventType = eventType;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public Invoice getInvoice() {

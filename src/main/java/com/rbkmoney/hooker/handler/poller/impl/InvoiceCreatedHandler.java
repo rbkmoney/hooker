@@ -37,6 +37,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         Message message = new Message();
+        message.setTopic(com.rbkmoney.swag_webhook_events.Event.TopicEnum.INVOICESTOPIC.getValue());
         message.setEventId(event.getId());
         message.setEventTime(event.getCreatedAt());
         message.setType(INVOICE);
