@@ -41,7 +41,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     public static final String TYPE = "type";
     public static final String PARTY_ID = "party_id";
     public static final String EVENT_TYPE = "event_type";
-    public static final String TOPIC = "topic";
     public static final String INVOICE_ID = "invoice_id";
     public static final String SHOP_ID = "shop_id";
     public static final String INVOICE_CREATED_AT = "invoice_created_at";
@@ -118,7 +117,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         message.setType(rs.getString(TYPE));
         message.setPartyId(rs.getString(PARTY_ID));
         message.setEventType(EventType.valueOf(rs.getString(EVENT_TYPE)));
-        message.setTopic(rs.getString(TOPIC));
         Invoice invoice = new Invoice();
         message.setInvoice(invoice);
         invoice.setId(rs.getString(INVOICE_ID));
@@ -254,14 +252,14 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     @Transactional
     public Message create(Message message) throws DaoException {
         final String sql = "INSERT INTO hook.message" +
-                "(event_id, event_time, type, party_id, event_type, topic, " +
+                "(event_id, event_time, type, party_id, event_type, " +
                 "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
                 "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
                 "payment_id, payment_created_at, payment_status, payment_error_code, payment_error_message, payment_amount, " +
                 "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
                 "payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider) " +
                 "VALUES " +
-                "(:event_id, :event_time, :type, :party_id, CAST(:event_type as hook.eventtype), CAST(:topic as hook.message_topic), " +
+                "(:event_id, :event_time, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
                 ":invoice_currency, :invoice_content_type, :invoice_content_data, :invoice_product, :invoice_description, " +
                 ":payment_id, :payment_created_at, :payment_status, :payment_error_code, :payment_error_message, :payment_amount, " +
@@ -275,7 +273,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 .addValue(TYPE, message.getType())
                 .addValue(PARTY_ID, message.getPartyId())
                 .addValue(EVENT_TYPE, message.getEventType().toString())
-                .addValue(TOPIC, message.getTopic())
                 .addValue(INVOICE_ID, message.getInvoice().getId())
                 .addValue(SHOP_ID, message.getInvoice().getShopID())
                 .addValue(INVOICE_CREATED_AT, message.getInvoice().getCreatedAt())

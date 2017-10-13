@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.handler.poller.impl;
+package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;

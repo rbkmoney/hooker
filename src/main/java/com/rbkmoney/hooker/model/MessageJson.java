@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
+import com.rbkmoney.swag_webhook_events.Event;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +88,7 @@ public class MessageJson {
         MessageJson messageJson = isInvoice ?  new InvoiceMessageJson() : new PaymentMessageJson(message.getPayment());
         messageJson.eventID = message.getEventId();
         messageJson.occuredAt = message.getEventTime();
-        messageJson.topic = message.getTopic();
+        messageJson.topic = Event.TopicEnum.INVOICESTOPIC.getValue();
         messageJson.invoice = message.getInvoice();
 
         messageJson.eventType = isInvoice ? invoiceStatusesMapping.get(message.getInvoice().getStatus()) : paymentStatusesMapping.get(message.getPayment().getStatus()) ;
