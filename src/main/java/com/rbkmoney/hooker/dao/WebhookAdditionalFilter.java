@@ -7,20 +7,20 @@ import com.rbkmoney.hooker.model.EventType;
  */
 public class WebhookAdditionalFilter {
     private EventType eventType;
-    private String invoiceShopId;
+    private String shopId;
     private String invoiceStatus;
     private String invoicePaymentStatus;
 
-    public WebhookAdditionalFilter(EventType eventType, String invoiceShopId, String invoiceStatus, String invoicePaymentStatus) {
+    public WebhookAdditionalFilter(EventType eventType, String shopId, String invoiceStatus, String invoicePaymentStatus) {
         this.eventType = eventType;
-        this.invoiceShopId = invoiceShopId;
+        this.shopId = shopId;
         this.invoiceStatus = invoiceStatus;
         this.invoicePaymentStatus = invoicePaymentStatus;
     }
 
-    public WebhookAdditionalFilter(EventType eventType, String invoiceShopId) {
+    public WebhookAdditionalFilter(EventType eventType, String shopId) {
         this.eventType = eventType;
-        this.invoiceShopId = invoiceShopId;
+        this.shopId = shopId;
     }
 
     public WebhookAdditionalFilter(EventType eventType) {
@@ -39,12 +39,12 @@ public class WebhookAdditionalFilter {
         this.eventType = eventType;
     }
 
-    public String getInvoiceShopId() {
-        return invoiceShopId;
+    public String getShopId() {
+        return shopId;
     }
 
-    public void setInvoiceShopId(String invoiceShopId) {
-        this.invoiceShopId = invoiceShopId;
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
     }
 
     public String getInvoiceStatus() {

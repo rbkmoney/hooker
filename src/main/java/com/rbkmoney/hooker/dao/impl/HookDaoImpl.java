@@ -215,7 +215,7 @@ public class HookDaoImpl implements HookDao {
         for (WebhookAdditionalFilter webhookAdditionalFilter : webhookAdditionalFilters) {
             MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource("hook_id", hookId)
                     .addValue("event_type", webhookAdditionalFilter.getEventType().toString())
-                    .addValue("invoice_shop_id", webhookAdditionalFilter.getInvoiceShopId())
+                    .addValue("invoice_shop_id", webhookAdditionalFilter.getShopId())
                     .addValue("invoice_status", webhookAdditionalFilter.getInvoiceStatus())
                     .addValue("invoice_payment_status", webhookAdditionalFilter.getInvoicePaymentStatus());
             batchValues.add(mapSqlParameterSource.getValues());

@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.Assert;
 import org.junit.Test;

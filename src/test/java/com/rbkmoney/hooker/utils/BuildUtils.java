@@ -18,7 +18,6 @@ public class BuildUtils {
 
     public static Message message(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
         Message message = new Message();
-        message.setTopic(com.rbkmoney.swag_webhook_events.Event.TopicEnum.INVOICESTOPIC.getValue());
         message.setEventId(5555);
         message.setEventTime("time");
         message.setType(type);

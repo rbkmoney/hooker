@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.handler.poller.impl;
+package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
 import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.domain.InvoiceCart;
@@ -37,7 +37,6 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         Message message = new Message();
-        message.setTopic(com.rbkmoney.swag_webhook_events.Event.TopicEnum.INVOICESTOPIC.getValue());
         message.setEventId(event.getId());
         message.setEventTime(event.getCreatedAt());
         message.setType(INVOICE);
