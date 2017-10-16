@@ -7,6 +7,7 @@ import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -23,6 +24,9 @@ import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
  * Created by inalarsanukaev on 13.10.17.
  */
 public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements CustomerDao {
+
+    @Autowired
+    CustomerTaskDao taskDao;
 
     Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -171,6 +175,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
             log.info("CustomerMessage {} saved to db.", message);
+            taskDao.create(message.getId());
             return message;
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't create customerMessage with customerId " + message.getCustomer().getId(), e);
@@ -189,6 +194,9 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
 
     @Override
     public List<CustomerMessage> getBy(Collection<Long> messageIds) {
+        if (messageIds.isEmpty()) {
+            return new ArrayList<>();
+        }
         final String sql = "SELECT DISTINCT * FROM hook.customer_message WHERE id in (:ids)";
         try {
             List<CustomerMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);

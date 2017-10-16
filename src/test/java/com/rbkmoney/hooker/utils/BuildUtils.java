@@ -95,7 +95,7 @@ public class BuildUtils {
                 .contactInfo(new ContactInfo().phoneNumber("1234").email("aaa@mail.ru")));
 
         if (customerMessage.isBinding()) {
-            new CustomerBinding()
+            customerMessage.setCustomerBinding(new CustomerBinding()
                     .id("12456")
                     .status(CustomerBinding.StatusEnum.CREATED)
             .paymentResource(new PaymentResource()
@@ -106,7 +106,7 @@ public class BuildUtils {
                     .cardNumberMask("1234")
                     .paymentSystem("visa")
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
-            ));
+            )));
         }
         return customerMessage;
     }

@@ -8,6 +8,7 @@ import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.swag_webhook_events.Customer;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,5 +40,6 @@ public class CustomerReadyHandler extends NeedReadCustomerEventHandler {
 
     @Override
     protected void modifyMessage(CustomerChange cc, Event event, CustomerMessage message) {
+        message.getCustomer().setStatus(Customer.StatusEnum.READY);
     }
 }

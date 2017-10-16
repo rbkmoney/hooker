@@ -1,6 +1,7 @@
-package com.rbkmoney.hooker.scheduler;
+package com.rbkmoney.hooker.scheduler.invoicing;
 
 import com.rbkmoney.hooker.dao.TaskDao;
+import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.MessageJson;
@@ -26,7 +27,7 @@ public class MessageSender implements Runnable {
     private Signer signer;
     private PostSender postSender;
 
-    public MessageSender(Hook hook, List<Message> messages, TaskDao taskDao, MessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
+    public MessageSender(Hook hook, List<Message> messages, InvoicingTaskDao taskDao, MessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
         this.hook = hook;
         this.messages = messages;
         this.taskDao = taskDao;

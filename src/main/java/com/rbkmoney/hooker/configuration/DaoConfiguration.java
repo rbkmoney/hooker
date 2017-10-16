@@ -34,8 +34,14 @@ public class DaoConfiguration {
 
     @Bean
     @DependsOn("dbInitializer")
-    public TaskDao taskDao(DataSource dataSource) {
-        return new TaskDaoImpl(dataSource);
+    public InvoicingTaskDao invoicingTaskDao(DataSource dataSource) {
+        return new InvoicingTaskDao(dataSource);
+    }
+
+    @Bean
+    @DependsOn("dbInitializer")
+    public CustomerTaskDao customerTaskDao(DataSource dataSource) {
+        return new CustomerTaskDao(dataSource);
     }
 
     @Bean

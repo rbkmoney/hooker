@@ -31,7 +31,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    TaskDao taskDao;
+    InvoicingTaskDao taskDao;
 
     @Autowired
     CacheManager cacheManager;
