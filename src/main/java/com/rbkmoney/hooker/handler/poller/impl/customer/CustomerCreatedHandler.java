@@ -6,9 +6,15 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
+import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.swag_webhook_events.ContactInfo;
+import com.rbkmoney.swag_webhook_events.Customer;
 import com.rbkmoney.swag_webhook_events.CustomerCreated;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,6 +22,9 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
+
+    @Autowired
+    CustomerDao customerDao;
 
     private Filter filter;
 
@@ -32,7 +41,22 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
 
     @Override
     protected void saveEvent(CustomerChange cc, Event event) throws DaoException {
-        com.rbkmoney.damsel.payment_processing.CustomerCreated customerOrigin = cc.getCustomerCreated();
-        CustomerCreated customer = new CustomerCreated();
+        com.rbkmoney.damsel.payment_processing.Customer customerOrigin = cc.getCustomerCreated().getCustomer();
+        CustomerMessage customerMessage = new CustomerMessage();
+        customerMessage.setEventId(event.getId());
+        customerMessage.setOccuredAt(event.getCreatedAt());
+        customerMessage.setType(CUSTOMER);
+        customerMessage.setPartyId(customerOrigin.getOwnerId());
+        customerMessage.setEventType(eventType);
+        Customer customer = new Customer()
+                .id(customerOrigin.getId())
+                .shopID(customerOrigin.getShopId())
+                .status(Customer.StatusEnum.fromValue(customerOrigin.getStatus().getSetField().getFieldName()))
+                .contactInfo(new ContactInfo()
+                        .email(customerOrigin.getContactInfo().getEmail())
+                        .phoneNumber(customerOrigin.getContactInfo().getPhoneNumber()))
+                .metadata(customerOrigin.getMetadata());
+        customerMessage.setCustomer(customer);
+        customerDao.create(customerMessage);
     }
 }

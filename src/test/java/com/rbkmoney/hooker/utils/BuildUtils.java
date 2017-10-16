@@ -80,4 +80,34 @@ public class BuildUtils {
         cart.add(new InvoiceCartPosition("Квакушка", 456L,6, 6 * 456L, null));
         return cart;
     }
+
+    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, String type, String custId, String shopId, Customer.StatusEnum custStatus){
+        CustomerMessage customerMessage = new CustomerMessage();
+        customerMessage.setEventId(eventId);
+        customerMessage.setPartyId(partyId);
+        customerMessage.setOccuredAt("time");
+        customerMessage.setEventType(eventType);
+        customerMessage.setType(type);
+        customerMessage.setCustomer(new Customer()
+                .id(custId)
+                .shopID(shopId)
+                .status(custStatus)
+                .contactInfo(new ContactInfo().phoneNumber("1234").email("aaa@mail.ru")));
+
+        if (customerMessage.isBinding()) {
+            new CustomerBinding()
+                    .id("12456")
+                    .status(CustomerBinding.StatusEnum.CREATED)
+            .paymentResource(new PaymentResource()
+            .paymentToolToken("shjfbergiwengriweno")
+            .paymentSession("wrgnjwierngweirngi")
+            .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
+            .paymentToolDetails(new PaymentToolDetailsBankCard()
+                    .cardNumberMask("1234")
+                    .paymentSystem("visa")
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
+            ));
+        }
+        return customerMessage;
+    }
 }

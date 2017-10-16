@@ -7,6 +7,7 @@ import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +23,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
+
+import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
 public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
@@ -160,7 +161,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                                     .fingerprint(rs.getString(PAYMENT_FINGERPRINT))
                                     .ip(rs.getString(PAYMENT_IP)));
 
-                    setPaymentToolDetails(rs, payer);
+                    payer.setPaymentToolDetails(getPaymentToolDetails(rs.getString(PAYMENT_TOOL_DETAILS_TYPE), rs.getString(PAYMENT_CARD_NUMBER_MASK), rs.getString(PAYMENT_SYSTEM), rs.getString(PAYMENT_TERMINAL_PROVIDER)));
                     payment.setPayer(payer);
                     break;
                 default:
@@ -170,24 +171,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         }
         return message;
     };
-
-    private static void setPaymentToolDetails(ResultSet rs, PaymentResourcePayer payer) throws SQLException {
-        PaymentToolDetails.DetailsTypeEnum detailsType = PaymentToolDetails.DetailsTypeEnum.fromValue(rs.getString(PAYMENT_TOOL_DETAILS_TYPE));
-        switch (detailsType) {
-            case PAYMENTTOOLDETAILSBANKCARD:
-                payer.setPaymentToolDetails(new PaymentToolDetailsBankCard()
-                        .cardNumberMask(rs.getString(PAYMENT_CARD_NUMBER_MASK))
-                        .paymentSystem(rs.getString(PAYMENT_SYSTEM)));
-                break;
-            case PAYMENTTOOLDETAILSPAYMENTTERMINAL:
-                payer.setPaymentToolDetails(new PaymentToolDetailsPaymentTerminal()
-                        .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(rs.getString(PAYMENT_TERMINAL_PROVIDER))));
-                break;
-            default:
-                throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
-        }
-        payer.getPaymentToolDetails().detailsType(detailsType);
-    }
 
     public MessageDaoImpl(DataSource dataSource) {
         setDataSource(dataSource);
@@ -311,7 +294,9 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                             .addValue(PAYMENT_PHONE,payer.getContactInfo().getPhoneNumber())
                             .addValue(PAYMENT_IP, payer.getClientInfo().getIp())
                             .addValue(PAYMENT_FINGERPRINT, payer.getClientInfo().getFingerprint());
-                    setPaymentToolDetailsParam(params, payer);
+
+                    PaymentToolUtils.setPaymentToolDetailsParam(params, payer.getPaymentToolDetails(),
+                            PAYMENT_TOOL_DETAILS_TYPE, PAYMENT_CARD_NUMBER_MASK, PAYMENT_SYSTEM, PAYMENT_TERMINAL_PROVIDER);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));
@@ -330,24 +315,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             return message;
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't create message with invoice_id "+ message.getInvoice().getId(), e);
-        }
-    }
-
-    private void setPaymentToolDetailsParam(MapSqlParameterSource params, PaymentResourcePayer payer) {
-        PaymentToolDetails.DetailsTypeEnum detailsType = payer.getPaymentToolDetails().getDetailsType();
-        params.addValue(PAYMENT_TOOL_DETAILS_TYPE, detailsType.getValue());
-        switch (detailsType) {
-            case PAYMENTTOOLDETAILSBANKCARD:
-                PaymentToolDetailsBankCard pCard = (PaymentToolDetailsBankCard) payer.getPaymentToolDetails();
-                params.addValue(PAYMENT_CARD_NUMBER_MASK, pCard.getCardNumberMask())
-                        .addValue(PAYMENT_SYSTEM, pCard.getPaymentSystem());
-                break;
-            case PAYMENTTOOLDETAILSPAYMENTTERMINAL:
-                PaymentToolDetailsPaymentTerminal pTerminal = (PaymentToolDetailsPaymentTerminal) payer.getPaymentToolDetails();
-                params.addValue(PAYMENT_TERMINAL_PROVIDER, pTerminal.getProvider().getValue());
-                break;
-            default:
-                throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
         }
     }
 

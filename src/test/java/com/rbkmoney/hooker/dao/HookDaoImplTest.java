@@ -59,6 +59,11 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         String pubKey2 = hook.getPubKey();
         ids.add(hook.getId());
         Assert.assertEquals(pubKey1, pubKey2);
+        webhookAdditionalFilters.clear();
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.CUSTOMER_CREATED));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.CUSTOMER_BINDING_SUCCEEDED));
+        webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
+        hook = hookDao.create(HookConverter.convert(webhookParams));
     }
 
     @After
@@ -85,7 +90,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getPartyWebhooks() throws Exception {
-        assertEquals(hookDao.getPartyHooks("123").size(), 2);
+        assertEquals(hookDao.getPartyHooks("123").size(), 3);
         Assert.assertTrue(hookDao.getPartyHooks("88888").isEmpty());
     }
 
