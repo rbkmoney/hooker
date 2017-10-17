@@ -1,8 +1,8 @@
-package com.rbkmoney.hooker.scheduler;
+package com.rbkmoney.hooker.scheduler.invoicing;
 
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.dao.TaskDao;
+import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;
@@ -31,7 +31,7 @@ public class MessageScheduler {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private TaskDao taskDao;
+    private InvoicingTaskDao taskDao;
 
     @Autowired
     private HookDao hookDao;

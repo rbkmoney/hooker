@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Created by jeckep on 17.04.17.
  */
@@ -25,7 +27,7 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
     HookDao hookDao;
 
     @Autowired
-    TaskDao taskDao;
+    List<TaskDao> taskDaoList;
 
     private long[] delays = {30, 300, 900, 3600}; //in seconds
 
@@ -42,7 +44,7 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
 
         if (rp.getFailCount() > delays.length) {
             hookDao.disable(rp.getHookId());
-            taskDao.removeAll(rp.getHookId());
+            taskDaoList.forEach(t -> t.removeAll(rp.getHookId()));
             log.warn("Hook: " + rp.getHookId() + " was disabled according to retry policy.");
         }
     }

@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.model;
 
-import com.rbkmoney.swag_webhook_events.Payer;
+import com.rbkmoney.swag_webhook_events.*;
 
 /**
  * Created by inalarsanukaev on 15.05.17.
@@ -23,7 +23,34 @@ public class Payment {
         }
         this.amount = other.amount;
         this.currency = other.currency;
-        this.payer = other.payer;
+        //TODO copy constructor
+        if (other.payer instanceof CustomerPayer) {
+            this.payer = new CustomerPayer()
+                    .customerID(((CustomerPayer) other.payer).getCustomerID());
+        } else if (other.payer instanceof PaymentResourcePayer) {
+            PaymentResourcePayer otherPayer = (PaymentResourcePayer) other.payer;
+            PaymentResourcePayer copyPayer = new PaymentResourcePayer()
+                    .paymentSession(otherPayer.getPaymentSession())
+                    .paymentToolToken(otherPayer.getPaymentToolToken())
+                    .clientInfo(new ClientInfo()
+                            .ip(otherPayer.getClientInfo().getIp())
+                            .fingerprint(otherPayer.getClientInfo().getFingerprint()))
+                    .contactInfo(new ContactInfo()
+                            .email(otherPayer.getContactInfo().getEmail())
+                            .phoneNumber(otherPayer.getContactInfo().getPhoneNumber()));
+            this.payer = copyPayer;
+            if (otherPayer.getPaymentToolDetails() instanceof PaymentToolDetailsBankCard) {
+                PaymentToolDetailsBankCard paymentToolDetails = (PaymentToolDetailsBankCard) otherPayer.getPaymentToolDetails();
+                copyPayer.setPaymentToolDetails(new PaymentToolDetailsBankCard()
+                        .cardNumberMask(paymentToolDetails.getCardNumberMask())
+                        .paymentSystem(paymentToolDetails.getPaymentSystem()));
+            } else if (otherPayer.getPaymentToolDetails() instanceof PaymentToolDetailsPaymentTerminal) {
+                copyPayer.setPaymentToolDetails(new PaymentToolDetailsPaymentTerminal()
+                        .provider(((PaymentToolDetailsPaymentTerminal) otherPayer.getPaymentToolDetails()).getProvider()));
+            }
+            copyPayer.getPaymentToolDetails().detailsType(otherPayer.getPaymentToolDetails().getDetailsType());
+        }
+        this.payer.payerType(other.payer.getPayerType());
     }
 
     public Payment() {

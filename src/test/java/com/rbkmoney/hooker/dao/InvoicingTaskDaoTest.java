@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.BuildUtils;
@@ -21,9 +22,9 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TaskDaoImplTest  extends AbstractIntegrationTest {
+public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Autowired
-    TaskDao taskDao;
+    InvoicingTaskDao taskDao;
 
     @Autowired
     HookDao hookDao;

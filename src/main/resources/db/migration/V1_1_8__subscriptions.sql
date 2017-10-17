@@ -66,3 +66,7 @@ ALTER TABLE hook.message ADD COLUMN payment_card_number_mask character varying;
 ALTER TABLE hook.message ADD COLUMN payment_system character varying;
 ALTER TABLE hook.message ADD COLUMN payment_terminal_provider hook.payment_terminal_provider;
 
+ALTER TABLE hook.scheduled_task DROP CONSTRAINT scheduled_task_fkey1;
+CREATE TYPE hook.message_topic AS ENUM ('InvoicesTopic','CustomersTopic');
+ALTER TABLE hook.scheduled_task ADD COLUMN message_type hook.message_topic;
+UPDATE hook.scheduled_task SET message_type = 'InvoicesTopic';
