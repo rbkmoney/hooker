@@ -1,44 +1,64 @@
 package com.rbkmoney.hooker.handler.poller;
 
 import com.rbkmoney.damsel.event_stock.StockEvent;
-import com.rbkmoney.damsel.payment_processing.InvoiceChange;
+import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.eventstock.client.EventAction;
 import com.rbkmoney.eventstock.client.EventHandler;
 import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.handler.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EventStockHandler implements EventHandler<StockEvent> {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    List<PollingEventHandler> pollingEventHandlers;
+    List<Handler> pollingEventHandlers;
+    private static final int INITIAL_VALUE = 3;
+    private final AtomicInteger count = new AtomicInteger(INITIAL_VALUE);
 
-    public EventStockHandler(List<PollingEventHandler> pollingEventHandlers) {
+    public EventStockHandler(List<Handler> pollingEventHandlers) {
         this.pollingEventHandlers = pollingEventHandlers;
     }
 
     @Override
     public EventAction handle(StockEvent stockEvent, String subsKey) {
-        if (stockEvent.getSourceEvent().getProcessingEvent().getPayload().isSetInvoiceChanges()) {
-            List<InvoiceChange> invoiceChanges = stockEvent.getSourceEvent().getProcessingEvent().getPayload().getInvoiceChanges();
-            for (InvoiceChange ic : invoiceChanges) {
-                for (PollingEventHandler pollingEventHandler : pollingEventHandlers) {
-                    if (pollingEventHandler.accept(ic)) {
-                        try {
-                            pollingEventHandler.handle(ic, stockEvent);
-                        } catch (DaoException e) {
-                            log.error("DaoException when poller handling", e);
-                        }catch (Exception e) {
-                            log.error("Error when poller handling", e);
+        EventPayload payload = stockEvent.getSourceEvent().getProcessingEvent().getPayload();
+        List changes;
+        if (payload.isSetInvoiceChanges()) {
+            changes = payload.getInvoiceChanges();
+        } else if (payload.isSetCustomerChanges()) {
+            changes = payload.getCustomerChanges();
+        } else return EventAction.CONTINUE;
+
+        long id = stockEvent.getSourceEvent().getProcessingEvent().getId();
+        for (Object cc : changes) {
+            for (Handler pollingEventHandler : pollingEventHandlers) {
+                if (pollingEventHandler.accept(cc)) {
+                    try {
+                        pollingEventHandler.handle(cc, stockEvent);
+                    } catch (DaoException e) {
+                        log.error("DaoException when poller handling with eventId {}", id, e);
+                        if (count.decrementAndGet() > 0) {
+                            log.warn("Retry handle with eventId {}", id);
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException e1) {
+                                log.warn("Waiting for retry is interrupted");
+                            }
+                            return EventAction.RETRY;
                         }
-                        break;
+                    } catch (Exception e) {
+                        log.error("Error when poller handling with id {}",  id, e);
                     }
+                    break;
                 }
             }
         }
+        count.set(INITIAL_VALUE);
         return EventAction.CONTINUE;
     }
 }

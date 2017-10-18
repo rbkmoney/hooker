@@ -2,9 +2,9 @@ package com.rbkmoney.hooker.scheduler.customer;
 
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
-import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
-import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.hooker.scheduler.invoicing.MessageScheduler;
+import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageJson;
+import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import com.rbkmoney.hooker.service.err.PostRequestException;

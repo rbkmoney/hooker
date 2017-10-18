@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.swag_webhook_events.Customer;
 import com.rbkmoney.swag_webhook_events.CustomerBinding;
-import com.rbkmoney.swag_webhook_events.CustomerDeleted;
 import com.rbkmoney.swag_webhook_events.Event;
 
 import java.util.HashMap;
