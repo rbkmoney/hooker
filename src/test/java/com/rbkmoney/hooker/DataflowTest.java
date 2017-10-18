@@ -125,7 +125,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         final String invoceId = "asgsdhghdhtfugny648";
         final String partyId = new Random().nextInt() + "";
         Hook hook = hookDao.create(hook(partyId, "http://" + baseServerUrl + BROKEN_HOOK, EventType.INVOICE_CREATED));
-        simpleRetryPolicyDao.update(new SimpleRetryPolicyRecord(hook.getId(), 76, 0));
+        simpleRetryPolicyDao.update(new SimpleRetryPolicyRecord(hook.getId(), 4, 0));
 
         Message message = messageDao.create(message(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status"));
         assertEquals(message.getInvoice().getId(), hookBrokenQueue.poll(1, TimeUnit.SECONDS).getInvoice().getId());
@@ -133,7 +133,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         Thread.sleep(1000);
 
         hook = hookDao.getHookById(hook.getId());
-        assertFalse(hook.isEnabled());
+        assertTrue(hook.isEnabled());
     }
 
     private static Hook hook(String partyId, String url, EventType... types) {
