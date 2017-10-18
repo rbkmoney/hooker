@@ -40,10 +40,16 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
         rp.setLastFailTime(System.currentTimeMillis());
         simpleRetryPolicyDao.update(rp);
 
+        //TODO REMOVE
         if (rp.getFailCount() > delays.length) {
-            hookDao.disable(rp.getHookId());
-            taskDao.removeAll(rp.getHookId());
-            log.warn("Hook: " + rp.getHookId() + " was disabled according to retry policy.");
+            //TODO RESTORE
+/*            hookDao.disable(rp.getHookId());
+            taskDao.removeAll(rp.getHookId());*/
+            //TODO REMOVE
+            rp.reset();
+            simpleRetryPolicyDao.update(rp);
+            //----------END OF REMOVE
+            log.warn("Hook: " + rp.getHookId() + " was NOT disabled according to retry policy.");
         }
     }
 
