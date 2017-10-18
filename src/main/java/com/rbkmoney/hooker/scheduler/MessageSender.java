@@ -11,6 +11,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -43,15 +44,17 @@ public class MessageSender implements Runnable {
                 final String signature = signer.sign(messageJson, hook.getPrivKey());
                 int statusCode = postSender.doPost(hook.getUrl(), messageJson, signature);
                 if (statusCode != HttpStatus.SC_OK) {
-                    log.warn("Wrong status code " + statusCode + " from merchant. Message id = " + message.getId());
-                    throw new PostRequestException("Internal server error for message id = " + message.getId());
+                    log.warn("Wrong status code {} from merchant, but we don't try to resend it. MessageId {}, invoiceId {}", statusCode, message.getId(), message.getInvoice().getId());
+                    //TODO RESTORE IT
+                   // throw new PostRequestException("Internal server error for message id = " + message.getId());
+                } else {
+                    log.info("{} is sent to {}", message, hook);
                 }
-                log.info("{} is sent to {}", message, hook);
                 taskDao.remove(hook.getId(), message.getId()); //required after message is sent
             }
             workerTaskScheduler.done(hook); // required after all messages processed
         } catch (Exception e) {
-            log.warn("Couldn't send message to hook: " + hook.toString(), e);
+            log.warn("Couldn't send message to hook {}. We'll try to resend it", hook.toString(), e);
             workerTaskScheduler.fail(hook); // required if fail to send message
         }
     }
