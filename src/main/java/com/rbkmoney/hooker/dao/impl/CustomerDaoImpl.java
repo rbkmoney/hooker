@@ -2,7 +2,8 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
@@ -16,7 +17,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import javax.sql.DataSource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 

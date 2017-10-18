@@ -3,8 +3,8 @@ package com.rbkmoney.hooker.configuration;
 import com.rbkmoney.eventstock.client.*;
 import com.rbkmoney.eventstock.client.poll.EventFlowFilter;
 import com.rbkmoney.eventstock.client.poll.PollingEventPublisherBuilder;
+import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.handler.poller.EventStockHandler;
-import com.rbkmoney.hooker.handler.poller.PollingEventHandler;
 import com.rbkmoney.hooker.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +28,7 @@ public class EventStockPollerConfig {
     int maxPoolSize;
 
     @Autowired
-    List<PollingEventHandler> pollingEventHandlers;
+    List<Handler> pollingEventHandlers;
 
     @Autowired
     EventService eventService;

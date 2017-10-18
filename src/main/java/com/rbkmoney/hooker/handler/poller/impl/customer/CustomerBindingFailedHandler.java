@@ -10,7 +10,6 @@ import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.PaymentStatusError;
 import com.rbkmoney.swag_webhook_events.CustomerBindingError;
 import org.springframework.stereotype.Component;
 
