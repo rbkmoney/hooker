@@ -1,8 +1,6 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.model.CustomerMessage;
-import com.rbkmoney.hooker.model.Message;
-
 
 import java.util.Collection;
 import java.util.List;

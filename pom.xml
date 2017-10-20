@@ -149,6 +149,11 @@
             <artifactId>shared-resources</artifactId>
             <version>${shared.resources.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.rbkmoney.geck</groupId>
+            <artifactId>serializer</artifactId>
+            <version>0.6.3</version>
+        </dependency>
         <!--Test libs-->
         <dependency>
             <groupId>org.hamcrest</groupId>

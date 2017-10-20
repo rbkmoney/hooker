@@ -2,13 +2,17 @@ package com.rbkmoney.hooker;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.hooker.dao.*;
+import com.rbkmoney.hooker.dao.CustomerDao;
+import com.rbkmoney.hooker.dao.HookDao;
+import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
+import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
-import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
+import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.BuildUtils;
-import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.swag_webhook_events.Customer;
+import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -23,14 +27,16 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static com.rbkmoney.hooker.utils.BuildUtils.cart;
-import static com.rbkmoney.hooker.utils.BuildUtils.message;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by jeckep on 20.04.17.

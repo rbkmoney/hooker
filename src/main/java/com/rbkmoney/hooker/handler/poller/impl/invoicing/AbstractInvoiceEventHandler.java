@@ -4,12 +4,12 @@ import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.handler.poller.PollingEventHandler;
+import com.rbkmoney.hooker.handler.Handler;
 
 /**
  * Created by inalarsanukaev on 07.04.17.
  */
-public abstract class AbstractInvoiceEventHandler implements PollingEventHandler {
+public abstract class AbstractInvoiceEventHandler implements Handler<InvoiceChange, StockEvent> {
 
     public static final String INVOICE = "invoice";
     public static final String PAYMENT = "payment";

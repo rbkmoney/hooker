@@ -1,6 +1,9 @@
 package com.rbkmoney.hooker.configuration;
 
-import com.rbkmoney.hooker.dao.*;
+import com.rbkmoney.hooker.dao.CustomerDao;
+import com.rbkmoney.hooker.dao.HookDao;
+import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.impl.*;
 import org.jooq.Schema;
 import org.jooq.impl.SchemaImpl;

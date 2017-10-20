@@ -3,7 +3,6 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;

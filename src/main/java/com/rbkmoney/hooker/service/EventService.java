@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.service;
 
+import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.MessageDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +15,19 @@ public class EventService {
     @Autowired
     MessageDao messageDao;
 
+    @Autowired
+    CustomerDao customerDao;
+
     public Long getLastEventId() {
-        Long lastEventId = messageDao.getMaxEventId();
-        log.info("Get last event id = {}", lastEventId);
-        return lastEventId;
+        Long invLastEventId = messageDao.getMaxEventId();
+        Long custLastEventId = customerDao.getMaxEventId();
+        Long max = invLastEventId;
+        if (invLastEventId == null) {
+            max = custLastEventId;
+        } else if (custLastEventId != null) {
+            max = Math.max(invLastEventId, custLastEventId);
+        }
+        log.info("Get last event id = {}", max);
+        return max;
     }
 }
