@@ -11,6 +11,7 @@ import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.swag_webhook_events.ContactInfo;
 import com.rbkmoney.swag_webhook_events.Customer;
 import com.rbkmoney.swag_webhook_events.CustomerCreated;
@@ -55,7 +56,7 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
                 .contactInfo(new ContactInfo()
                         .email(customerOrigin.getContactInfo().getEmail())
                         .phoneNumber(customerOrigin.getContactInfo().getPhoneNumber()))
-                .metadata(customerOrigin.getMetadata());
+                .metadata(new CustomerUtils().getResult(customerOrigin.getMetadata()));
         customerMessage.setCustomer(customer);
         customerDao.create(customerMessage);
     }

@@ -52,6 +52,11 @@ public class BuildUtils {
             payment.setError(new PaymentStatusError("1", "shit"));
             payment.setAmount(1);
             payment.setCurrency("RUB");
+            payment.setPaymentToolToken("payment tool token");
+            payment.setPaymentSession("payment session");
+            payment.setContactInfo(new PaymentContactInfo("aaaa@mail.ru", "89037279209"));
+            payment.setIp("127.0.0.1");
+            payment.setFingerprint("fingerbox");
             if (isPayer) {
                 payment.setPayer(new PaymentResourcePayer()
                         .paymentToolToken("payment tool token")
@@ -92,7 +97,8 @@ public class BuildUtils {
                 .id(custId)
                 .shopID(shopId)
                 .status(custStatus)
-                .contactInfo(new ContactInfo().phoneNumber("1234").email("aaa@mail.ru")));
+                .contactInfo(new ContactInfo().phoneNumber("1234").email("aaa@mail.ru"))
+                .metadata(CustomerUtils.getJsonObject("{\"field1\":\"value1\",\"field2\":[123,123,123]}")));
 
         if (customerMessage.isBinding()) {
             customerMessage.setCustomerBinding(new CustomerBinding()
