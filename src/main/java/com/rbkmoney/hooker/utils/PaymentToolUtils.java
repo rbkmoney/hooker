@@ -1,11 +1,18 @@
 package com.rbkmoney.hooker.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.rbkmoney.damsel.domain.BankCard;
+import com.rbkmoney.damsel.domain.BankCardPaymentSystem;
+import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetails;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetailsPaymentTerminal;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * Created by inalarsanukaev on 13.10.17.
@@ -48,5 +55,24 @@ public class PaymentToolUtils {
             default:
                 throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
         }
+    }
+
+    public static String getPaymentToolToken(PaymentTool paymentTool) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        if (paymentTool.isSetBankCard()) {
+            BankCard pCard = paymentTool.getBankCard();
+            rootNode.put("type", "bank_card");
+            rootNode.put("token", pCard.getToken());
+            rootNode.put("payment_system", pCard.getPaymentSystem().toString());
+            rootNode.put("bin", pCard.getBin());
+            rootNode.put("masked_pan", pCard.getMaskedPan());
+        } else if (paymentTool.isSetPaymentTerminal()) {
+            rootNode.put("type", "payment_terminal");
+            rootNode.put("terminal_type", paymentTool.getPaymentTerminal().getTerminalType().toString());
+        } else {
+            throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card or terminal");
+        }
+        return Base64.getUrlEncoder().encodeToString(rootNode.toString().getBytes(StandardCharsets.UTF_8));
     }
 }

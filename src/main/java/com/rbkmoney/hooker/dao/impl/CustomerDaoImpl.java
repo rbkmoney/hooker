@@ -2,8 +2,8 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.model.CustomerMessage;
-import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
@@ -17,10 +17,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
@@ -94,7 +91,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
                 .contactInfo(new ContactInfo()
                         .email(rs.getString(CUSTOMER_EMAIL))
                         .phoneNumber(rs.getString(CUSTOMER_PHONE)))
-                .metadata(rs.getString(CUSTOMER_METADATA)));
+                .metadata(CustomerUtils.getJsonObject(rs.getString(CUSTOMER_METADATA))));
         if (message.isBinding()) {
             PaymentResource paymentResource = new PaymentResource()
                     .paymentSession(rs.getString(BINDING_PAYMENT_SESSION))
@@ -144,18 +141,19 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
                 ":binding_payment_card_number_mask, :binding_payment_card_system, CAST(:binding_payment_terminal_provider as hook.payment_terminal_provider), " +
                 ":binding_client_ip, :binding_client_fingerprint, CAST(:binding_status as hook.customer_binding_status), :binding_error_code, :binding_error_message) " +
                 "RETURNING id";
+        Customer customer = message.getCustomer();
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())
                 .addValue(OCCURED_AT, message.getOccuredAt())
                 .addValue(TYPE, message.getType())
                 .addValue(PARTY_ID, message.getPartyId())
                 .addValue(EVENT_TYPE, message.getEventType().name())
-                .addValue(CUSTOMER_ID, message.getCustomer().getId())
-                .addValue(CUSTOMER_SHOP_ID, message.getCustomer().getShopID())
-                .addValue(CUSTOMER_STATUS, message.getCustomer().getStatus().getValue())
-                .addValue(CUSTOMER_EMAIL, message.getCustomer().getContactInfo().getEmail())
-                .addValue(CUSTOMER_PHONE, message.getCustomer().getContactInfo().getPhoneNumber())
-                .addValue(CUSTOMER_METADATA, message.getCustomer().getMetadata());
+                .addValue(CUSTOMER_ID, customer.getId())
+                .addValue(CUSTOMER_SHOP_ID, customer.getShopID())
+                .addValue(CUSTOMER_STATUS, customer.getStatus().getValue())
+                .addValue(CUSTOMER_EMAIL, customer.getContactInfo().getEmail())
+                .addValue(CUSTOMER_PHONE, customer.getContactInfo().getPhoneNumber())
+                .addValue(CUSTOMER_METADATA, customer.getMetadata() != null);
 
         //TODO
         setNullPaymentParamValues(params);
@@ -182,7 +180,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
             taskDao.create(message.getId());
             return message;
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Couldn't create customerMessage with customerId " + message.getCustomer().getId(), e);
+            throw new DaoException("Couldn't create customerMessage with customerId " + customer.getId(), e);
         }
     }
 

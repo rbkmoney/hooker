@@ -1,14 +1,10 @@
 package com.rbkmoney.hooker.utils;
 
-import com.rbkmoney.damsel.json.Value;
-import com.rbkmoney.geck.serializer.kit.json.JsonHandler;
-import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.swag_webhook_events.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +52,11 @@ public class BuildUtils {
             payment.setError(new PaymentStatusError("1", "shit"));
             payment.setAmount(1);
             payment.setCurrency("RUB");
+            payment.setPaymentToolToken("payment tool token");
+            payment.setPaymentSession("payment session");
+            payment.setContactInfo(new PaymentContactInfo("aaaa@mail.ru", "89037279209"));
+            payment.setIp("127.0.0.1");
+            payment.setFingerprint("fingerbox");
             if (isPayer) {
                 payment.setPayer(new PaymentResourcePayer()
                         .paymentToolToken("payment tool token")
@@ -85,39 +86,33 @@ public class BuildUtils {
         return cart;
     }
 
-    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, String type, String custId, String shopId, Customer.StatusEnum custStatus) {
+    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, String type, String custId, String shopId, Customer.StatusEnum custStatus){
         CustomerMessage customerMessage = new CustomerMessage();
         customerMessage.setEventId(eventId);
         customerMessage.setPartyId(partyId);
         customerMessage.setOccuredAt("time");
         customerMessage.setEventType(eventType);
         customerMessage.setType(type);
-        String metadata = null;
-        try {
-            metadata = new TBaseProcessor().process(Value.str("124"), new JsonHandler()).toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         customerMessage.setCustomer(new Customer()
                 .id(custId)
                 .shopID(shopId)
                 .status(custStatus)
                 .contactInfo(new ContactInfo().phoneNumber("1234").email("aaa@mail.ru"))
-                .metadata(metadata));
+                .metadata(CustomerUtils.getJsonObject("{\"field1\":\"value1\",\"field2\":[123,123,123]}")));
 
         if (customerMessage.isBinding()) {
             customerMessage.setCustomerBinding(new CustomerBinding()
                     .id("12456")
                     .status(CustomerBinding.StatusEnum.CREATED)
-                    .paymentResource(new PaymentResource()
-                            .paymentToolToken("shjfbergiwengriweno")
-                            .paymentSession("wrgnjwierngweirngi")
-                            .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
-                            .paymentToolDetails(new PaymentToolDetailsBankCard()
-                                    .cardNumberMask("1234")
-                                    .paymentSystem("visa")
-                                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
-                            )));
+            .paymentResource(new PaymentResource()
+            .paymentToolToken("shjfbergiwengriweno")
+            .paymentSession("wrgnjwierngweirngi")
+            .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
+            .paymentToolDetails(new PaymentToolDetailsBankCard()
+                    .cardNumberMask("1234")
+                    .paymentSystem("visa")
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
+            )));
         }
         return customerMessage;
     }

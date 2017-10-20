@@ -144,6 +144,11 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             }
             payment.setAmount(rs.getLong(PAYMENT_AMOUNT));
             payment.setCurrency(rs.getString(PAYMENT_CURRENCY));
+            payment.setPaymentToolToken(rs.getString(PAYMENT_TOOL_TOKEN));
+            payment.setPaymentSession(rs.getString(PAYMENT_SESSION));
+            payment.setContactInfo(new PaymentContactInfo(rs.getString(PAYMENT_EMAIL), rs.getString(PAYMENT_PHONE)));
+            payment.setIp(rs.getString(PAYMENT_IP));
+            payment.setFingerprint(rs.getString(PAYMENT_FINGERPRINT));
             Payer.PayerTypeEnum payerType = Payer.PayerTypeEnum.fromValue(rs.getString(PAYMENT_PAYER_TYPE));
             switch (payerType) {
                 case CUSTOMERPAYER:
@@ -277,7 +282,13 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                     .addValue(PAYMENT_ERROR_CODE, payment.getError() != null ? payment.getError().getCode() : null)
                     .addValue(PAYMENT_ERROR_MESSAGE, payment.getError() != null ? payment.getError().getMessage() : null)
                     .addValue(PAYMENT_AMOUNT, payment.getAmount())
-                    .addValue(PAYMENT_CURRENCY, payment.getCurrency());
+                    .addValue(PAYMENT_CURRENCY, payment.getCurrency())
+                    .addValue(PAYMENT_TOOL_TOKEN, payment.getPaymentToolToken())
+                    .addValue(PAYMENT_SESSION, payment.getPaymentSession())
+                    .addValue(PAYMENT_EMAIL, payment.getContactInfo().getEmail())
+                    .addValue(PAYMENT_PHONE, payment.getContactInfo().getPhoneNumber())
+                    .addValue(PAYMENT_IP, payment.getIp())
+                    .addValue(PAYMENT_FINGERPRINT, payment.getFingerprint());
 
             Payer.PayerTypeEnum payerType = payment.getPayer().getPayerType();
             params.addValue(PAYMENT_PAYER_TYPE, payerType.getValue());

@@ -12,6 +12,11 @@ public class Payment {
     private PaymentStatusError error;
     private long amount;
     private String currency;
+    private String paymentToolToken;
+    private String paymentSession;
+    private PaymentContactInfo contactInfo;
+    private String ip;
+    private String fingerprint;
     private Payer payer;
 
     public Payment(Payment other) {
@@ -23,6 +28,11 @@ public class Payment {
         }
         this.amount = other.amount;
         this.currency = other.currency;
+        this.paymentToolToken = other.paymentToolToken;
+        this.paymentSession = other.paymentSession;
+        this.contactInfo = new PaymentContactInfo(other.contactInfo);
+        this.ip = other.ip;
+        this.fingerprint = other.fingerprint;
         //TODO copy constructor
         if (other.payer instanceof CustomerPayer) {
             this.payer = new CustomerPayer()
@@ -102,6 +112,46 @@ public class Payment {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getPaymentToolToken() {
+        return paymentToolToken;
+    }
+
+    public void setPaymentToolToken(String paymentToolToken) {
+        this.paymentToolToken = paymentToolToken;
+    }
+
+    public String getPaymentSession() {
+        return paymentSession;
+    }
+
+    public void setPaymentSession(String paymentSession) {
+        this.paymentSession = paymentSession;
+    }
+
+    public PaymentContactInfo getContactInfo() {
+        return contactInfo;
+    }
+
+    public void setContactInfo(PaymentContactInfo contactInfo) {
+        this.contactInfo = contactInfo;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getFingerprint() {
+        return fingerprint;
+    }
+
+    public void setFingerprint(String fingerprint) {
+        this.fingerprint = fingerprint;
     }
 
     public Payer getPayer() {

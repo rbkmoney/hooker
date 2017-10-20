@@ -1,9 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.domain.BankCard;
-import com.rbkmoney.damsel.domain.DisposablePaymentResource;
-import com.rbkmoney.damsel.domain.InvoicePayment;
-import com.rbkmoney.damsel.domain.PaymentResourcePayer;
+import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
@@ -13,7 +10,13 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.PaymentContactInfo;
+import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.swag_webhook_events.ClientInfo;
+import com.rbkmoney.swag_webhook_events.ContactInfo;
+import com.rbkmoney.swag_webhook_events.CustomerPayer;
+import com.rbkmoney.swag_webhook_events.Payer;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -51,8 +54,14 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         payment.setStatus(paymentOrigin.getStatus().getSetField().getFieldName());
         payment.setAmount(paymentOrigin.getCost().getAmount());
         payment.setCurrency(paymentOrigin.getCost().getCurrency().getSymbolicCode());
+        LegacyPayerDetails payerDetails = paymentOrigin.getPayerDetails();
+        payment.setPaymentToolToken(PaymentToolUtils.getPaymentToolToken(payerDetails.getPaymentTool()));
+        payment.setPaymentSession(payerDetails.getSessionId());
+        payment.setContactInfo(new PaymentContactInfo(payerDetails.getContactInfo().getEmail(), payerDetails.getContactInfo().getPhoneNumber()));
+        payment.setIp(payerDetails.getClientInfo().getIpAddress());
+        payment.setFingerprint(payerDetails.getClientInfo().getFingerprint());
         if (paymentOrigin.getPayer().isSetPaymentResource()) {
-            PaymentResourcePayer payerOrigin = paymentOrigin.getPayer().getPaymentResource();
+            com.rbkmoney.damsel.domain.PaymentResourcePayer payerOrigin = paymentOrigin.getPayer().getPaymentResource();
             DisposablePaymentResource resourceOrigin = payerOrigin.getResource();
             com.rbkmoney.swag_webhook_events.PaymentResourcePayer payer = new com.rbkmoney.swag_webhook_events.PaymentResourcePayer()
                     .paymentSession(resourceOrigin.getPaymentSessionId())
