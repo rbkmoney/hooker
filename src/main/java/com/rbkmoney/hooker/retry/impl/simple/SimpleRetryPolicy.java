@@ -29,7 +29,11 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
     @Autowired
     List<TaskDao> taskDaoList;
 
-    private long[] delays = {30, 300, 900, 3600}; //in seconds
+    private long[] delays = {30, 300, 900, 3600,
+            3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600,
+            3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600,
+            3600, 3600, 3600, 3600
+    }; //in seconds
 
     @Override
     public RetryPolicyType getType() {
