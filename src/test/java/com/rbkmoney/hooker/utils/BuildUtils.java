@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.utils;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.swag_webhook_events.*;
 
 import java.util.ArrayList;
@@ -103,7 +104,7 @@ public class BuildUtils {
         if (customerMessage.isBinding()) {
             customerMessage.setCustomerBinding(new CustomerBinding()
                     .id("12456")
-                    .status(CustomerBinding.StatusEnum.CREATED)
+                    .status(CustomerBinding.StatusEnum.PENDING)
             .paymentResource(new PaymentResource()
             .paymentToolToken("shjfbergiwengriweno")
             .paymentSession("wrgnjwierngweirngi")

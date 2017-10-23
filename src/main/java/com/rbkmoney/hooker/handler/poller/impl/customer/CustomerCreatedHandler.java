@@ -8,13 +8,11 @@ import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.swag_webhook_events.ContactInfo;
 import com.rbkmoney.swag_webhook_events.Customer;
-import com.rbkmoney.swag_webhook_events.CustomerCreated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

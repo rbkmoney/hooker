@@ -84,4 +84,18 @@ public class CustomerMessage {
     public void setCustomerBinding(CustomerBinding customerBinding) {
         this.customerBinding = customerBinding;
     }
+
+    @Override
+    public String toString() {
+        return "CustomerMessage{" +
+                "id=" + id +
+                ", eventId=" + eventId +
+                ", type='" + type +
+                ", occuredAt='" + occuredAt +
+                ", partyId='" + partyId +
+                ", eventType=" + eventType +
+                ", customer=" + customer.toString().replaceAll("\n", "") +
+                (isBinding() ? ", customerBinding=" + customerBinding.toString().replaceAll("\n", "") : "") +
+                '}';
+    }
 }

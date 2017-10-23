@@ -3,7 +3,6 @@ package com.rbkmoney.hooker.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rbkmoney.damsel.domain.BankCard;
-import com.rbkmoney.damsel.domain.BankCardPaymentSystem;
 import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetails;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
@@ -20,7 +19,7 @@ import java.util.Base64;
 public class PaymentToolUtils {
     public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String cardNum, String paymentSystem, String providerTerminal) {
         PaymentToolDetails.DetailsTypeEnum detailsType = PaymentToolDetails.DetailsTypeEnum.fromValue(sDetailsType);
-        PaymentToolDetails paymentToolDetails = null;
+        PaymentToolDetails paymentToolDetails;
         switch (detailsType) {
             case PAYMENTTOOLDETAILSBANKCARD:
                 paymentToolDetails = new PaymentToolDetailsBankCard()
