@@ -148,7 +148,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         Thread.sleep(1000);
 
         hook = hookDao.getHookById(hook.getId());
-        assertFalse(hook.isEnabled());
+        assertTrue(hook.isEnabled());
     }
 
     private static Hook hook(String partyId, String url, EventType... types) {
