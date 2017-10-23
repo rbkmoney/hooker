@@ -2,7 +2,8 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
@@ -17,7 +18,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import javax.sql.DataSource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
@@ -119,7 +123,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         try {
             result = getNamedParameterJdbcTemplate().queryForObject(sql, params, messageRowMapper);
         } catch (EmptyResultDataAccessException e) {
-            log.warn("CustomerMessage with customerId {} not exist!", customerId);
+            log.warn("CustomerMessage with customerId {}, type {} not exist!", customerId, type);
         } catch (NestedRuntimeException e) {
             throw new DaoException("CustomerMessageDaoImpl.getAny error with customerId " + customerId, e);
         }
@@ -138,7 +142,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
                 "(:event_id, :occured_at, CAST(:type as hook.customer_message_type), :party_id, CAST(:event_type as hook.eventtype), " +
                 ":customer_id, :customer_shop_id, CAST(:customer_status as hook.customer_status), :customer_email , :customer_phone, :customer_metadata, " +
                 ":binding_id, :binding_payment_tool_token, :binding_payment_session, CAST(:binding_payment_tool_details_type as hook.payment_tool_details_type), " +
-                ":binding_payment_card_number_mask, :binding_payment_card_system, CAST(:binding_payment_terminal_provider as hook.payment_terminal_provider), " +
+                ":binding_payment_card_number_mask, :binding_payment_card_system, :binding_payment_terminal_provider, " +
                 ":binding_client_ip, :binding_client_fingerprint, CAST(:binding_status as hook.customer_binding_status), :binding_error_code, :binding_error_message) " +
                 "RETURNING id";
         Customer customer = message.getCustomer();
@@ -153,7 +157,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
                 .addValue(CUSTOMER_STATUS, customer.getStatus().getValue())
                 .addValue(CUSTOMER_EMAIL, customer.getContactInfo().getEmail())
                 .addValue(CUSTOMER_PHONE, customer.getContactInfo().getPhoneNumber())
-                .addValue(CUSTOMER_METADATA, customer.getMetadata() != null);
+                .addValue(CUSTOMER_METADATA, customer.getMetadata() != null ? customer.getMetadata().toString() : null);
 
         //TODO
         setNullPaymentParamValues(params);

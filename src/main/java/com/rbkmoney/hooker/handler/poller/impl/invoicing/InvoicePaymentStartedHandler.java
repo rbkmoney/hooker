@@ -1,6 +1,9 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.BankCard;
+import com.rbkmoney.damsel.domain.DisposablePaymentResource;
+import com.rbkmoney.damsel.domain.InvoicePayment;
+import com.rbkmoney.damsel.domain.LegacyPayerDetails;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
@@ -13,10 +16,6 @@ import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
-import com.rbkmoney.swag_webhook_events.ClientInfo;
-import com.rbkmoney.swag_webhook_events.ContactInfo;
-import com.rbkmoney.swag_webhook_events.CustomerPayer;
-import com.rbkmoney.swag_webhook_events.Payer;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -65,6 +64,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
             DisposablePaymentResource resourceOrigin = payerOrigin.getResource();
             com.rbkmoney.swag_webhook_events.PaymentResourcePayer payer = new com.rbkmoney.swag_webhook_events.PaymentResourcePayer()
                     .paymentSession(resourceOrigin.getPaymentSessionId())
+                    .paymentToolToken(payment.getPaymentToolToken())
                     .contactInfo(new ContactInfo()
                             .email(payerOrigin.getContactInfo().getEmail())
                             .phoneNumber(payerOrigin.getContactInfo().getPhoneNumber()))
@@ -80,7 +80,6 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
                         .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL));
             } else if (resourceOrigin.getPaymentTool().isSetBankCard()) {
                 BankCard bankCard = resourceOrigin.getPaymentTool().getBankCard();
-                payer.paymentToolToken(bankCard.getToken());
                 payer.setPaymentToolDetails(new PaymentToolDetailsBankCard()
                         .cardNumberMask(bankCard.getMaskedPan())
                         .paymentSystem(bankCard.getPaymentSystem().name())

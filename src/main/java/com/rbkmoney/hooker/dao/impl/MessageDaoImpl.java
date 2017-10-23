@@ -6,6 +6,7 @@ import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
@@ -252,7 +253,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 ":payment_id, :payment_created_at, :payment_status, :payment_error_code, :payment_error_message, :payment_amount, " +
                 ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
-                ":payment_card_number_mask, :payment_system, CAST(:payment_terminal_provider as hook.payment_terminal_provider)) " +
+                ":payment_card_number_mask, :payment_system, :payment_terminal_provider) " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())

@@ -4,6 +4,8 @@ import com.rbkmoney.damsel.event_stock.StockEvent;
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.eventstock.client.EventAction;
 import com.rbkmoney.eventstock.client.EventHandler;
+import com.rbkmoney.geck.serializer.kit.json.JsonHandler;
+import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.handler.Handler;
 import org.slf4j.Logger;
@@ -35,10 +37,12 @@ public class EventStockHandler implements EventHandler<StockEvent> {
         } else return EventAction.CONTINUE;
 
         long id = stockEvent.getSourceEvent().getProcessingEvent().getId();
+
         for (Object cc : changes) {
             for (Handler pollingEventHandler : pollingEventHandlers) {
                 if (pollingEventHandler.accept(cc)) {
                     try {
+                        log.info("We got an event {}", new TBaseProcessor().process(stockEvent, JsonHandler.newPrettyJsonInstance()));
                         pollingEventHandler.handle(cc, stockEvent);
                     } catch (DaoException e) {
                         log.error("DaoException when poller handling with eventId {}", id, e);
