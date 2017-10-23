@@ -63,12 +63,12 @@ public class CustomerBindingStartedHandler extends NeedReadCustomerEventHandler 
         String terminalProvider = null;
 
         if (bindingOrigin.getPaymentResource().getPaymentTool().isSetBankCard()) {
-            detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD.name();
+            detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD.getValue();
             cardNum = bindingOrigin.getPaymentResource().getPaymentTool().getBankCard().getMaskedPan();
             paymentSystem = bindingOrigin.getPaymentResource().getPaymentTool().getBankCard().getPaymentSystem().name();
             paymentResource.setPaymentToolToken(bindingOrigin.getPaymentResource().getPaymentTool().getBankCard().getToken());
         } else if (bindingOrigin.getPaymentResource().getPaymentTool().isSetPaymentTerminal()) {
-            detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL.name();
+            detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL.getValue();
         } else {
             throw new UnsupportedOperationException();
         }
