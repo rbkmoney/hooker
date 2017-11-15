@@ -51,7 +51,6 @@ public class HookDaoImpl implements HookDao {
         hook.setEnabled(rs.getBoolean("enabled"));
         RetryPolicyType retryPolicyType = RetryPolicyType.valueOf(rs.getString("retry_policy"));
         hook.setRetryPolicyType(retryPolicyType);
-        hook.setRetryPolicyRecord(retryPolicyType.build(rs));
         return hook;
     };
 
@@ -190,23 +189,12 @@ public class HookDaoImpl implements HookDao {
             }
             hook.setId(keyHolder.getKey().longValue());
             saveHookFilters(hook.getId(), hook.getFilters());
-            addRecordToRetryPolicy(hook.getId());
         } catch (NestedRuntimeException e) {
-            log.error("Fail to create hook: " + hook, e);
+            log.error("Fail to createWithPolicy hook: " + hook, e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} created.", hook.getId());
         return hook;
-    }
-
-    private void addRecordToRetryPolicy(long hookId) {
-        final String sql = "insert into hook.simple_retry_policy(hook_id) VALUES (:hook_id)";
-        try {
-            jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId));
-        } catch (NestedRuntimeException e) {
-            log.error("Fail to create simple_retry_policy for hook: " + hookId, e);
-            throw new DaoException(e);
-        }
     }
 
     private void saveHookFilters(long hookId, Collection<WebhookAdditionalFilter> webhookAdditionalFilters) {
@@ -280,7 +268,7 @@ public class HookDaoImpl implements HookDao {
             jdbcTemplate.update(sql, params, keyHolder);
             pubKey = (String) keyHolder.getKeys().get("pub_key");
         } catch (NestedRuntimeException | NullPointerException | ClassCastException e) {
-            log.error("Fail to create security keys for party: " + partyId,  e);
+            log.error("Fail to createWithPolicy security keys for party: " + partyId,  e);
             throw new DaoException(e);
         }
         return pubKey;

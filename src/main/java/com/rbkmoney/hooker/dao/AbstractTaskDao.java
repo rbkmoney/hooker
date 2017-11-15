@@ -25,7 +25,7 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
     }
 
     public static RowMapper<Task> taskRowMapper = (rs, i) ->
-            new Task(rs.getLong("hook_id"), rs.getLong("message_id"));
+            new Task(rs.getLong("hook_id"), rs.getLong("message_id"), rs.getString("invoice_id"));
 
     protected abstract String getMessageTopic();
 
@@ -55,34 +55,22 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
     }
 
     @Override
-    public List<Task> getAll() {
-        final String sql = "SELECT * FROM hook.scheduled_task WHERE message_type=CAST(:message_type as hook.message_topic)";
-        try {
-            List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("message_type", getMessageTopic()), taskRowMapper);
-            log.debug("Tasks count: " + tasks.size());
-            return tasks;
-        } catch (NestedRuntimeException e) {
-            log.error("Fail to get all tasks from scheduled_task", e);
-            throw new DaoException(e);
-        }
-    }
-
-    @Override
-    // should return ordered BY hook_id, message_id
-    public Map<Long, List<Task>> getScheduled(Collection<Long> excludeHooksIds) {
+    // should return ordered BY invoice_id, message_id
+    public Map<String, List<Task>> getScheduled(Collection<Long> excludeHooksIds) {
         final String sql =
-                " SELECT DISTINCT * " +
-                        " FROM hook.scheduled_task st WHERE message_type=CAST(:message_type as hook.message_topic)" +
+                " SELECT DISTINCT q.hook_id, q.invoice_id, st.message_id FROM hook.scheduled_task st " +
+                        "JOIN hook.invoicing_queue q on q.hook_id=st.hook_id " +
+                        "WHERE st.message_type=CAST(:message_type as hook.message_topic)" +
                         (excludeHooksIds.size() > 0 ? " AND st.hook_id not in (:hook_ids)" : "") +
-                        " ORDER BY hook_id ASC , message_id ASC";
+                        " ORDER BY q.invoice_id, st.message_id ASC";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(
                     sql,
-                    new MapSqlParameterSource("enabled", true)
+                    new MapSqlParameterSource()
                             .addValue("hook_ids", excludeHooksIds)
                             .addValue("message_type", getMessageTopic())
                     , taskRowMapper);
-            Map<Long, List<Task>> longListMap = splitByHooks(tasks);
+            Map<String, List<Task>> longListMap = splitByInvoice(tasks);
             return longListMap;
         } catch (NestedRuntimeException e) {
             log.error("Fail to get active tasks from scheduled_task", e);
@@ -91,22 +79,23 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
     }
 
     //should preserve order
-    private Map<Long, List<Task>> splitByHooks(List<Task> orderedByHookIdMessageIdTasks) {
-        final Map<Long, List<Task>> map = new HashMap<>();
-        if (orderedByHookIdMessageIdTasks.size() == 0) {
+    //TODO Invoice ordering
+    private Map<String, List<Task>> splitByInvoice(List<Task> orderedByInvoiceIdMessageIdTasks) {
+        final Map<String, List<Task>> map = new HashMap<>();
+        if (orderedByInvoiceIdMessageIdTasks.size() == 0) {
             return map;
         }
         int start = 0;
-        long previousHookId = orderedByHookIdMessageIdTasks.get(0).getHookId();
-        for (int i = 0; i < orderedByHookIdMessageIdTasks.size(); i++) {
-            long currentHookId = orderedByHookIdMessageIdTasks.get(i).getHookId();
-            if (previousHookId != currentHookId) {
-                map.put(previousHookId, orderedByHookIdMessageIdTasks.subList(start, i));
+        String previousInvId = orderedByInvoiceIdMessageIdTasks.get(0).getInvoiceId();
+        for (int i = 0; i < orderedByInvoiceIdMessageIdTasks.size(); i++) {
+            String currentInvId = orderedByInvoiceIdMessageIdTasks.get(i).getInvoiceId();
+            if (!previousInvId.equals(currentInvId)) {
+                map.put(previousInvId, orderedByInvoiceIdMessageIdTasks.subList(start, i));
                 start = i;
-                previousHookId = currentHookId;
+                previousInvId = currentInvId;
             }
         }
-        map.put(previousHookId, orderedByHookIdMessageIdTasks.subList(start, orderedByHookIdMessageIdTasks.size()));
+        map.put(previousInvId, orderedByInvoiceIdMessageIdTasks.subList(start, orderedByInvoiceIdMessageIdTasks.size()));
 
         return map;
     }

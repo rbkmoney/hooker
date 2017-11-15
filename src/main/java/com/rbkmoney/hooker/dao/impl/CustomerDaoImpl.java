@@ -184,7 +184,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
             taskDao.create(message.getId());
             return message;
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Couldn't create customerMessage with customerId " + customer.getId(), e);
+            throw new DaoException("Couldn't createWithPolicy customerMessage with customerId " + customer.getId(), e);
         }
     }
 

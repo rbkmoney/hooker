@@ -57,13 +57,13 @@ public class MessageScheduler {
 
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
     public void loop() throws InterruptedException {
-        final List<Long> currentlyProcessedHooks;
+        final List<Long> currentlyProcessedInvoiceQueues;
         synchronized (processedHooks) {
-            currentlyProcessedHooks = new ArrayList<>(processedHooks);
+            currentlyProcessedInvoiceQueues = new ArrayList<>(processedHooks);
         }
 
-        final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
-        final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+        final Map<String, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedInvoiceQueues);
+        final Map<Long, Hook> healthyHooks = loadInvoiceQueues(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
 
         //ready task means - not delayed by failed hook
         int numberOfTasks = numberOfReadyTasks(scheduledTasks, healthyHooks.keySet());
@@ -113,11 +113,11 @@ public class MessageScheduler {
                 .onFail(hook.getRetryPolicyRecord());
     }
 
-    private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeHooksIds) {
+    private Map<String, List<Task>> getScheduledTasks(Collection<Long> excludeHooksIds) {
         return taskDao.getScheduled(excludeHooksIds);
     }
 
-    private List<Hook> loadHooks(Collection<Long> hookIds) {
+    private List<Hook> loadInvoiceQueues(Collection<Long> hookIds) {
         List<Hook> hooksWaitingMessages = hookDao.getWithPolicies(hookIds);
         return retryPoliciesService.filter(hooksWaitingMessages);
     }

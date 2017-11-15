@@ -47,7 +47,8 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
         simpleRetryPolicyDao.update(rp);
 
         if (rp.getFailCount() > delays.length) {
-            hookDao.disable(rp.getHookId());
+           // hookDao.disable(rp.getTaskId());
+            //TODO
             taskDaoList.forEach(t -> t.removeAll(rp.getHookId()));
             log.warn("Hook: " + rp.getHookId() + " was disabled according to retry policy.");
         }

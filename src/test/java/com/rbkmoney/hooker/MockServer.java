@@ -45,7 +45,7 @@ public class MockServer {
                 return new MockResponse().setBody("xyi").setResponseCode(200);
             }
         };
-        // Create a MockWebServer. These are lean enough that you can create a new
+        // Create a MockWebServer. These are lean enough that you can createWithPolicy a new
         // instance for every unit test.
         MockWebServer server = new MockWebServer();
         server.setDispatcher(dispatcher);

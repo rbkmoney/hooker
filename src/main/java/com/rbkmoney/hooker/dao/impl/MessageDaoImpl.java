@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
@@ -325,7 +326,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             putToCache(message);
             return message;
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Couldn't create message with invoice_id "+ message.getInvoice().getId(), e);
+            throw new DaoException("Couldn't createWithPolicy message with invoice_id "+ message.getInvoice().getId(), e);
         }
     }
 

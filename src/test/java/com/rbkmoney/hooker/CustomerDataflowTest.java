@@ -71,7 +71,7 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         //start mock web server
-        //create hooks
+        //createWithPolicy hooks
         if (baseServerUrl == null) {
             baseServerUrl = webserver(dispatcher());
             log.info("Mock server url: " + baseServerUrl);

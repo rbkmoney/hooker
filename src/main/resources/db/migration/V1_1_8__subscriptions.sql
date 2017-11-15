@@ -1,7 +1,7 @@
 -- add values in enum (https://github.com/flyway/flyway/issues/350)
 -- rename the old enum
 ALTER TYPE hook.EventType rename TO OldEventType;
--- create the new enum
+-- createWithPolicy the new enum
 CREATE TYPE hook.EventType AS ENUM (
     'INVOICE_CREATED',
     'INVOICE_STATUS_CHANGED',

@@ -19,9 +19,8 @@ public class Hook {
     private String privKey;
     private boolean enabled;
     private RetryPolicyType retryPolicyType;
-    private RetryPolicyRecord retryPolicyRecord;
 
-    public Hook(long id, String partyId, Set<WebhookAdditionalFilter> filters, String url, String pubKey, String privKey, boolean enabled, RetryPolicyType retryPolicyType, RetryPolicyRecord retryPolicyRecord) {
+    public Hook(long id, String partyId, Set<WebhookAdditionalFilter> filters, String url, String pubKey, String privKey, boolean enabled, RetryPolicyType retryPolicyType) {
         this.id = id;
         this.partyId = partyId;
         this.filters = filters;
@@ -30,7 +29,6 @@ public class Hook {
         this.privKey = privKey;
         this.enabled = enabled;
         this.retryPolicyType = retryPolicyType;
-        this.retryPolicyRecord = retryPolicyRecord;
     }
 
     public Hook() {
@@ -98,14 +96,6 @@ public class Hook {
 
     public void setRetryPolicyType(RetryPolicyType retryPolicyType) {
         this.retryPolicyType = retryPolicyType;
-    }
-
-    public RetryPolicyRecord getRetryPolicyRecord() {
-        return retryPolicyRecord;
-    }
-
-    public void setRetryPolicyRecord(RetryPolicyRecord retryPolicyRecord) {
-        this.retryPolicyRecord = retryPolicyRecord;
     }
 
     @Override

@@ -42,7 +42,7 @@ public class CustomerTaskDao extends AbstractTaskDao {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId));
             log.debug("Created tasks count : " + updateCount);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to create tasks for messages messages.", e);
+            log.error("Fail to createWithPolicy tasks for messages messages.", e);
             throw new DaoException(e);
         }
     }

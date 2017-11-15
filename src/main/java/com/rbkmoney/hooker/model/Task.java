@@ -6,10 +6,12 @@ package com.rbkmoney.hooker.model;
 public class Task {
     long hookId;
     long messageId;
+    String invoiceId;
 
-    public Task(long hookId, long messageId) {
+    public Task(long hookId, long messageId, String invoiceId) {
         this.hookId = hookId;
         this.messageId = messageId;
+        this.invoiceId = invoiceId;
     }
 
     public long getHookId() {
@@ -26,5 +28,13 @@ public class Task {
 
     public void setMessageId(long messageId) {
         this.messageId = messageId;
+    }
+
+    public String getInvoiceId() {
+        return invoiceId;
+    }
+
+    public void setInvoiceId(String invoiceId) {
+        this.invoiceId = invoiceId;
     }
 }
