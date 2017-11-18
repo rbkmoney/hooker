@@ -320,9 +320,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             message.setId(keyHolder.getKey().longValue());
             saveCart(message.getId(), message.getInvoice().getCart());
             log.info("Message {} save to db.", message);
-
-            // create tasks
-            taskDao.create(message.getId());
             putToCache(message);
             return message;
         } catch (NestedRuntimeException e) {

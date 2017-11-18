@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.retry.impl.simple;
 
-import com.rbkmoney.hooker.dao.HookDao;
+import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.retry.RetryPolicy;
@@ -24,9 +24,6 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
     SimpleRetryPolicyDao simpleRetryPolicyDao;
 
     @Autowired
-    HookDao hookDao;
-
-    @Autowired
     List<TaskDao> taskDaoList;
 
     private long[] delays = {30, 300, 900, 3600,
@@ -47,10 +44,8 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
         simpleRetryPolicyDao.update(rp);
 
         if (rp.getFailCount() > delays.length) {
-           // hookDao.disable(rp.getTaskId());
-            //TODO
-            taskDaoList.forEach(t -> t.removeAll(rp.getHookId()));
-            log.warn("Hook: " + rp.getHookId() + " was disabled according to retry policy.");
+            taskDaoList.forEach(t -> t.removeAll(rp.getQueueId()));
+            log.warn("Queue {} was disabled according to retry policy.", rp.getQueueId());
         }
     }
 

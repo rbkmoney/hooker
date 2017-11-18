@@ -4,6 +4,8 @@ import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.dao.TaskDao;
+import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHandler{
     @Autowired
     MessageDao messageDao;
+
+    @Autowired
+    InvoicingTaskDao taskDao;
 
     @Override
     protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
@@ -30,6 +35,8 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         modifyMessage(ic, event, message);
 
         messageDao.create(message);
+        // create tasks
+        taskDao.create(message.getId());
         //TODO getAny message id and write to logs
     }
 

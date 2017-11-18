@@ -102,12 +102,6 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         }
     }
 
-    @Test
-    public void getByIds(){
-        List<Hook> hooks = hookDao.getWithPolicies(ids);
-        assertEquals(3, hooks.size());
-    }
-
     public static Hook buildHook(String partyId, String url){
         Hook hook = new Hook();
         hook.setPartyId(partyId);

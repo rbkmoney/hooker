@@ -4,22 +4,21 @@ package com.rbkmoney.hooker.model;
  * Created by jeckep on 17.04.17.
  */
 public class Task {
-    long hookId;
+
     long messageId;
-    String invoiceId;
+    long queueId;
 
-    public Task(long hookId, long messageId, String invoiceId) {
-        this.hookId = hookId;
+    public Task(long messageId, long queueId) {
         this.messageId = messageId;
-        this.invoiceId = invoiceId;
+        this.queueId = queueId;
     }
 
-    public long getHookId() {
-        return hookId;
+    public long getQueueId() {
+        return queueId;
     }
 
-    public void setHookId(long hookId) {
-        this.hookId = hookId;
+    public void setQueueId(long queueId) {
+        this.queueId = queueId;
     }
 
     public long getMessageId() {
@@ -30,11 +29,11 @@ public class Task {
         this.messageId = messageId;
     }
 
-    public String getInvoiceId() {
-        return invoiceId;
-    }
-
-    public void setInvoiceId(String invoiceId) {
-        this.invoiceId = invoiceId;
+    @Override
+    public String toString() {
+        return "Task{" +
+                "messageId=" + messageId +
+                ", queueId=" + queueId +
+                '}';
     }
 }

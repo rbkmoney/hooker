@@ -30,7 +30,7 @@ public class HookConverter {
                 webhook.getPubKey(),
                 null,
                 webhook.isEnabled(),
-                null, null);
+                null);
     }
 
     public static Hook convert(WebhookParams webhookParams){

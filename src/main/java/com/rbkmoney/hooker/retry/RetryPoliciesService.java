@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.retry;
 
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
-import com.rbkmoney.hooker.model.Hook;
+import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicy;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +32,9 @@ public class RetryPoliciesService {
         }
     }
 
-    public List<Hook> filter(Collection<Hook> hooks){
-        return hooks.stream().
-                filter(h -> getRetryPolicyByType(h.getRetryPolicyType()).isActive(h.getRetryPolicyRecord()))
+    public List<Queue> filter(Collection<? extends Queue> queues){
+        return queues.stream().
+                filter(q -> getRetryPolicyByType(q.getHook().getRetryPolicyType()).isActive(q.getRetryPolicyRecord()))
                 .collect(Collectors.toList());
     }
 

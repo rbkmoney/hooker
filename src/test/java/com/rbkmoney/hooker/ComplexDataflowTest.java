@@ -14,11 +14,13 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.shaded.com.google.common.annotations.GwtIncompatible;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ import static org.junit.Assert.assertTrue;
  * Created by jeckep on 20.04.17.
  */
 @TestPropertySource(properties = {"message.scheduler.delay=100"})
+@Ignore
 public class ComplexDataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(ComplexDataflowTest.class);
 

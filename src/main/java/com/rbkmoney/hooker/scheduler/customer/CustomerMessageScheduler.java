@@ -1,10 +1,10 @@
 package com.rbkmoney.hooker.scheduler.customer;
 
 import com.rbkmoney.hooker.dao.CustomerDao;
-import com.rbkmoney.hooker.dao.HookDao;
+import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
 import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.model.CustomerMessage;
-import com.rbkmoney.hooker.model.Hook;
+import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
@@ -34,7 +34,7 @@ public class CustomerMessageScheduler {
     private CustomerTaskDao taskDao;
 
     @Autowired
-    private HookDao hookDao;
+    private CustomerQueueDao queueDao;
 
     @Autowired
     private CustomerDao customerDao;
@@ -48,7 +48,7 @@ public class CustomerMessageScheduler {
     @Autowired
     PostSender postSender;
 
-    private final Set<Long> processedHooks = Collections.synchronizedSet(new HashSet<>());
+    private final Set<Long> processedQueues = Collections.synchronizedSet(new HashSet<>());
     private ExecutorService executorService;
 
     public CustomerMessageScheduler(@Value("${message.sender.number}") int numberOfWorkers) {
@@ -57,87 +57,81 @@ public class CustomerMessageScheduler {
 
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
     public void loop() throws InterruptedException {
-        final List<Long> currentlyProcessedHooks;
-        synchronized (processedHooks) {
-            currentlyProcessedHooks = new ArrayList<>(processedHooks);
+        final List<Long> currentlyProcessedQueues;
+        synchronized (processedQueues) {
+            currentlyProcessedQueues = new ArrayList<>(processedQueues);
         }
 
-        final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
-        final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
-
-        //ready task means - not delayed by failed hook
-        int numberOfTasks = numberOfReadyTasks(scheduledTasks, healthyHooks.keySet());
-        if(numberOfTasks > 0){
-            log.info("Number of not done ready tasks(message->hook): {}", numberOfTasks);
+        final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedQueues);
+        log.info("scheduledTasks {}", scheduledTasks);
+        if (scheduledTasks.entrySet().isEmpty()) {
+            return;
         }
+        final Map<Long, Queue> healthyQueues = loadQueues(scheduledTasks.keySet())
+                .stream().collect(Collectors.toMap(Queue::getId, v -> v));
 
-        processedHooks.addAll(healthyHooks.keySet());
+        log.info("healthyQueues {}", healthyQueues);
+        processedQueues.addAll(healthyQueues.keySet());
 
-        final Set<Long> messageIdsToSend = getMessageIdsFilteredByHooks(scheduledTasks, healthyHooks.keySet());
+        final Set<Long> messageIdsToSend = getMessageIdsFilteredByQueues(scheduledTasks, healthyQueues.keySet());
+        log.info("messageIdsToSend {}", messageIdsToSend);
         final Map<Long, CustomerMessage> messagesMap = loadMessages(messageIdsToSend);
+        log.info("messagesMap {}", messagesMap);
 
-        for (long hookId : healthyHooks.keySet()) {
-            List<Task> tasks = scheduledTasks.get(hookId);
-            List<CustomerMessage> messagesForHook = new ArrayList<>();
+        for (long queueId : healthyQueues.keySet()) {
+            List<Task> tasks = scheduledTasks.get(queueId);
+            List<CustomerMessage> messagesForQueue = new ArrayList<>();
             for (Task task : tasks) {
                 CustomerMessage e = messagesMap.get(task.getMessageId());
                 if (e != null) {
-                    messagesForHook.add(e);
+                    messagesForQueue.add(e);
                 } else {
                     log.error("Message with id {} couldn't be null", task.getMessageId());
                 }
             }
-            CustomerMessageSender messageSender = new CustomerMessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this, signer, postSender);
+            CustomerMessageSender messageSender = new CustomerMessageSender(healthyQueues.get(queueId), messagesForQueue, taskDao, this, signer, postSender);
             executorService.submit(messageSender);
         }
     }
 
     //worker should invoke this method when it is done with scheduled messages for hookId
-    public void done(Hook hook) {
-        processedHooks.remove(hook.getId());
+    public void done(Queue queue) {
+        processedQueues.remove(queue.getId());
 
         //reset fail count for hook
-        if (hook.getRetryPolicyRecord().isFailed()) {
-            RetryPolicyRecord record = hook.getRetryPolicyRecord();
+        if (queue.getRetryPolicyRecord().isFailed()) {
+            RetryPolicyRecord record = queue.getRetryPolicyRecord();
             record.reset();
             retryPoliciesService.update(record);
         }
     }
 
     //worker should invoke this method when it is fail to send message to hookId
-    public void fail(Hook hook) {
-        processedHooks.remove(hook.getId());
+    public void fail(Queue queue) {
+        processedQueues.remove(queue.getId());
 
-        log.warn("Hook: " + hook.getId() + " failed.");
-        retryPoliciesService.getRetryPolicyByType(hook.getRetryPolicyType())
-                .onFail(hook.getRetryPolicyRecord());
+        log.warn("Queue {} failed.", queue.getId());
+        retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType())
+                .onFail(queue.getRetryPolicyRecord());
     }
 
-    private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeHooksIds) {
-        return taskDao.getScheduled(excludeHooksIds);
+    private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeQueueIds) {
+        return taskDao.getScheduled(excludeQueueIds);
     }
 
-    private List<Hook> loadHooks(Collection<Long> hookIds) {
-        List<Hook> hooksWaitingMessages = hookDao.getWithPolicies(hookIds);
-        return retryPoliciesService.filter(hooksWaitingMessages);
+    private List<Queue> loadQueues(Collection<Long> queueIds) {
+        List<? extends Queue> queuesWaitingMessages = queueDao.getWithPolicies(queueIds);
+        return retryPoliciesService.filter(queuesWaitingMessages);
     }
 
-    private Set<Long> getMessageIdsFilteredByHooks(Map<Long, List<Task>> scheduledTasks, Collection<Long> liveHookIds) {
+    private Set<Long> getMessageIdsFilteredByQueues(Map<Long, List<Task>> scheduledTasks, Collection<Long> queueIds) {
         final Set<Long> messageIds = new HashSet<>();
-        for (long hookId : liveHookIds) {
-            for (Task t : scheduledTasks.get(hookId)) {
+        for (long queueId : queueIds) {
+            for (Task t : scheduledTasks.get(queueId)) {
                 messageIds.add(t.getMessageId());
             }
         }
         return messageIds;
-    }
-
-    private int numberOfReadyTasks(Map<Long, List<Task>> tasks, Collection<Long> liveHookIds){
-        int count = 0;
-        for(long hookId: liveHookIds){
-            count += tasks.get(hookId).size();
-        }
-        return count;
     }
 
     private Map<Long, CustomerMessage> loadMessages(Collection<Long> messageIds) {

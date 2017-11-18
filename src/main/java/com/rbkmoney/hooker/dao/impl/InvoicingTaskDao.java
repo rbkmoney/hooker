@@ -19,9 +19,6 @@ public class InvoicingTaskDao extends AbstractTaskDao {
 
     Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    SimpleRetryPolicyDao simpleRetryPolicyDao;
-
     public InvoicingTaskDao(DataSource dataSource) {
         super(dataSource);
     }
@@ -34,22 +31,17 @@ public class InvoicingTaskDao extends AbstractTaskDao {
     @Override
     public void create(long messageId) {
         final String sql =
-                " insert into hook.scheduled_task(message_id, hook_id, message_type)" +
-                        " select m.id, w.id, '" + getMessageTopic() + "'" +
-                        " from hook.message m" +
-                        " join hook.webhook w on m.party_id = w.party_id and w.enabled" +
-                        " join hook.webhook_to_events wte on wte.hook_id = w.id" +
-                        " where m.id = :id " +
-                        " and m.event_type = wte.event_type " +
-                        " and (m.shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
-                        " and (m.invoice_status = wte.invoice_status or wte.invoice_status is null) " +
-                        " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
-                        " ON CONFLICT (message_id, hook_id) DO NOTHING";
+                " insert into hook.scheduled_task(message_id, queue_id, message_type) " +
+                        "select m.id, q.id, CAST(:message_type as hook.message_topic) " +
+                        "from hook.invoicing_queue q " +
+                        "join hook.message m on q.invoice_id=m.invoice_id " +
+                        "where m.id=:message_id";
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId));
-            log.debug("Created tasks count : " + updateCount);
+            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("message_id", messageId)
+                    .addValue("message_type", getMessageTopic()));
+            log.info("Created tasks count={} for messageId={}", updateCount, messageId);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to createWithPolicy tasks for messages messages.", e);
+            log.error("Fail to createWithPolicy tasks for messages.", e);
             throw new DaoException(e);
         }
     }

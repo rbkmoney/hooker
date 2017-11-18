@@ -53,7 +53,13 @@ public class DaoConfiguration {
     @Bean
     @DependsOn("dbInitializer")
     public InvoicingQueueDao invoicingQueueDao(DataSource dataSource) {
-        return new InvoicingQueueDaoImpl(dataSource);
+        return new InvoicingQueueDao(dataSource);
+    }
+
+    @Bean
+    @DependsOn("dbInitializer")
+    public CustomerQueueDao customerQueueDao(DataSource dataSource) {
+        return new CustomerQueueDao(dataSource);
     }
 
     @Bean

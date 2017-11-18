@@ -227,8 +227,9 @@ public class HookDaoImpl implements HookDao {
     @Transactional
     public void delete(long id) {
         final String sql =
-                " DELETE FROM hook.scheduled_task where hook_id=:id;" +
-                " DELETE FROM hook.simple_retry_policy where hook_id=:id;" +
+                " DELETE FROM hook.scheduled_task USING hook.invoicing_queue q WHERE q.hook_id=:id;" +
+                " DELETE FROM hook.simple_retry_policy USING hook.invoicing_queue q WHERE q.hook_id=:id;" +
+                " DELETE FROM hook.invoicing_queue where hook_id=:id;" +
                 " DELETE FROM hook.webhook_to_events where hook_id=:id;" +
                 " DELETE FROM hook.webhook where id=:id; ";
         try {

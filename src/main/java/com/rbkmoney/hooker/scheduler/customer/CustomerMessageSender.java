@@ -4,7 +4,7 @@ import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.CustomerMessageJson;
-import com.rbkmoney.hooker.model.Hook;
+import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import com.rbkmoney.hooker.service.err.PostRequestException;
@@ -20,15 +20,15 @@ import java.util.List;
 public class CustomerMessageSender implements Runnable {
     public static Logger log = LoggerFactory.getLogger(CustomerMessageSender.class);
 
-    private Hook hook;
+    private Queue queue;
     private List<CustomerMessage> messages;
     private TaskDao taskDao;
     private CustomerMessageScheduler workerTaskScheduler;
     private Signer signer;
     private PostSender postSender;
 
-    public CustomerMessageSender(Hook hook, List<CustomerMessage> messages, CustomerTaskDao taskDao, CustomerMessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
-        this.hook = hook;
+    public CustomerMessageSender(Queue queue, List<CustomerMessage> messages, CustomerTaskDao taskDao, CustomerMessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
+        this.queue = queue;
         this.messages = messages;
         this.taskDao = taskDao;
         this.workerTaskScheduler = workerTaskScheduler;
@@ -41,19 +41,19 @@ public class CustomerMessageSender implements Runnable {
         try {
             for (CustomerMessage message : messages) {
                 final String messageJson = CustomerMessageJson.buildMessageJson(message);
-                final String signature = signer.sign(messageJson, hook.getPrivKey());
-                int statusCode = postSender.doPost(hook.getUrl(), messageJson, signature);
+                final String signature = signer.sign(messageJson, queue.getHook().getPrivKey());
+                int statusCode = postSender.doPost(queue.getHook().getUrl(), messageJson, signature);
                 if (statusCode != HttpStatus.SC_OK) {
-                    log.warn("Wrong status code " + statusCode + " from merchant. Message id = " + message.getId());
+                    log.warn("Wrong status code {} from merchant, we try to resend it. MessageId {}, customerId {}", statusCode, message.getId(), message.getCustomer().getId());
                     throw new PostRequestException("Internal server error for message id = " + message.getId());
                 }
-                log.info("{} is sent to {}", message, hook);
-                taskDao.remove(hook.getId(), message.getId()); //required after message is sent
+                log.info("{} is sent to {}", message, queue.getHook());
+                taskDao.remove(queue.getId(), message.getId()); //required after message is sent
             }
-            workerTaskScheduler.done(hook); // required after all messages processed
+            workerTaskScheduler.done(queue); // required after all messages processed
         } catch (Exception e) {
-            log.warn("Couldn't send message to hook: " + hook.toString(), e);
-            workerTaskScheduler.fail(hook); // required if fail to send message
+            log.warn("Couldn't send message to hook {}. We'll try to resend it", queue.getHook().toString(), e);
+            workerTaskScheduler.fail(queue); // required if fail to send message
         }
     }
 }
