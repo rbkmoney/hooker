@@ -5,10 +5,6 @@ import com.rbkmoney.hooker.model.CustomerMessage;
 import java.util.Collection;
 import java.util.List;
 
-//TODO create parametrized interface MessageDao
-public interface CustomerDao {
+public interface CustomerDao extends MessageDao<CustomerMessage>{
     CustomerMessage getAny(String customerId, String type) throws DaoException;
-    CustomerMessage create(CustomerMessage customerMessage) throws DaoException;
-    Long getMaxEventId();
-    List<CustomerMessage> getBy(Collection<Long> messageIds);
 }

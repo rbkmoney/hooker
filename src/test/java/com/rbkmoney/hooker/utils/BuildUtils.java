@@ -13,11 +13,11 @@ import java.util.List;
  * Created by jeckep on 25.04.17.
  */
 public class BuildUtils {
-    public static InvoicingMessage message(String type, String invoiceId, String partyId, EventType eventType, String status) {
-        return message(type, invoiceId, partyId, eventType, status, null, true);
+    public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status) {
+        return buildMessage(type, invoiceId, partyId, eventType, status, null, true);
     }
 
-    public static InvoicingMessage message(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
+    public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
         InvoicingMessage message = new InvoicingMessage();
         message.setEventId(5555);
         message.setEventTime("time");

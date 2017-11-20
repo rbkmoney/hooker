@@ -241,7 +241,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
 
     @Override
     @Transactional
-    public InvoicingMessage create(InvoicingMessage message) throws DaoException {
+    public void create(InvoicingMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.message" +
                 "(event_id, event_time, type, party_id, event_type, " +
                 "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
@@ -325,7 +325,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
             putToCache(message);
             queueDao.createWithPolicy(message.getId());
             taskDao.create(message.getId());
-            return message;
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't createWithPolicy message with invoice_id "+ message.getInvoice().getId(), e);
         }

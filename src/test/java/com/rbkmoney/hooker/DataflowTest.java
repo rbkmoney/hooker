@@ -27,7 +27,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
-import static com.rbkmoney.hooker.utils.BuildUtils.message;
+import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static org.junit.Assert.*;
 
 /**
@@ -74,7 +74,8 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void testCache(){
         final String invoceId = "asgsdhghdhtfugny78989";
         final String partyId = new Random().nextInt() + "";
-        InvoicingMessage message1 = messageDao.create(message(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status"));
+        InvoicingMessage message1 = buildMessage(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status");
+        messageDao.create(message1);
         InvoicingMessage message2 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
         InvoicingMessage message3 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
         assertTrue(message1 != message2);
@@ -85,12 +86,24 @@ public class DataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true)));
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status")));
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status")));
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"4", "qwe", EventType.INVOICE_CREATED, "status")));
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false)));
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false)));
+        InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true);
+        messageDao.create(message);
+        sourceMessages.add(message);
+        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status");
+        messageDao.create(message);
+        sourceMessages.add(message);
+        message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status");
+        messageDao.create(message);
+        sourceMessages.add(message);
+        message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "4", "qwe", EventType.INVOICE_CREATED, "status");
+        messageDao.create(message);
+        sourceMessages.add(message);
+        message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false);
+        messageDao.create(message);
+        sourceMessages.add(message);
+        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false);
+        messageDao.create(message);
+        sourceMessages.add(message);
 
         List<MockMessage> inv1 = new ArrayList<>();
         List<MockMessage> inv3 = new ArrayList<>();

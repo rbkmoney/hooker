@@ -80,12 +80,24 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<CustomerMessage> sourceMessages = new ArrayList<>();
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(1L, "partyId1",  EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(2L, "partyId1",  EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(3L, "partyId2",  EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(4L, "partyId2",  EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(5L, "partyId2",  EventType.CUSTOMER_BINDING_STARTED, AbstractCustomerEventHandler.BINDING, "2", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(6L, "partyId2",  EventType.CUSTOMER_BINDING_SUCCEEDED, AbstractCustomerEventHandler.BINDING, "3", "2342", Customer.StatusEnum.READY)));
+        CustomerMessage message = BuildUtils.buildCustomerMessage(1L, "partyId1", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(2L, "partyId1", EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(3L, "partyId2", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(4L, "partyId2", EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(5L, "partyId2", EventType.CUSTOMER_BINDING_STARTED, AbstractCustomerEventHandler.BINDING, "2", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(6L, "partyId2", EventType.CUSTOMER_BINDING_SUCCEEDED, AbstractCustomerEventHandler.BINDING, "3", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
 
         List<MockMessage> cust1 = new ArrayList<>();
         List<MockMessage> cust2 = new ArrayList<>();
