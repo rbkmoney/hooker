@@ -22,7 +22,7 @@ public class DaoConfiguration {
 
     @Bean
     @DependsOn("dbInitializer")
-    public MessageDao messageDao(DataSource dataSource) {
+    public InvoicingMessageDao messageDao(DataSource dataSource) {
         return new MessageDaoImpl(dataSource);
     }
 

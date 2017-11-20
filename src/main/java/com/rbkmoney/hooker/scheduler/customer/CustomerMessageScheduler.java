@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  * Created by jeckep on 17.04.17.
  */
 
+//TODO squash with InvoicingMessageScheduler
 @Service
 public class CustomerMessageScheduler {
     Logger log = LoggerFactory.getLogger(this.getClass());
@@ -63,20 +64,16 @@ public class CustomerMessageScheduler {
         }
 
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedQueues);
-        log.info("scheduledTasks {}", scheduledTasks);
         if (scheduledTasks.entrySet().isEmpty()) {
             return;
         }
         final Map<Long, Queue> healthyQueues = loadQueues(scheduledTasks.keySet())
                 .stream().collect(Collectors.toMap(Queue::getId, v -> v));
 
-        log.info("healthyQueues {}", healthyQueues);
         processedQueues.addAll(healthyQueues.keySet());
 
         final Set<Long> messageIdsToSend = getMessageIdsFilteredByQueues(scheduledTasks, healthyQueues.keySet());
-        log.info("messageIdsToSend {}", messageIdsToSend);
         final Map<Long, CustomerMessage> messagesMap = loadMessages(messageIdsToSend);
-        log.info("messagesMap {}", messagesMap);
 
         for (long queueId : healthyQueues.keySet()) {
             List<Task> tasks = scheduledTasks.get(queueId);
@@ -86,7 +83,7 @@ public class CustomerMessageScheduler {
                 if (e != null) {
                     messagesForQueue.add(e);
                 } else {
-                    log.error("Message with id {} couldn't be null", task.getMessageId());
+                    log.error("InvoicingMessage with id {} couldn't be null", task.getMessageId());
                 }
             }
             CustomerMessageSender messageSender = new CustomerMessageSender(healthyQueues.get(queueId), messagesForQueue, taskDao, this, signer, postSender);

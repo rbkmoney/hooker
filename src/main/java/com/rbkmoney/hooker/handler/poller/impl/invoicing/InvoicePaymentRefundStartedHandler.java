@@ -9,7 +9,7 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Payment;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +41,7 @@ public class InvoicePaymentRefundStartedHandler extends NeedReadInvoiceEventHand
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, Event event, Message message) {
+    protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
         InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getPayload().getInvoicePaymentRefundCreated();
         Payment payment = message.getPayment();
         payment.setCreatedAt(refundCreated.getRefund().getCreatedAt());

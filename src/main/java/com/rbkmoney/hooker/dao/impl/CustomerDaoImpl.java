@@ -30,10 +30,13 @@ import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
  */
 public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements CustomerDao {
 
+    Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    CustomerQueueDao queueDao;
+
     @Autowired
     CustomerTaskDao taskDao;
-
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     public static final String ID = "id";
     public static final String EVENT_ID = "event_id";
@@ -181,6 +184,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
             log.info("CustomerMessage {} saved to db.", message);
+            queueDao.createWithPolicy(message.getId());
             taskDao.create(message.getId());
             return message;
         } catch (NestedRuntimeException e) {

@@ -3,10 +3,8 @@ package com.rbkmoney.hooker;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.*;
-import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
 import com.rbkmoney.swag_webhook_events.CustomerPayer;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
 import okhttp3.mockwebserver.Dispatcher;
@@ -15,7 +13,6 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +33,7 @@ import static org.junit.Assert.*;
 /**
  * Created by jeckep on 20.04.17.
  */
-@TestPropertySource(properties = {"message.scheduler.delay=1000"})
+@TestPropertySource(properties = {"message.scheduler.delay=500"})
 public class DataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(DataflowTest.class);
 
@@ -44,27 +41,17 @@ public class DataflowTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    MessageDao messageDao;
+    InvoicingMessageDao messageDao;
 
-    @Autowired
-    SimpleRetryPolicyDao simpleRetryPolicyDao;
-
-    @Autowired
-    QueueDao queueDao;
-
-    @Autowired
-    InvoicingTaskDao taskDao;
-
-    BlockingQueue<MockMessage> hook1Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<MockMessage> hook2Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<MockMessage> hook3Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<MockMessage> hookBrokenQueue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> inv1Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> inv3Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> inv4Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> inv5Queue = new LinkedBlockingDeque<>(10);
 
     final List<Hook> hooks = new ArrayList<>();
     final String HOOK_1 = "/hook1";
     final String HOOK_2 = "/hook2";
     final String HOOK_3 = "/hook3";
-    final String BROKEN_HOOK = "/brokenhook";
 
     String baseServerUrl;
 
@@ -87,9 +74,9 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void testCache(){
         final String invoceId = "asgsdhghdhtfugny78989";
         final String partyId = new Random().nextInt() + "";
-        Message message1 = messageDao.create(message(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status"));
-        Message message2 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
-        Message message3 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
+        InvoicingMessage message1 = messageDao.create(message(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status"));
+        InvoicingMessage message2 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
+        InvoicingMessage message3 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
         assertTrue(message1 != message2);
         assertTrue(message2 != message3);
         assertTrue(message1 != message3);
@@ -97,74 +84,47 @@ public class DataflowTest extends AbstractIntegrationTest {
 
     @Test
     public void testMessageSend() throws InterruptedException {
-        List<Message> sourceMessages = new ArrayList<>();
+        List<InvoicingMessage> sourceMessages = new ArrayList<>();
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true)));
-        queueDao.createWithPolicy(sourceMessages.get(0).getId());
-        taskDao.create(sourceMessages.get(0).getId());
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status")));
-        taskDao.create(sourceMessages.get(1).getId());
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status")));
-        queueDao.createWithPolicy(sourceMessages.get(2).getId());
-        taskDao.create(sourceMessages.get(2).getId());
-
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"4", "qwe", EventType.INVOICE_CREATED, "status")));
-        queueDao.createWithPolicy(sourceMessages.get(3).getId());
-        taskDao.create(sourceMessages.get(3).getId());
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"5", "qwe", EventType.INVOICE_CREATED, "status")));
-        queueDao.createWithPolicy(sourceMessages.get(4).getId());
-        taskDao.create(sourceMessages.get(4).getId());
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false)));
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false)));
-        taskDao.create(sourceMessages.get(5).getId());
 
-        List<MockMessage> hook1 = new ArrayList<>();
-        List<MockMessage> hook2 = new ArrayList<>();
-        List<MockMessage> hook3 = new ArrayList<>();
-
-        for (int i = 0; i < 2; i++) {
-            hook1.add(hook1Queue.poll(1, TimeUnit.SECONDS));
-        }
-        Assert.assertNotNull(hook1.get(0));
-        Assert.assertNotNull(hook1.get(1));
-        assertEquals(sourceMessages.get(0).getInvoice().getId(), hook1.get(0).getInvoice().getId());
-        assertEquals(sourceMessages.get(2).getInvoice().getId(), hook1.get(1).getInvoice().getId());
-
-
-        for (int i = 0; i < 3; i++) {
-            hook2.add(hook2Queue.poll(1, TimeUnit.SECONDS));
-        }
-        for (int i = 0; i < 3; i++) {
-            assertEquals(sourceMessages.get(i).getInvoice().getId(), hook2.get(i).getInvoice().getId());
-        }
-
-        for (int i = 0; i < 1; i++) {
-            hook3.add(hook3Queue.poll(1, TimeUnit.SECONDS));
-        }
-        assertTrue(hook3.get(0).getPayment().getPayer() instanceof CustomerPayer);
-
-        assertTrue(hook1Queue.isEmpty());
-        assertTrue(hook2Queue.isEmpty());
-        assertTrue(hook3Queue.isEmpty());
+        List<MockMessage> inv1 = new ArrayList<>();
+        List<MockMessage> inv3 = new ArrayList<>();
+        List<MockMessage> inv4 = new ArrayList<>();
+        List<MockMessage> inv5 = new ArrayList<>();
 
         Thread.currentThread().sleep(1000);
 
-    }
+        for (int i = 0; i < 3; i++) {
+            inv1.add(inv1Queue.poll(1, TimeUnit.SECONDS));
+        }
+        Assert.assertNotNull(inv1.get(0));
+        Assert.assertNotNull(inv1.get(1));
+        Assert.assertNotNull(inv1.get(2));
 
-    @Test
-    public void testDisableHookPolicy() throws InterruptedException {
-        final String invoceId = "asgsdhghdhtfugny648";
-        final String partyId = new Random().nextInt() + "";
-        Hook hook = hookDao.create(hook(partyId, "http://" + baseServerUrl + BROKEN_HOOK, EventType.INVOICE_CREATED));
-        simpleRetryPolicyDao.update(new SimpleRetryPolicyRecord(hook.getId(), 0, 0));
+        for (int i = 0; i < 2; i++) {
+            inv3.add(inv3Queue.poll(1, TimeUnit.SECONDS));
+        }
+        Assert.assertNotNull(inv3.get(0));
+        Assert.assertNotNull(inv3.get(1));
 
-        Message message = messageDao.create(message(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status"));
-        queueDao.createWithPolicy(message.getId());
-        taskDao.create(message.getId());
-        assertEquals(message.getInvoice().getId(), hookBrokenQueue.poll(1, TimeUnit.SECONDS).getInvoice().getId());
+        inv4.add(inv4Queue.poll(1, TimeUnit.SECONDS));
+        Assert.assertNull(inv4.get(0));
 
-        Thread.sleep(1000);
+        inv5.add(inv5Queue.poll(1, TimeUnit.SECONDS));
+        Assert.assertNotNull(inv5.get(0));
+        assertEquals(sourceMessages.get(5).getInvoice().getId(), inv5.get(0).getInvoice().getId());
+        assertTrue(inv5.get(0).getPayment().getPayer() instanceof CustomerPayer);
 
-        hook = hookDao.getHookById(hook.getId());
-        //assertTrue(hook.isEnabled());
+        assertTrue(inv1Queue.isEmpty());
+        assertTrue(inv3Queue.isEmpty());
+        assertTrue(inv4Queue.isEmpty());
+        assertTrue(inv5Queue.isEmpty());
+
     }
 
     private static Hook hook(String partyId, String url, EventType... types) {
@@ -186,28 +146,34 @@ public class DataflowTest extends AbstractIntegrationTest {
 
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-                if (request.getPath().startsWith(HOOK_1)) {
-                    hook1Queue.put(extractPaymentResourcePayer(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(HOOK_1).setResponseCode(200);
-                }
-                if (request.getPath().startsWith(HOOK_2)) {
-                    hook2Queue.put(extractPaymentResourcePayer(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(HOOK_2).setResponseCode(200);
-                }
+                MockMessage mockMessage;
                 if (request.getPath().startsWith(HOOK_3)) {
-                    hook3Queue.put(extractCustomerPayer(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(HOOK_3).setResponseCode(200);
-                }
-                if (request.getPath().startsWith(BROKEN_HOOK)) {
-                    hookBrokenQueue.put(extractPaymentResourcePayer(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(BROKEN_HOOK).setResponseCode(500);
+                    mockMessage = extractCustomerPayer(request);
+                } else {
+                    mockMessage = extractPaymentResourcePayer(request);
                 }
 
-                return new MockResponse().setResponseCode(500);
+                String invoiceId = mockMessage.getInvoice().getId();
+                switch (invoiceId) {
+                    case "1":
+                        inv1Queue.put(mockMessage);
+                        break;
+                    case "3":
+                        inv3Queue.put(mockMessage);
+                        break;
+                    case "4":
+                        inv4Queue.put(mockMessage);
+                        break;
+                    case "5":
+                        inv5Queue.put(mockMessage);
+                        break;
+                    default:
+                        Thread.sleep(100);
+                        return new MockResponse().setBody("FAIL").setResponseCode(500);
+                }
+
+                Thread.sleep(100);
+                return new MockResponse().setBody("OK").setResponseCode(200);
             }
         };
         return dispatcher;

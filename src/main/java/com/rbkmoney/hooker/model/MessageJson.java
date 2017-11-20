@@ -83,7 +83,7 @@ public class MessageJson {
         this.invoice = invoice;
     }
 
-    public static String buildMessageJson(Message message) throws JsonProcessingException {
+    public static String buildMessageJson(InvoicingMessage message) throws JsonProcessingException {
         boolean isInvoice = AbstractInvoiceEventHandler.INVOICE.equals(message.getType());
         MessageJson messageJson = isInvoice ?  new InvoiceMessageJson() : new PaymentMessageJson(message.getPayment());
         messageJson.eventID = message.getEventId();

@@ -11,9 +11,7 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.QueueDao;
-import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,13 +23,7 @@ import java.util.ArrayList;
 public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
 
     @Autowired
-    MessageDao messageDao;
-
-    @Autowired
-    QueueDao queueDao;
-
-    @Autowired
-    InvoicingTaskDao taskDao;
+    InvoicingMessageDao messageDao;
 
     private Filter filter;
 
@@ -46,7 +38,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
     protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
-        Message message = new Message();
+        InvoicingMessage message = new InvoicingMessage();
         message.setEventId(event.getId());
         message.setEventTime(event.getCreatedAt());
         message.setType(INVOICE);
@@ -86,9 +78,6 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
             }
         }
         messageDao.create(message);
-        queueDao.createWithPolicy(message.getId());
-        // create tasks
-        taskDao.create(message.getId());
     }
 
     @Override

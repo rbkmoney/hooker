@@ -14,7 +14,8 @@ CREATE TABLE hook.invoicing_queue
     id bigserial NOT NULL,
     hook_id bigint NOT NULL,
     invoice_id CHARACTER VARYING NOT NULL,
-    CONSTRAINT invoicing_queue_pkey PRIMARY KEY (id)
+    CONSTRAINT invoicing_queue_pkey PRIMARY KEY (id),
+    CONSTRAINT invoicing_queue_pkey2 UNIQUE (hook_id, invoice_id)
 );
 
 -- create customer_queue table
@@ -22,8 +23,9 @@ CREATE TABLE hook.customer_queue
 (
     id bigserial NOT NULL,
     hook_id bigint NOT NULL,
-    customer_id bigint NOT NULL,
-    CONSTRAINT customer_queue_pkey PRIMARY KEY (id)
+    customer_id CHARACTER VARYING NOT NULL,
+    CONSTRAINT customer_queue_pkey PRIMARY KEY (id),
+    CONSTRAINT customer_queue_pkey2 UNIQUE (hook_id, customer_id)
 );
 
 -- add queue_id column
@@ -37,3 +39,6 @@ ALTER TABLE hook.scheduled_task DROP COLUMN hook_id;
 ALTER TABLE hook.scheduled_task ADD COLUMN queue_id bigint NOT NULL;
 ALTER TABLE hook.scheduled_task ADD CONSTRAINT scheduled_task_pkey PRIMARY KEY (message_id, queue_id, message_type);
 
+-- create indices
+CREATE INDEX message_invoice_id_idx on hook.message(invoice_id);
+CREATE INDEX customer_message_customer_id_idx on hook.customer_message(customer_id);

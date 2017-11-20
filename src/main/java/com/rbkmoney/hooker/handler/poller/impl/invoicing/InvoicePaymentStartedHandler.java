@@ -11,7 +11,7 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
@@ -44,7 +44,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, Event event, Message message) {
+    protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
         InvoicePayment paymentOrigin = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
         Payment payment = new Payment();
         message.setPayment(payment);
@@ -93,7 +93,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected Message getMessage(String invoiceId) {
+    protected InvoicingMessage getMessage(String invoiceId) {
         return messageDao.getAny(invoiceId, INVOICE);
     }
 }

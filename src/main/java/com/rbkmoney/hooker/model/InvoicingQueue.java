@@ -13,4 +13,5 @@ public class InvoicingQueue extends Queue{
     public void setInvoiceId(String invoiceId) {
         this.invoiceId = invoiceId;
     }
+
 }

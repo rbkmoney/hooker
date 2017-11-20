@@ -1,10 +1,10 @@
 package com.rbkmoney.hooker.scheduler.invoicing;
 
-import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Queue;
-import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  */
 
 @Service
-public class MessageScheduler {
+public class InvoicingMessageScheduler {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -37,7 +37,7 @@ public class MessageScheduler {
     private InvoicingQueueDao queueDao;
 
     @Autowired
-    private MessageDao messageDao;
+    private InvoicingMessageDao messageDao;
 
     @Autowired
     private RetryPoliciesService retryPoliciesService;
@@ -51,7 +51,7 @@ public class MessageScheduler {
     private final Set<Long> processedQueues = Collections.synchronizedSet(new HashSet<>());
     private ExecutorService executorService;
 
-    public MessageScheduler(@Value("${message.sender.number}") int numberOfWorkers) {
+    public InvoicingMessageScheduler(@Value("${message.sender.number}") int numberOfWorkers) {
         this.executorService = Executors.newFixedThreadPool(numberOfWorkers);
     }
 
@@ -63,33 +63,29 @@ public class MessageScheduler {
         }
 
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedQueues);
-        log.info("scheduledTasks {}", scheduledTasks);
         if (scheduledTasks.entrySet().isEmpty()) {
             return;
         }
         final Map<Long, Queue> healthyQueues = loadQueues(scheduledTasks.keySet())
                 .stream().collect(Collectors.toMap(Queue::getId, v -> v));
 
-        log.info("healthyQueues {}", healthyQueues);
         processedQueues.addAll(healthyQueues.keySet());
 
         final Set<Long> messageIdsToSend = getMessageIdsFilteredByQueues(scheduledTasks, healthyQueues.keySet());
-        log.info("messageIdsToSend {}", messageIdsToSend);
-        final Map<Long, Message> messagesMap = loadMessages(messageIdsToSend);
-        log.info("messagesMap {}", messagesMap);
+        final Map<Long, InvoicingMessage> messagesMap = loadMessages(messageIdsToSend);
 
         for (long queueId : healthyQueues.keySet()) {
             List<Task> tasks = scheduledTasks.get(queueId);
-            List<Message> messagesForQueue = new ArrayList<>();
+            List<InvoicingMessage> messagesForQueue = new ArrayList<>();
             for (Task task : tasks) {
-                Message e = messagesMap.get(task.getMessageId());
+                InvoicingMessage e = messagesMap.get(task.getMessageId());
                 if (e != null) {
                     messagesForQueue.add(e);
                 } else {
-                    log.error("Message with id {} couldn't be null", task.getMessageId());
+                    log.error("InvoicingMessage with id {} couldn't be null", task.getMessageId());
                 }
             }
-            MessageSender messageSender = new MessageSender(healthyQueues.get(queueId), messagesForQueue, taskDao, this, signer, postSender);
+            InvoicingMessageSender messageSender = new InvoicingMessageSender(healthyQueues.get(queueId), messagesForQueue, taskDao, this, signer, postSender);
             executorService.submit(messageSender);
         }
     }
@@ -134,10 +130,10 @@ public class MessageScheduler {
         return messageIds;
     }
 
-    private Map<Long, Message> loadMessages(Collection<Long> messageIds) {
-        List<Message> messages =  messageDao.getBy(messageIds);
-        Map<Long, Message> map = new HashMap<>();
-        for(Message message: messages){
+    private Map<Long, InvoicingMessage> loadMessages(Collection<Long> messageIds) {
+        List<InvoicingMessage> messages =  messageDao.getBy(messageIds);
+        Map<Long, InvoicingMessage> map = new HashMap<>();
+        for(InvoicingMessage message: messages){
             map.put(message.getId(), message);
         }
         return map;

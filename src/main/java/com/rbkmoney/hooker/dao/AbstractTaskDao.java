@@ -77,7 +77,6 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
 
     //should preserve order
     private Map<Long, List<Task>> splitByQueue(List<Task> orderedByQueueIdMessageIdTasks) {
-        log.info("orderedByQueueIdMessageIdTasks {}",orderedByQueueIdMessageIdTasks);
         final Map<Long, List<Task>> map = new HashMap<>();
         if (orderedByQueueIdMessageIdTasks.size() == 0) {
             return map;

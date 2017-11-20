@@ -13,12 +13,12 @@ import java.util.List;
  * Created by jeckep on 25.04.17.
  */
 public class BuildUtils {
-    public static Message message(String type, String invoiceId, String partyId, EventType eventType, String status) {
+    public static InvoicingMessage message(String type, String invoiceId, String partyId, EventType eventType, String status) {
         return message(type, invoiceId, partyId, eventType, status, null, true);
     }
 
-    public static Message message(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
-        Message message = new Message();
+    public static InvoicingMessage message(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
+        InvoicingMessage message = new InvoicingMessage();
         message.setEventId(5555);
         message.setEventTime("time");
         message.setType(type);

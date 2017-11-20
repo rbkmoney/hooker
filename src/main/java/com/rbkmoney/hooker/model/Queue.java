@@ -33,4 +33,13 @@ public class Queue {
     public void setRetryPolicyRecord(RetryPolicyRecord retryPolicyRecord) {
         this.retryPolicyRecord = retryPolicyRecord;
     }
+
+    @Override
+    public String toString() {
+        return "Queue{" +
+                "id=" + id +
+                ", hook=" + hook +
+                ", retryPolicyRecord=" + retryPolicyRecord +
+                '}';
+    }
 }

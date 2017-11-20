@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Ignore
 public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(CustomerMessageDaoImplTest.class);
 

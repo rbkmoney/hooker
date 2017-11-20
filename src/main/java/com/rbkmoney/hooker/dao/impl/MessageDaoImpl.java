@@ -2,8 +2,7 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
@@ -28,14 +27,17 @@ import java.util.*;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
-public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
+public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements InvoicingMessageDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    InvoicingTaskDao taskDao;
+    CacheManager cacheManager;
 
     @Autowired
-    CacheManager cacheManager;
+    InvoicingQueueDao queueDao;
+
+    @Autowired
+    InvoicingTaskDao taskDao;
 
     public static final String ID = "id";
     public static final String EVENT_ID = "event_id";
@@ -111,8 +113,8 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         return invoiceCartPosition;
     };
 
-    private static RowMapper<Message> messageRowMapper = (rs, i) -> {
-        Message message = new Message();
+    private static RowMapper<InvoicingMessage> messageRowMapper = (rs, i) -> {
+        InvoicingMessage message = new InvoicingMessage();
         message.setId(rs.getLong(ID));
         message.setEventId(rs.getLong(EVENT_ID));
         message.setEventTime(rs.getString(EVENT_TIME));
@@ -183,12 +185,12 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     }
 
     @Override
-    public Message getAny(String invoiceId, String type) throws DaoException {
-        Message message = getFromCache(invoiceId, type);
+    public InvoicingMessage getAny(String invoiceId, String type) throws DaoException {
+        InvoicingMessage message = getFromCache(invoiceId, type);
         if (message != null) {
             return message.copy();
         }
-        Message result = null;
+        InvoicingMessage result = null;
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id AND type =:type ORDER BY id DESC LIMIT 1";
         MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, invoiceId).addValue(TYPE, type);
         try {
@@ -200,7 +202,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 result.getInvoice().setCart(cart);
             }
         } catch (EmptyResultDataAccessException e) {
-            log.warn("Message with invoiceId {} not exist!", invoiceId);
+            log.warn("InvoicingMessage with invoiceId {} not exist!", invoiceId);
         } catch (NestedRuntimeException e) {
             throw new DaoException("MessageDaoImpl.getAny error with invoiceId " + invoiceId, e);
         }
@@ -239,7 +241,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
 
     @Override
     @Transactional
-    public Message create(Message message) throws DaoException {
+    public InvoicingMessage create(InvoicingMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.message" +
                 "(event_id, event_time, type, party_id, event_type, " +
                 "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
@@ -319,8 +321,10 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
             saveCart(message.getId(), message.getInvoice().getCart());
-            log.info("Message {} save to db.", message);
+            log.info("InvoicingMessage {} save to db.", message);
             putToCache(message);
+            queueDao.createWithPolicy(message.getId());
+            taskDao.create(message.getId());
             return message;
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't createWithPolicy message with invoice_id "+ message.getInvoice().getId(), e);
@@ -338,23 +342,23 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     }
 
     @Override
-    public List<Message> getBy(Collection<Long> messageIds) {
-        List<Message> messages = getFromCache(messageIds);
+    public List<InvoicingMessage> getBy(Collection<Long> messageIds) {
+        List<InvoicingMessage> messages = getFromCache(messageIds);
 
         if (messages.size() == messageIds.size()) {
             return messages;
         }
 
         Set<Long> ids = new HashSet<>(messageIds);
-        for (Message message : messages) {
+        for (InvoicingMessage message : messages) {
             ids.remove(message.getId());
         }
 
         final String sql = "SELECT DISTINCT * FROM hook.message WHERE id in (:ids)";
         try {
-            List<Message> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", ids), messageRowMapper);
+            List<InvoicingMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", ids), messageRowMapper);
             log.debug("messagesFromDb {}", messagesFromDb);
-            for(Message message: messagesFromDb){
+            for(InvoicingMessage message: messagesFromDb){
                 putToCache(message);
             }
             messages.addAll(messagesFromDb);
@@ -364,23 +368,23 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         }
     }
 
-    private void putToCache(Message message){
+    private void putToCache(InvoicingMessage message){
         if(message != null) {
             cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS).put(message.getId(), message);
             cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoice().getId() + message.getType(), message);
         }
     }
 
-    private Message getFromCache(String invoiceId, String type) {
+    private InvoicingMessage getFromCache(String invoiceId, String type) {
         Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE);
-        return cache.get(invoiceId + type, Message.class);
+        return cache.get(invoiceId + type, InvoicingMessage.class);
     }
 
-    private List<Message> getFromCache(Collection<Long> ids) {
+    private List<InvoicingMessage> getFromCache(Collection<Long> ids) {
         Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS);
-        List<Message> messages = new ArrayList<>();
+        List<InvoicingMessage> messages = new ArrayList<>();
         for (Long id : ids) {
-            Message e = cache.get(id, Message.class);
+            InvoicingMessage e = cache.get(id, InvoicingMessage.class);
             if (e != null) {
                 messages.add(e);
             }

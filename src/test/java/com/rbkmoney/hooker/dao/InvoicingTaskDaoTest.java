@@ -30,7 +30,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    MessageDao messageDao;
+    InvoicingMessageDao messageDao;
 
     Long messageId;
     Long hookId;

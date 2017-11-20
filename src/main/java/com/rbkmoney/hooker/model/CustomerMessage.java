@@ -7,8 +7,7 @@ import com.rbkmoney.swag_webhook_events.CustomerBinding;
 /**
  * Created by inalarsanukaev on 13.10.17.
  */
-public class CustomerMessage {
-    private long id;
+public class CustomerMessage extends Message {
     private long eventId;
     private String type;
     private String occuredAt;
@@ -19,14 +18,6 @@ public class CustomerMessage {
 
     public boolean isBinding() {
         return AbstractCustomerEventHandler.BINDING.equals(type);
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public long getEventId() {
@@ -88,7 +79,7 @@ public class CustomerMessage {
     @Override
     public String toString() {
         return "CustomerMessage{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", eventId=" + eventId +
                 ", type='" + type +
                 ", occuredAt='" + occuredAt +

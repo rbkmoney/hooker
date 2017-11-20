@@ -45,7 +45,6 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
         return queue;
     };
 
-
     @Override
     public void createWithPolicy(long messageId) throws DaoException {
         final String sql = "with queue as ( " +
@@ -53,13 +52,8 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
                 " select w.id , m.invoice_id" +
                 " from hook.message m" +
                 " join hook.webhook w on m.party_id = w.party_id and w.enabled" +
-                " join hook.webhook_to_events wte on wte.hook_id = w.id" +
                 " where m.id = :id " +
-                " and m.event_type = wte.event_type " +
-                " and (m.shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
-                " and (m.invoice_status = wte.invoice_status or wte.invoice_status is null) " +
-                " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
-                " returning *) " +
+                " on conflict(hook_id, invoice_id) do nothing returning *) " +
                 "insert into hook.simple_retry_policy(queue_id) select id from queue";
         try {
             int count = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId));

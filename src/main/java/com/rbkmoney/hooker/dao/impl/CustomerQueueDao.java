@@ -31,7 +31,7 @@ public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements Qu
     public static RowMapper<CustomerQueue> queueWithPolicyRowMapper = (rs, i) -> {
         CustomerQueue queue = new CustomerQueue();
         queue.setId(rs.getLong("id"));
-        queue.setCustomerId(rs.getLong("customer_id"));
+        queue.setCustomerId(rs.getString("customer_id"));
         Hook hook = new Hook();
         hook.setId(rs.getLong("hook_id"));
         hook.setPartyId(rs.getString("party_id"));
@@ -54,13 +54,8 @@ public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements Qu
                 " select w.id , m.customer_id" +
                 " from hook.customer_message m" +
                 " join hook.webhook w on m.party_id = w.party_id and w.enabled" +
-                " join hook.webhook_to_events wte on wte.hook_id = w.id" +
                 " where m.id = :id " +
-                " and m.event_type = wte.event_type " +
-                " and (m.shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
-                " and (m.invoice_status = wte.invoice_status or wte.invoice_status is null) " +
-                " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
-                " returning *) " +
+                " on conflict(hook_id, customer_id) do nothing returning *) " +
                 "insert into hook.simple_retry_policy(queue_id) select id from queue";
         try {
             int count = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId));

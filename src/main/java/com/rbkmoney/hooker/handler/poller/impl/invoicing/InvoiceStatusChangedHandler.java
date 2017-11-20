@@ -7,9 +7,9 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
-import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     private Filter filter;
 
     @Autowired
-    MessageDao messageDao;
+    InvoicingMessageDao messageDao;
 
     public InvoiceStatusChangedHandler() {
         filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
@@ -42,7 +42,7 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, Event event, Message message) {
+    protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
         InvoiceStatus statusOrigin = ic.getInvoiceStatusChanged().getStatus();
         message.getInvoice().setStatus(statusOrigin.getSetField().getFieldName());
         if (statusOrigin.isSetCancelled()) {

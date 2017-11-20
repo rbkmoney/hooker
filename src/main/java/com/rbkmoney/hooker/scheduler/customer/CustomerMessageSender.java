@@ -17,6 +17,7 @@ import java.util.List;
 /**
  * Created by jeckep on 18.04.17.
  */
+//TODO squash with InvoicingMessageSender
 public class CustomerMessageSender implements Runnable {
     public static Logger log = LoggerFactory.getLogger(CustomerMessageSender.class);
 

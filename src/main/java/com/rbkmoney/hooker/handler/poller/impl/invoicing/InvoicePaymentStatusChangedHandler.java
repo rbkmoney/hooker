@@ -10,7 +10,7 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentStatusError;
 import org.springframework.stereotype.Component;
@@ -41,7 +41,7 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, Event event, Message message) {
+    protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
         InvoicePaymentStatus paymentOriginStatus = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStatusChanged().getStatus();
         Payment payment = message.getPayment();
         payment.setStatus(paymentOriginStatus.getSetField().getFieldName());

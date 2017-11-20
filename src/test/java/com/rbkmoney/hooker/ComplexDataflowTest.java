@@ -1,26 +1,23 @@
 package com.rbkmoney.hooker;
 
 import com.rbkmoney.hooker.dao.HookDao;
-import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.shaded.com.google.common.annotations.GwtIncompatible;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,8 +35,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by jeckep on 20.04.17.
  */
-@TestPropertySource(properties = {"message.scheduler.delay=100"})
-@Ignore
+@TestPropertySource(properties = {"message.scheduler.delay=500"})
 public class ComplexDataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(ComplexDataflowTest.class);
 
@@ -47,13 +43,10 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    MessageDao messageDao;
+    InvoicingMessageDao messageDao;
 
-    @Autowired
-    SimpleRetryPolicyDao simpleRetryPolicyDao;
-
-    BlockingQueue<DataflowTest.MockMessage> hook1Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<DataflowTest.MockMessage> hook2Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<DataflowTest.MockMessage> inv1Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<DataflowTest.MockMessage> inv2Queue = new LinkedBlockingDeque<>(10);
 
     final List<Hook> hooks = new ArrayList<>();
     final String HOOK_1 = "/hook1";
@@ -88,27 +81,28 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
 
     @Test
     public void testMessageSend() throws InterruptedException {
-        List<Message> sourceMessages = new ArrayList<>();
+        List<InvoicingMessage> sourceMessages = new ArrayList<>();
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid")));
         sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured")));
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed")));
-        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed")));
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed")));
+        sourceMessages.add(messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed")));
 
         List<DataflowTest.MockMessage> hooks = new ArrayList<>();
 
-        hooks.add(hook1Queue.poll(1, TimeUnit.SECONDS));
-        hooks.add(hook1Queue.poll(1, TimeUnit.SECONDS));
-        hooks.add(hook2Queue.poll(1, TimeUnit.SECONDS));
+        hooks.add(inv1Queue.poll(1, TimeUnit.SECONDS));
+        hooks.add(inv1Queue.poll(1, TimeUnit.SECONDS));
+        hooks.add(inv2Queue.poll(1, TimeUnit.SECONDS));
 
         Assert.assertNotNull(hooks.get(0));
         Assert.assertNotNull(hooks.get(1));
+        Assert.assertNotNull(hooks.get(2));
         assertEquals(sourceMessages.get(0).getInvoice().getStatus(), hooks.get(0).getInvoice().getStatus());
         assertEquals(sourceMessages.get(1).getPayment().getStatus(), hooks.get(1).getPayment().getStatus());
         assertEquals(sourceMessages.get(3).getPayment().getStatus(), hooks.get(2).getPayment().getStatus());
 
 
-        assertTrue(hook1Queue.isEmpty());
-        assertTrue(hook2Queue.isEmpty());
+        assertTrue(inv1Queue.isEmpty());
+        assertTrue(inv2Queue.isEmpty());
 
         Thread.currentThread().sleep(1000);
 
@@ -127,18 +121,19 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
 
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-                if (request.getPath().startsWith(HOOK_1)) {
-                    hook1Queue.put(DataflowTest.extractPaymentResourcePayer(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(HOOK_1).setResponseCode(200);
-                }
-                if (request.getPath().startsWith(HOOK_2)) {
-                    hook2Queue.put(DataflowTest.extractPaymentResourcePayer(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(HOOK_2).setResponseCode(200);
-                }
 
-                return new MockResponse().setResponseCode(500);
+                DataflowTest.MockMessage mockMessage = DataflowTest.extractPaymentResourcePayer(request);
+                String id = mockMessage.getInvoice().getId();
+                if (id.equals("1")) {
+                    inv1Queue.put(mockMessage);
+                } else if (id.equals("2")) {
+                    inv2Queue.put(mockMessage);
+                } else {
+                    Thread.sleep(100);
+                    return new MockResponse().setResponseCode(500);
+                }
+                Thread.sleep(100);
+                return new MockResponse().setBody(HOOK_1).setResponseCode(200);
             }
         };
         return dispatcher;

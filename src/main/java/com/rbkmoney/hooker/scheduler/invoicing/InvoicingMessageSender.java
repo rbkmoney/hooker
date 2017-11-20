@@ -2,7 +2,7 @@ package com.rbkmoney.hooker.scheduler.invoicing;
 
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.MessageJson;
 import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.service.PostSender;
@@ -17,17 +17,17 @@ import java.util.List;
 /**
  * Created by jeckep on 18.04.17.
  */
-public class MessageSender implements Runnable {
-    public static Logger log = LoggerFactory.getLogger(MessageSender.class);
+public class InvoicingMessageSender implements Runnable {
+    public static Logger log = LoggerFactory.getLogger(InvoicingMessageSender.class);
 
     private Queue queue;
-    private List<Message> messages;
+    private List<InvoicingMessage> messages;
     private TaskDao taskDao;
-    private MessageScheduler workerTaskScheduler;
+    private InvoicingMessageScheduler workerTaskScheduler;
     private Signer signer;
     private PostSender postSender;
 
-    public MessageSender(Queue queue, List<Message> messages, InvoicingTaskDao taskDao, MessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
+    public InvoicingMessageSender(Queue queue, List<InvoicingMessage> messages, InvoicingTaskDao taskDao, InvoicingMessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
         this.queue = queue;
         this.messages = messages;
         this.taskDao = taskDao;
@@ -39,7 +39,7 @@ public class MessageSender implements Runnable {
     @Override
     public void run() {
         try {
-            for (Message message : messages) {
+            for (InvoicingMessage message : messages) {
                 final String messageJson = MessageJson.buildMessageJson(message);
                 final String signature = signer.sign(messageJson, queue.getHook().getPrivKey());
                 int statusCode = postSender.doPost(queue.getHook().getUrl(), messageJson, signature);
