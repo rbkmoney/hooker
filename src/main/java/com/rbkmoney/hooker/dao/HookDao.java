@@ -13,6 +13,4 @@ public interface HookDao {
     Hook getHookById(long id);
     Hook create(Hook hook);
     void delete(long id);
-    void disable(long id);
-    List<Hook> getWithPolicies(Collection<Long> ids);
 }

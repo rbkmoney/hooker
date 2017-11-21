@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.dao.impl;
 
+import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.model.Hook;
@@ -8,20 +9,26 @@ import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.swag_webhook_events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 
 import javax.sql.DataSource;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by inalarsanukaev on 14.11.17.
  */
 public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements QueueDao<InvoicingQueue> {
     Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private CacheManager cacheManager;
 
     public InvoicingQueueDao(DataSource dataSource) {
         setDataSource(dataSource);
@@ -66,6 +73,13 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
 
     @Override
     public List<InvoicingQueue> getWithPolicies(Collection<Long> ids) {
+        List<InvoicingQueue> queues = getFromCache(ids);
+        if (queues.size() == ids.size()) {
+            return queues;
+        }
+        Set<Long> queueIds = new HashSet<>(ids);
+        queues.forEach(h -> queueIds.remove(h.getId()));
+
         final String sql =
                 " select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time " +
                         " from hook.invoicing_queue q " +
@@ -76,7 +90,9 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
         final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids);
 
         try {
-            List<InvoicingQueue> queues = getNamedParameterJdbcTemplate().query(sql, params, queueWithPolicyRowMapper);
+            List<InvoicingQueue> queuesFromDb = getNamedParameterJdbcTemplate().query(sql, params, queueWithPolicyRowMapper);
+            putToCache(queuesFromDb);
+            queues.addAll(queuesFromDb);
             return queues;
         } catch (NestedRuntimeException e) {
             throw new DaoException(e);
@@ -95,5 +111,15 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
         } catch (NestedRuntimeException e) {
             throw new DaoException(e);
         }
+    }
+
+    private List<InvoicingQueue> getFromCache(Collection<Long> ids){
+        Cache cache = cacheManager.getCache(CacheConfiguration.QUEUES);
+        return ids.stream().map(id -> cache.get(id, InvoicingQueue.class)).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    private void putToCache(Collection<InvoicingQueue> queues){
+        Cache cache = cacheManager.getCache(CacheConfiguration.QUEUES);
+        queues.forEach(q -> cache.put(q.getId(), q));
     }
 }

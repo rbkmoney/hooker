@@ -141,33 +141,6 @@ public class HookDaoImpl implements HookDao {
         }
     }
 
-    public List<Hook> getWithPolicies(Collection<Long> ids) {
-        List<Hook> hooks = getFromCache(ids);
-        if (hooks.size() == ids.size()) {
-            return hooks;
-        }
-        Set<Long> hookIds = new HashSet<>(ids);
-        hooks.forEach(h -> hookIds.remove(h.getId()));
-
-        final String sql =
-                " select w.*, k.*, srp.*" +
-                        " from hook.webhook w " +
-                        " join hook.party_key k on k.party_id = w.party_id " +
-                        " left join hook.simple_retry_policy srp on srp.hook_id = w.id" +
-                        " where w.id in (:ids)";
-        final MapSqlParameterSource params = new MapSqlParameterSource("ids", hookIds);
-
-        try {
-            List<Hook> hooksFromDb = jdbcTemplate.query(sql, params, hookWithPolicyRowMapper);
-            putToCache(hooksFromDb);
-            hooks.addAll(hooksFromDb);
-            return hooks;
-        } catch (NestedRuntimeException e) {
-            throw new DaoException(e);
-        }
-
-    }
-
     @Override
     @Transactional
     public Hook create(Hook hook) {
@@ -239,16 +212,6 @@ public class HookDaoImpl implements HookDao {
         }
     }
 
-    @Override
-    public void disable(long id) {
-        final String sql = " UPDATE hook.webhook SET enabled = FALSE where id=:id;";
-        try {
-            jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
-        } catch (NestedRuntimeException e) {
-            log.error("Fail to disable webhook: {}", id, e);
-            throw new DaoException(e);
-        }
-    }
 
     @Autowired
     Signer signer;
@@ -289,25 +252,5 @@ public class HookDaoImpl implements HookDao {
                             rs.getString("invoice_payment_status")));
 
 
-    private List<Hook> getFromCache(Collection<Long> ids){
-        Cache cache = cacheManager.getCache(CacheConfiguration.HOOKS);
-        List<Hook> hooks = new ArrayList<>();
-
-        for(long id: ids){
-            Hook hook = cache.get(id, Hook.class);
-            if(hook != null){
-                hooks.add(hook);
-            }
-        }
-
-        return hooks;
-    }
-
-    private void putToCache(Collection<Hook> hooks){
-        Cache cache = cacheManager.getCache(CacheConfiguration.HOOKS);
-        for(Hook hook: hooks){
-            cache.put(hook.getId(), hook);
-        }
-    }
 
 }
