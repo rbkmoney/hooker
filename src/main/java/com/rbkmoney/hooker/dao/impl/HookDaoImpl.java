@@ -31,26 +31,13 @@ public class HookDaoImpl implements HookDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    CacheManager cacheManager;
+    Signer signer;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public HookDaoImpl(NamedParameterJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-
-    public static RowMapper<Hook> hookWithPolicyRowMapper = (rs, i) -> {
-        Hook hook = new Hook();
-        hook.setId(rs.getLong("id"));
-        hook.setPartyId(rs.getString("party_id"));
-        hook.setUrl(rs.getString("url"));
-        hook.setPubKey(rs.getString("pub_key"));
-        hook.setPrivKey(rs.getString("priv_key"));
-        hook.setEnabled(rs.getBoolean("enabled"));
-        RetryPolicyType retryPolicyType = RetryPolicyType.valueOf(rs.getString("retry_policy"));
-        hook.setRetryPolicyType(retryPolicyType);
-        return hook;
-    };
 
     @Override
     public List<Hook> getPartyHooks(String partyId) {
@@ -210,10 +197,6 @@ public class HookDaoImpl implements HookDao {
         }
     }
 
-
-    @Autowired
-    Signer signer;
-
     private String createOrGetPubKey(String partyId) {
         final String sql = "INSERT INTO hook.party_key(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +
@@ -248,7 +231,6 @@ public class HookDaoImpl implements HookDao {
                             rs.getString("invoice_shop_id"),
                             rs.getString("invoice_status"),
                             rs.getString("invoice_payment_status")));
-
 
 
 }
