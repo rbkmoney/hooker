@@ -187,7 +187,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
             queueDao.createWithPolicy(message.getId());
             taskDao.create(message.getId());
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Couldn't createWithPolicy customerMessage with customerId " + customer.getId(), e);
+            throw new DaoException("Couldn't create customerMessage with customerId " + customer.getId(), e);
         }
     }
 
@@ -206,7 +206,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         if (messageIds.isEmpty()) {
             return new ArrayList<>();
         }
-        final String sql = "SELECT DISTINCT * FROM hook.customer_message WHERE id in (:ids)";
+        final String sql = "SELECT * FROM hook.customer_message WHERE id in (:ids)";
         try {
             List<CustomerMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
             log.debug("messagesFromDb {}", messagesFromDb);

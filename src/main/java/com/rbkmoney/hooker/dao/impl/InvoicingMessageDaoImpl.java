@@ -27,7 +27,7 @@ import java.util.*;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
-public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements InvoicingMessageDao {
+public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implements InvoicingMessageDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -180,7 +180,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
         return message;
     };
 
-    public MessageDaoImpl(DataSource dataSource) {
+    public InvoicingMessageDaoImpl(DataSource dataSource) {
         setDataSource(dataSource);
     }
 
@@ -204,7 +204,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
         } catch (EmptyResultDataAccessException e) {
             log.warn("InvoicingMessage with invoiceId {} not exist!", invoiceId);
         } catch (NestedRuntimeException e) {
-            throw new DaoException("MessageDaoImpl.getAny error with invoiceId " + invoiceId, e);
+            throw new DaoException("InvoicingMessageDaoImpl.getAny error with invoiceId " + invoiceId, e);
         }
 
         putToCache(result);
@@ -326,7 +326,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
             queueDao.createWithPolicy(message.getId());
             taskDao.create(message.getId());
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Couldn't createWithPolicy message with invoice_id "+ message.getInvoice().getId(), e);
+            throw new DaoException("Couldn't create message with invoice_id "+ message.getInvoice().getId(), e);
         }
     }
 
@@ -363,7 +363,7 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Invo
             messages.addAll(messagesFromDb);
             return messages;
         }  catch (NestedRuntimeException e) {
-            throw new DaoException("MessageDaoImpl.getByIds error", e);
+            throw new DaoException("InvoicingMessageDaoImpl.getByIds error", e);
         }
     }
 

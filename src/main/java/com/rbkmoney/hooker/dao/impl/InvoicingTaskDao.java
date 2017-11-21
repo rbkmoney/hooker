@@ -2,11 +2,9 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.AbstractTaskDao;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.swag_webhook_events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
@@ -49,7 +47,7 @@ public class InvoicingTaskDao extends AbstractTaskDao {
                     .addValue("message_type", getMessageTopic()));
             log.info("Created tasks count={} for messageId={}", updateCount, messageId);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to createWithPolicy tasks for messages.", e);
+            log.error("Fail to create tasks for messages.", e);
             throw new DaoException(e);
         }
     }

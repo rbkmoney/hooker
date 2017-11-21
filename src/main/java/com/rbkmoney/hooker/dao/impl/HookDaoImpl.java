@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
@@ -12,7 +11,6 @@ import com.rbkmoney.hooker.service.crypt.Signer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
@@ -163,7 +161,7 @@ public class HookDaoImpl implements HookDao {
             hook.setId(keyHolder.getKey().longValue());
             saveHookFilters(hook.getId(), hook.getFilters());
         } catch (NestedRuntimeException e) {
-            log.error("Fail to createWithPolicy hook: " + hook, e);
+            log.error("Fail to createWithPolicy hook {}", hook, e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} created.", hook.getId());
@@ -232,7 +230,7 @@ public class HookDaoImpl implements HookDao {
             jdbcTemplate.update(sql, params, keyHolder);
             pubKey = (String) keyHolder.getKeys().get("pub_key");
         } catch (NestedRuntimeException | NullPointerException | ClassCastException e) {
-            log.error("Fail to createWithPolicy security keys for party: " + partyId,  e);
+            log.error("Fail to createOrGetPubKey security keys for party {} ", partyId,  e);
             throw new DaoException(e);
         }
         return pubKey;

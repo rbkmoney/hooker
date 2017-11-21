@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.model;
 
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.retry.RetryPolicyRecord;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 
 import java.util.Set;

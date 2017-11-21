@@ -26,8 +26,8 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class MessageDaoImplTest extends AbstractIntegrationTest {
-    private static Logger log = LoggerFactory.getLogger(MessageDaoImplTest.class);
+public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
+    private static Logger log = LoggerFactory.getLogger(InvoicingMessageDaoImplTest.class);
 
     @Autowired
     InvoicingMessageDao messageDao;

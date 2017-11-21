@@ -4,8 +4,6 @@ import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
-import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import org.springframework.beans.factory.annotation.Autowired;

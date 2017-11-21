@@ -1,6 +1,9 @@
 package com.rbkmoney.hooker.configuration;
 
-import com.rbkmoney.hooker.dao.*;
+import com.rbkmoney.hooker.dao.CustomerDao;
+import com.rbkmoney.hooker.dao.HookDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
+import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.impl.*;
 import org.jooq.Schema;
 import org.jooq.impl.SchemaImpl;
@@ -23,7 +26,7 @@ public class DaoConfiguration {
     @Bean
     @DependsOn("dbInitializer")
     public InvoicingMessageDao messageDao(DataSource dataSource) {
-        return new MessageDaoImpl(dataSource);
+        return new InvoicingMessageDaoImpl(dataSource);
     }
 
     @Bean

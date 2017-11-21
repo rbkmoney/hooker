@@ -2,7 +2,6 @@ package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.model.Hook;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

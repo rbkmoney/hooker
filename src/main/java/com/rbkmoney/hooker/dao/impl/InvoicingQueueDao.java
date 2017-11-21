@@ -28,7 +28,7 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private CacheManager cacheManager;
+    CacheManager cacheManager;
 
     public InvoicingQueueDao(DataSource dataSource) {
         setDataSource(dataSource);
@@ -115,6 +115,7 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
 
     private List<InvoicingQueue> getFromCache(Collection<Long> ids){
         Cache cache = cacheManager.getCache(CacheConfiguration.QUEUES);
+        log.info("class {} cache {} ids {}", cacheManager.getClass().getName(), cache, ids);
         return ids.stream().map(id -> cache.get(id, InvoicingQueue.class)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 

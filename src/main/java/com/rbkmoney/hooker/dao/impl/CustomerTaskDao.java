@@ -44,7 +44,7 @@ public class CustomerTaskDao extends AbstractTaskDao {
                     .addValue("message_type", getMessageTopic()));
             log.info("Created tasks count={} for messageId={}", updateCount, messageId);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to createWithPolicy tasks for messages.", e);
+            log.error("Fail to create tasks for messages.", e);
             throw new DaoException(e);
         }
     }

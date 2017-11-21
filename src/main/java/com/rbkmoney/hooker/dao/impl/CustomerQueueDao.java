@@ -4,7 +4,6 @@ import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.model.CustomerQueue;
 import com.rbkmoney.hooker.model.Hook;
-import com.rbkmoney.hooker.model.InvoicingQueue;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.swag_webhook_events.Event;
 import org.slf4j.Logger;

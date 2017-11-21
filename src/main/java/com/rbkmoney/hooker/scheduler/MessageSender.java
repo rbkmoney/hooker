@@ -2,12 +2,8 @@ package com.rbkmoney.hooker.scheduler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rbkmoney.hooker.dao.TaskDao;
-import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
-import com.rbkmoney.hooker.model.CustomerMessage;
-import com.rbkmoney.hooker.model.CustomerMessageJson;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Queue;
-import com.rbkmoney.hooker.scheduler.customer.CustomerMessageScheduler;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import com.rbkmoney.hooker.service.err.PostRequestException;

@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.retry.impl.simple;
 
-import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.retry.RetryPolicy;
