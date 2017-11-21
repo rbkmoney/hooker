@@ -86,10 +86,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         } else if (paymentOrigin.getPayer().isSetCustomer()) {
             com.rbkmoney.damsel.domain.CustomerPayer customerPayerOrigin = paymentOrigin.getPayer().getCustomer();
             payment.setPaymentToolToken(PaymentToolUtils.getPaymentToolToken(customerPayerOrigin.getPaymentTool()));
-            payment.setPaymentSession("");
             payment.setContactInfo(new PaymentContactInfo(customerPayerOrigin.getContactInfo().getEmail(), customerPayerOrigin.getContactInfo().getPhoneNumber()));
-            payment.setIp("");
-            payment.setFingerprint("");
             payment.setPayer(new CustomerPayer()
                     .customerID(paymentOrigin.getPayer().getCustomer().getCustomerId())
                     .payerType(Payer.PayerTypeEnum.CUSTOMERPAYER));
