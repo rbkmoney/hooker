@@ -52,9 +52,7 @@ public abstract class MessageSender<M extends Message> implements Runnable {
                 taskDao.remove(queue.getId(), message.getId()); //required after message is sent
             }
             workerTaskScheduler.done(queue); // required after all messages processed
-        } catch (JsonProcessingException e) {
-            log.warn("Unexpected error in MessageSender. We totally don't understand what happens and we don't try to resend it",  e);
-        } catch (IOException | PostRequestException e) {
+        } catch (Exception e) {
             log.warn("Couldn't send message to hook {}. We'll try to resend it", queue.getHook().toString(), e);
             workerTaskScheduler.fail(queue); // required if fail to send message
         }
