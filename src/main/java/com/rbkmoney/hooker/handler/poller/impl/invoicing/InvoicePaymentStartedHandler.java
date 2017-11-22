@@ -3,7 +3,6 @@ package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 import com.rbkmoney.damsel.domain.BankCard;
 import com.rbkmoney.damsel.domain.DisposablePaymentResource;
 import com.rbkmoney.damsel.domain.InvoicePayment;
-import com.rbkmoney.damsel.domain.LegacyPayerDetails;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
@@ -53,15 +52,14 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         payment.setStatus(paymentOrigin.getStatus().getSetField().getFieldName());
         payment.setAmount(paymentOrigin.getCost().getAmount());
         payment.setCurrency(paymentOrigin.getCost().getCurrency().getSymbolicCode());
-        LegacyPayerDetails payerDetails = paymentOrigin.getPayerDetails();
-        payment.setPaymentToolToken(PaymentToolUtils.getPaymentToolToken(payerDetails.getPaymentTool()));
-        payment.setPaymentSession(payerDetails.getSessionId());
-        payment.setContactInfo(new PaymentContactInfo(payerDetails.getContactInfo().getEmail(), payerDetails.getContactInfo().getPhoneNumber()));
-        payment.setIp(payerDetails.getClientInfo().getIpAddress());
-        payment.setFingerprint(payerDetails.getClientInfo().getFingerprint());
         if (paymentOrigin.getPayer().isSetPaymentResource()) {
             com.rbkmoney.damsel.domain.PaymentResourcePayer payerOrigin = paymentOrigin.getPayer().getPaymentResource();
             DisposablePaymentResource resourceOrigin = payerOrigin.getResource();
+            payment.setPaymentToolToken(PaymentToolUtils.getPaymentToolToken(resourceOrigin.getPaymentTool()));
+            payment.setPaymentSession(resourceOrigin.getPaymentSessionId());
+            payment.setContactInfo(new PaymentContactInfo(payerOrigin.getContactInfo().getEmail(), payerOrigin.getContactInfo().getPhoneNumber()));
+            payment.setIp(resourceOrigin.getClientInfo().getIpAddress());
+            payment.setFingerprint(resourceOrigin.getClientInfo().getFingerprint());
             com.rbkmoney.swag_webhook_events.PaymentResourcePayer payer = new com.rbkmoney.swag_webhook_events.PaymentResourcePayer()
                     .paymentSession(resourceOrigin.getPaymentSessionId())
                     .paymentToolToken(payment.getPaymentToolToken())
@@ -86,6 +84,9 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
                         .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD));
             }
         } else if (paymentOrigin.getPayer().isSetCustomer()) {
+            com.rbkmoney.damsel.domain.CustomerPayer customerPayerOrigin = paymentOrigin.getPayer().getCustomer();
+            payment.setPaymentToolToken(PaymentToolUtils.getPaymentToolToken(customerPayerOrigin.getPaymentTool()));
+            payment.setContactInfo(new PaymentContactInfo(customerPayerOrigin.getContactInfo().getEmail(), customerPayerOrigin.getContactInfo().getPhoneNumber()));
             payment.setPayer(new CustomerPayer()
                     .customerID(paymentOrigin.getPayer().getCustomer().getCustomerId())
                     .payerType(Payer.PayerTypeEnum.CUSTOMERPAYER));

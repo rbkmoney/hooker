@@ -40,21 +40,21 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
 
     @Override
     protected void saveEvent(CustomerChange cc, Event event) throws DaoException {
-        com.rbkmoney.damsel.payment_processing.Customer customerOrigin = cc.getCustomerCreated().getCustomer();
+        com.rbkmoney.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
         customerMessage.setEventId(event.getId());
         customerMessage.setOccuredAt(event.getCreatedAt());
         customerMessage.setType(CUSTOMER);
-        customerMessage.setPartyId(customerOrigin.getOwnerId());
+        customerMessage.setPartyId(customerCreatedOrigin.getOwnerId());
         customerMessage.setEventType(eventType);
         Customer customer = new Customer()
-                .id(customerOrigin.getId())
-                .shopID(customerOrigin.getShopId())
-                .status(Customer.StatusEnum.fromValue(customerOrigin.getStatus().getSetField().getFieldName()))
+                .id(customerCreatedOrigin.getCustomerId())
+                .shopID(customerCreatedOrigin.getShopId())
+                .status(Customer.StatusEnum.fromValue("unready"))
                 .contactInfo(new ContactInfo()
-                        .email(customerOrigin.getContactInfo().getEmail())
-                        .phoneNumber(customerOrigin.getContactInfo().getPhoneNumber()))
-                .metadata(new CustomerUtils().getResult(customerOrigin.getMetadata()));
+                        .email(customerCreatedOrigin.getContactInfo().getEmail())
+                        .phoneNumber(customerCreatedOrigin.getContactInfo().getPhoneNumber()))
+                .metadata(new CustomerUtils().getResult(customerCreatedOrigin.getMetadata()));
         customerMessage.setCustomer(customer);
         customerDao.create(customerMessage);
     }
