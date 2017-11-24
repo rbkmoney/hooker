@@ -2,10 +2,13 @@ package com.rbkmoney.hooker;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.hooker.dao.*;
+import com.rbkmoney.hooker.dao.HookDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
+import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.swag_webhook_events.CustomerPayer;
+import com.rbkmoney.swag_webhook_events.Event;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
@@ -26,9 +29,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
-import static org.junit.Assert.*;
+import static com.rbkmoney.hooker.utils.BuildUtils.cart;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by jeckep on 20.04.17.
@@ -143,6 +147,7 @@ public class DataflowTest extends AbstractIntegrationTest {
     private static Hook hook(String partyId, String url, EventType... types) {
         Hook hook = new Hook();
         hook.setPartyId(partyId);
+        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
         hook.setUrl(url);
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();

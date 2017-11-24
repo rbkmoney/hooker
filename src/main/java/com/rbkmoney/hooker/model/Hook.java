@@ -12,6 +12,7 @@ import java.util.Set;
 public class Hook {
     private long id;
     private String partyId;
+    private String topic;
     private Set<WebhookAdditionalFilter> filters;
     private String url;
     private String pubKey;
@@ -19,9 +20,10 @@ public class Hook {
     private boolean enabled;
     private RetryPolicyType retryPolicyType;
 
-    public Hook(long id, String partyId, Set<WebhookAdditionalFilter> filters, String url, String pubKey, String privKey, boolean enabled, RetryPolicyType retryPolicyType) {
+    public Hook(long id, String partyId, String topic, Set<WebhookAdditionalFilter> filters, String url, String pubKey, String privKey, boolean enabled, RetryPolicyType retryPolicyType) {
         this.id = id;
         this.partyId = partyId;
+        this.topic = topic;
         this.filters = filters;
         this.url = url;
         this.pubKey = pubKey;
@@ -47,6 +49,14 @@ public class Hook {
 
     public void setPartyId(String partyId) {
         this.partyId = partyId;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public Set<WebhookAdditionalFilter> getFilters() {
@@ -101,6 +111,7 @@ public class Hook {
     public String toString() {
         return "Hook{" +
                 "id=" + id +
+                ", topic=" + topic +
                 ", partyId='" + partyId + '\'' +
                 ", url='" + url + '\'' +
                 '}';

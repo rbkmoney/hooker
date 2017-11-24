@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.configuration.CacheConfiguration;
+import com.rbkmoney.hooker.dao.CacheMng;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
@@ -12,8 +12,6 @@ import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -31,7 +29,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    CacheManager cacheManager;
+    CacheMng cacheMng;
 
     @Autowired
     InvoicingQueueDao queueDao;
@@ -186,7 +184,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
     @Override
     public InvoicingMessage getAny(String invoiceId, String type) throws DaoException {
-        InvoicingMessage message = getFromCache(invoiceId, type);
+        InvoicingMessage message = cacheMng.getMessage(invoiceId + type, InvoicingMessage.class);
         if (message != null) {
             return message.copy();
         }
@@ -342,7 +340,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
     @Override
     public List<InvoicingMessage> getBy(Collection<Long> messageIds) {
-        List<InvoicingMessage> messages = getFromCache(messageIds);
+        List<InvoicingMessage> messages = cacheMng.getMessages(messageIds, InvoicingMessage.class);
 
         if (messages.size() == messageIds.size()) {
             return messages;
@@ -353,7 +351,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             ids.remove(message.getId());
         }
 
-        final String sql = "SELECT DISTINCT * FROM hook.message WHERE id in (:ids)";
+        final String sql = "SELECT * FROM hook.message WHERE id in (:ids)";
         try {
             List<InvoicingMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", ids), messageRowMapper);
             log.debug("messagesFromDb {}", messagesFromDb);
@@ -368,26 +366,9 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     }
 
     private void putToCache(InvoicingMessage message){
-        if(message != null) {
-            cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS).put(message.getId(), message);
-            cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoice().getId() + message.getType(), message);
+        if (message != null) {
+            cacheMng.putMessage(message);
+            cacheMng.putMessage(message.getInvoice().getId() + message.getType(), message);
         }
-    }
-
-    private InvoicingMessage getFromCache(String invoiceId, String type) {
-        Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE);
-        return cache.get(invoiceId + type, InvoicingMessage.class);
-    }
-
-    private List<InvoicingMessage> getFromCache(Collection<Long> ids) {
-        Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS);
-        List<InvoicingMessage> messages = new ArrayList<>();
-        for (Long id : ids) {
-            InvoicingMessage e = cache.get(id, InvoicingMessage.class);
-            if (e != null) {
-                messages.add(e);
-            }
-        }
-        return messages;
     }
 }

@@ -8,14 +8,16 @@ import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 public class AllHookTablesRow {
     private long id;
     private String partyId;
+    private String topic;
     private String url;
     private String pubKey;
     private boolean enabled;
     private WebhookAdditionalFilter webhookAdditionalFilter;
 
-    public AllHookTablesRow(long id, String partyId, String url, String pubKey, boolean enabled, WebhookAdditionalFilter webhookAdditionalFilter) {
+    public AllHookTablesRow(long id, String partyId, String topic, String url, String pubKey, boolean enabled, WebhookAdditionalFilter webhookAdditionalFilter) {
         this.id = id;
         this.partyId = partyId;
+        this.topic = topic;
         this.url = url;
         this.pubKey = pubKey;
         this.enabled = enabled;
@@ -44,6 +46,14 @@ public class AllHookTablesRow {
 
     public void setPartyId(String partyId) {
         this.partyId = partyId;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public String getUrl() {

@@ -78,7 +78,7 @@ public class CustomerMessageJson {
         CustomerMessageJson messageJson =  message.isBinding() ? new CustomerBindingMessageJson(message.getCustomerBinding()) : new CustomerMessageJson();
         messageJson.eventID = message.getEventId();
         messageJson.occuredAt = message.getOccuredAt();
-        messageJson.topic = Event.TopicEnum.INVOICESTOPIC.getValue();
+        messageJson.topic = Event.TopicEnum.CUSTOMERSTOPIC.getValue();
         messageJson.customer = message.getCustomer();
         messageJson.eventType = eventTypeMapping.get(message.getEventType()).getValue();
         return new ObjectMapper()

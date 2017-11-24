@@ -7,6 +7,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.EventFilterUtils;
 import com.rbkmoney.hooker.utils.HookConverter;
+import com.rbkmoney.swag_webhook_events.Event;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,6 +107,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         Hook hook = new Hook();
         hook.setPartyId(partyId);
         hook.setUrl(url);
+        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled"));

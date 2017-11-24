@@ -1,24 +1,26 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.configuration.CacheConfiguration;
+import com.rbkmoney.hooker.dao.CacheMng;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingQueue;
+import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.swag_webhook_events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 
 import javax.sql.DataSource;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -28,7 +30,7 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    CacheManager cacheManager;
+    CacheMng cacheMng;
 
     public InvoicingQueueDao(DataSource dataSource) {
         setDataSource(dataSource);
@@ -41,6 +43,7 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
         Hook hook = new Hook();
         hook.setId(rs.getLong("hook_id"));
         hook.setPartyId(rs.getString("party_id"));
+        hook.setTopic(rs.getString("message_type"));
         hook.setUrl(rs.getString("url"));
         hook.setPubKey(rs.getString("pub_key"));
         hook.setPrivKey(rs.getString("priv_key"));
@@ -58,12 +61,13 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
                 " insert into hook.invoicing_queue(hook_id, invoice_id)" +
                 " select w.id , m.invoice_id" +
                 " from hook.message m" +
-                " join hook.webhook w on m.party_id = w.party_id and w.enabled" +
+                " join hook.webhook w on m.party_id = w.party_id and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
                 " where m.id = :id " +
                 " on conflict(hook_id, invoice_id) do nothing returning *) " +
-                "insert into hook.simple_retry_policy(queue_id) select id from queue";
+                "insert into hook.simple_retry_policy(queue_id, message_type) select id, CAST(:message_type as hook.message_topic) from queue";
         try {
-            int count = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId));
+            int count = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId)
+                    .addValue("message_type", getMessagesTopic()));
             log.info("Created {} queues for messageId {}", count, messageId);
         } catch (NestedRuntimeException e) {
             log.error("Fail to createWithPolicy queue {}", messageId, e);
@@ -73,25 +77,27 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
 
     @Override
     public List<InvoicingQueue> getWithPolicies(Collection<Long> ids) {
-        List<InvoicingQueue> queues = getFromCache(ids);
+        List<InvoicingQueue> queues = cacheMng.getQueues(ids, InvoicingQueue.class);
+        log.info("ids {}; queues {}", ids, queues.stream().map(Queue::getId).collect(Collectors.toList()));
         if (queues.size() == ids.size()) {
             return queues;
         }
         Set<Long> queueIds = new HashSet<>(ids);
         queues.forEach(h -> queueIds.remove(h.getId()));
-
+        log.info("after remove queues {}", queues.stream().map(Queue::getId).collect(Collectors.toList()));
         final String sql =
-                " select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time " +
+                " select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time, srp.message_type " +
                         " from hook.invoicing_queue q " +
-                        " join hook.webhook wh on wh.id = q.hook_id " +
+                        " join hook.webhook wh on wh.id = q.hook_id and wh.enabled and wh.topic=CAST(:message_type as hook.message_topic)" +
                         " join hook.party_key k on k.party_id = wh.party_id " +
-                        " left join hook.simple_retry_policy srp on q.id = srp.queue_id" +
-                        " where q.id in (:ids)";
-        final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids);
+                        " left join hook.simple_retry_policy srp on q.id = srp.queue_id and srp.message_type=CAST(:message_type as hook.message_topic)" +
+                        " where q.id in (:ids) and q.enabled";
+        final MapSqlParameterSource params = new MapSqlParameterSource("ids", queueIds)
+                .addValue("message_type", getMessagesTopic());
 
         try {
             List<InvoicingQueue> queuesFromDb = getNamedParameterJdbcTemplate().query(sql, params, queueWithPolicyRowMapper);
-            putToCache(queuesFromDb);
+            cacheMng.putQueues(queuesFromDb);
             queues.addAll(queuesFromDb);
             return queues;
         } catch (NestedRuntimeException e) {
@@ -100,27 +106,9 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
     }
 
     @Override
-    public void delete(long id) {
-        final String sql =
-                " DELETE FROM hook.scheduled_task where queue_id=:id AND message_type=CAST(:message_type as hook.message_topic);" +
-                        " DELETE FROM hook.simple_retry_policy where queue_id=:id;" +
-                        " DELETE FROM hook.invoicing_queue where id=:id; ";
-        try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id)
-                    .addValue("message_type", Event.TopicEnum.INVOICESTOPIC.getValue()));
-        } catch (NestedRuntimeException e) {
-            throw new DaoException(e);
-        }
-    }
-
-    private List<InvoicingQueue> getFromCache(Collection<Long> ids){
-        Cache cache = cacheManager.getCache(CacheConfiguration.QUEUES);
-        log.info("class {} cache {} ids {}", cacheManager.getClass().getName(), cache, ids);
-        return ids.stream().map(id -> cache.get(id, InvoicingQueue.class)).filter(Objects::nonNull).collect(Collectors.toList());
-    }
-
-    private void putToCache(Collection<InvoicingQueue> queues){
-        Cache cache = cacheManager.getCache(CacheConfiguration.QUEUES);
-        queues.forEach(q -> cache.put(q.getId(), q));
+    public String getMessagesTopic() {
+        return Event.TopicEnum.INVOICESTOPIC.getValue();
     }
 }
+
+ //select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time from hook.invoicing_queue q join hook.webhook wh on wh.id = q.hook_id and wh.enabled join hook.party_key k on k.party_id = wh.party_id left join hook.simple_retry_policy srp on q.id = srp.queue_id where q.id in (:ids)

@@ -30,11 +30,11 @@ public class CustomerTaskDao extends AbstractTaskDao {
     public void create(long messageId) {
         final String sql =
                 " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
-                        " select m.id, q.id, CAST(:message_type as hook.message_topic)" +
+                        " select m.id, q.id, w.topic" +
                         " from hook.customer_message m" +
-                        " join hook.webhook w on m.party_id = w.party_id and w.enabled" +
+                        " join hook.webhook w on m.party_id = w.party_id and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
                         " join hook.webhook_to_events wte on wte.hook_id = w.id" +
-                        " join hook.customer_queue q on q.hook_id=w.id and q.customer_id=m.customer_id" +
+                        " join hook.customer_queue q on q.hook_id=w.id and q.enabled and q.customer_id=m.customer_id" +
                         " where m.id = :message_id " +
                         " and m.event_type = wte.event_type " +
                         " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +

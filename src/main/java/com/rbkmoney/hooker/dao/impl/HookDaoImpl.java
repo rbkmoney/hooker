@@ -5,13 +5,11 @@ import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
-import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -77,11 +75,7 @@ public class HookDaoImpl implements HookDao {
         //grouping by hookId
         for (AllHookTablesRow row : allHookTablesRows) {
             final long hookId = row.getId();
-            List<AllHookTablesRow> list = hookIdToRows.get(hookId);
-            if (list == null) {
-                list = new ArrayList<>();
-                hookIdToRows.put(hookId, list);
-            }
+            List<AllHookTablesRow> list = hookIdToRows.computeIfAbsent(hookId, k -> new ArrayList<>());
             list.add(row);
         }
 
@@ -90,6 +84,7 @@ public class HookDaoImpl implements HookDao {
             Hook hook = new Hook();
             hook.setId(hookId);
             hook.setPartyId(rows.get(0).getPartyId());
+            hook.setTopic(rows.get(0).getTopic());
             hook.setUrl(rows.get(0).getUrl());
             hook.setPubKey(rows.get(0).getPubKey());
             hook.setEnabled(rows.get(0).isEnabled());
@@ -133,12 +128,13 @@ public class HookDaoImpl implements HookDao {
         hook.setPubKey(pubKey);
         hook.setEnabled(true);
 
-        final String sql = "INSERT INTO hook.webhook(party_id, url) " +
-                "VALUES (:party_id, :url) RETURNING ID";
+        final String sql = "INSERT INTO hook.webhook(party_id, url, topic) " +
+                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic)) RETURNING ID";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("party_id", hook.getPartyId())
-                .addValue("url", hook.getUrl());
+                .addValue("url", hook.getUrl())
+                .addValue("topic", hook.getTopic());
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             int updateCount = jdbcTemplate.update(sql, params, keyHolder);
@@ -186,8 +182,11 @@ public class HookDaoImpl implements HookDao {
     public void delete(long id) {
         final String sql =
                 " DELETE FROM hook.scheduled_task USING hook.invoicing_queue q WHERE q.hook_id=:id;" +
+                " DELETE FROM hook.scheduled_task USING hook.customer_queue q WHERE q.hook_id=:id;" +
                 " DELETE FROM hook.simple_retry_policy USING hook.invoicing_queue q WHERE q.hook_id=:id;" +
+                " DELETE FROM hook.simple_retry_policy USING hook.customer_queue q WHERE q.hook_id=:id;" +
                 " DELETE FROM hook.invoicing_queue where hook_id=:id;" +
+                " DELETE FROM hook.customer_queue where hook_id=:id;" +
                 " DELETE FROM hook.webhook_to_events where hook_id=:id;" +
                 " DELETE FROM hook.webhook where id=:id; ";
         try {
@@ -223,7 +222,7 @@ public class HookDaoImpl implements HookDao {
     private static RowMapper<AllHookTablesRow> allHookTablesRowRowMapper =
             (rs, i) -> new AllHookTablesRow(rs.getLong("id"),
                     rs.getString("party_id"),
-                    //EventTypeCode.valueOfKey(rs.getString("event_code")),
+                    rs.getString("topic"),
                     rs.getString("url"),
                     rs.getString("pub_key"),
                     rs.getBoolean("enabled"),
@@ -234,3 +233,4 @@ public class HookDaoImpl implements HookDao {
 
 
 }
+//select * from hook.webhook w where exists (select * from hook.webhook_to_events wh where wh.hook_id = w.id AND wh.event_type = 'CUSTOMER_CREATED');

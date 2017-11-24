@@ -15,7 +15,7 @@ import java.util.Map;
  * Created by inalarsanukaev on 07.04.17.
  */
 @JsonPropertyOrder({"eventID", "occuredAt", "topic", "eventType", "invoice"})
-public class MessageJson {
+public class InvoicingMessageJson {
     private static Map<String, String> invoiceStatusesMapping = new HashMap<>();
     static {
         invoiceStatusesMapping.put("unpaid", "InvoiceCreated");
@@ -40,7 +40,7 @@ public class MessageJson {
     private String eventType;
     private Invoice invoice;
 
-    public MessageJson() {
+    public InvoicingMessageJson() {
     }
 
     public long getEventID() {
@@ -85,23 +85,23 @@ public class MessageJson {
 
     public static String buildMessageJson(InvoicingMessage message) throws JsonProcessingException {
         boolean isInvoice = AbstractInvoiceEventHandler.INVOICE.equals(message.getType());
-        MessageJson messageJson = isInvoice ?  new InvoiceMessageJson() : new PaymentMessageJson(message.getPayment());
-        messageJson.eventID = message.getEventId();
-        messageJson.occuredAt = message.getEventTime();
-        messageJson.topic = Event.TopicEnum.INVOICESTOPIC.getValue();
-        messageJson.invoice = message.getInvoice();
+        InvoicingMessageJson invoicingMessageJson = isInvoice ?  new InvoiceMessageJson() : new PaymentMessageJson(message.getPayment());
+        invoicingMessageJson.eventID = message.getEventId();
+        invoicingMessageJson.occuredAt = message.getEventTime();
+        invoicingMessageJson.topic = Event.TopicEnum.INVOICESTOPIC.getValue();
+        invoicingMessageJson.invoice = message.getInvoice();
 
-        messageJson.eventType = isInvoice ? invoiceStatusesMapping.get(message.getInvoice().getStatus()) : paymentStatusesMapping.get(message.getPayment().getStatus()) ;
+        invoicingMessageJson.eventType = isInvoice ? invoiceStatusesMapping.get(message.getInvoice().getStatus()) : paymentStatusesMapping.get(message.getPayment().getStatus()) ;
         return new ObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true)
-                .writeValueAsString(messageJson);
+                .writeValueAsString(invoicingMessageJson);
     }
 
-    static class InvoiceMessageJson extends MessageJson{
+    static class InvoiceMessageJson extends InvoicingMessageJson {
     }
 
-    static class PaymentMessageJson extends MessageJson {
+    static class PaymentMessageJson extends InvoicingMessageJson {
         Payment payment;
 
         public PaymentMessageJson(Payment payment) {

@@ -26,9 +26,10 @@ public class SimpleRetryPolicyDaoImpl extends NamedParameterJdbcDaoSupport imple
     public void update(SimpleRetryPolicyRecord record) {
         final String sql = "update hook.simple_retry_policy " +
                 " set last_fail_time = :last_fail_time, fail_count = :fail_count" +
-                " where queue_id = :queue_id";
+                " where queue_id = :queue_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", record.getQueueId())
+                    .addValue("message_type", record.getMessageType())
                     .addValue("last_fail_time", record.getLastFailTime())
                     .addValue("fail_count", record.getFailCount()));
             log.info("Record in table 'simple_retry_policy' with id {} updated.", record.getQueueId());

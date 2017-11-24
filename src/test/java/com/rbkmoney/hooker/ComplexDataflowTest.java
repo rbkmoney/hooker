@@ -7,6 +7,8 @@ import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHan
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.utils.EventFilterUtils;
+import com.rbkmoney.swag_webhook_events.Event;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -121,6 +123,7 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
         hook.setPartyId(partyId);
         hook.setUrl(url);
         hook.setFilters(webhookAdditionalFilters);
+        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
         return hook;
     }
 

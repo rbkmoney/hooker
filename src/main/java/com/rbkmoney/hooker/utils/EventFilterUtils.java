@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.utils;
 import com.rbkmoney.damsel.webhooker.*;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.swag_webhook_events.Event;
 import org.apache.thrift.meta_data.StructMetaData;
 
 import java.util.Arrays;
@@ -169,5 +170,15 @@ public class EventFilterUtils {
             }
         }
         return eventTypeCodeSet;
+    }
+
+    public static String getTopic(EventFilter eventFilter) {
+        if (eventFilter.isSetInvoice()) {
+            return Event.TopicEnum.INVOICESTOPIC.getValue();
+        }
+        if (eventFilter.isSetCustomer()) {
+            return Event.TopicEnum.CUSTOMERSTOPIC.getValue();
+        }
+        throw new UnsupportedOperationException("Unknown topic; must be one of these: "+Arrays.toString(Event.TopicEnum.values()));
     }
 }

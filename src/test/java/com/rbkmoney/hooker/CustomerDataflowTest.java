@@ -11,6 +11,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.swag_webhook_events.Customer;
+import com.rbkmoney.swag_webhook_events.Event;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
@@ -137,6 +138,7 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     private static Hook hook(String partyId, String url, EventType... types) {
         Hook hook = new Hook();
         hook.setPartyId(partyId);
+        hook.setTopic(Event.TopicEnum.CUSTOMERSTOPIC.getValue());
         hook.setUrl(url);
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();

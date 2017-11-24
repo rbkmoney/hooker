@@ -9,5 +9,5 @@ import java.util.List;
 public interface QueueDao<Q> {
     void createWithPolicy(long messageId) throws DaoException;
     List<Q> getWithPolicies(Collection<Long> ids);
-    void delete(long id);
+    String getMessagesTopic();
 }

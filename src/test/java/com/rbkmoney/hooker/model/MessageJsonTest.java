@@ -15,7 +15,7 @@ public class MessageJsonTest {
     @Test
     public void test() throws JsonProcessingException {
         InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled");
-        System.out.println(MessageJson.buildMessageJson(message));
+        System.out.println(InvoicingMessageJson.buildMessageJson(message));
         InvoicingMessage copy = message.copy();
         message.getInvoice().setAmount(99988);
         Assert.assertNotEquals(message.getInvoice().getAmount(), copy.getInvoice().getAmount());
@@ -24,7 +24,7 @@ public class MessageJsonTest {
     @Test
     public void testCart() throws JsonProcessingException {
         InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), true);
-        String messageJson = MessageJson.buildMessageJson(message);
+        String messageJson = InvoicingMessageJson.buildMessageJson(message);
         System.out.println(messageJson);
         Assert.assertTrue(messageJson.contains("taxMode"));
     }
@@ -32,7 +32,7 @@ public class MessageJsonTest {
     @Test
     public void testInvoiceCustomer() throws JsonProcessingException {
         InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), false);
-        String messageJson = MessageJson.buildMessageJson(message);
+        String messageJson = InvoicingMessageJson.buildMessageJson(message);
         System.out.println(messageJson);
         Assert.assertTrue(messageJson.contains("CustomerPayer"));
     }

@@ -10,11 +10,13 @@ public class SimpleRetryPolicyRecord extends RetryPolicyRecord {
     public static RetryPolicyType type = RetryPolicyType.SIMPLE;
 
     long queueId;
+    String messageType;
     int failCount;
     long lastFailTime;
 
-    public SimpleRetryPolicyRecord(long queueId, int failCount, long lastFailTime) {
+    public SimpleRetryPolicyRecord(long queueId, String messageType, int failCount, long lastFailTime) {
         this.queueId = queueId;
+        this.messageType = messageType;
         this.failCount = failCount;
         this.lastFailTime = lastFailTime;
     }
@@ -32,6 +34,14 @@ public class SimpleRetryPolicyRecord extends RetryPolicyRecord {
 
     public void setQueueId(long queueId) {
         this.queueId = queueId;
+    }
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
     }
 
     public int getFailCount() {

@@ -3,7 +3,7 @@ package com.rbkmoney.hooker.scheduler.invoicing;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.model.MessageJson;
+import com.rbkmoney.hooker.model.InvoicingMessageJson;
 import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.scheduler.MessageScheduler;
 import com.rbkmoney.hooker.scheduler.MessageSender;
@@ -23,6 +23,6 @@ public class InvoicingMessageSender extends MessageSender<InvoicingMessage> {
 
     @Override
     protected String getMessageJson(InvoicingMessage message) throws JsonProcessingException {
-        return MessageJson.buildMessageJson(message);
+        return InvoicingMessageJson.buildMessageJson(message);
     }
 }
