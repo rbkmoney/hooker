@@ -319,7 +319,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
             saveCart(message.getId(), message.getInvoice().getCart());
-            log.info("InvoicingMessage {} save to db.", message);
+            log.info("InvoicingMessage {} saved to db.", message);
             putToCache(message);
             queueDao.createWithPolicy(message.getId());
             taskDao.create(message.getId());
@@ -339,7 +339,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     }
 
     @Override
-    public List<InvoicingMessage> getBy(Collection<Long> messageIds) {
+    public List<InvoicingMessage> getBy(Collection<Long> messageIds) throws DaoException {
         List<InvoicingMessage> messages = cacheMng.getMessages(messageIds, InvoicingMessage.class);
 
         if (messages.size() == messageIds.size()) {

@@ -44,7 +44,7 @@ public abstract class MessageSender<M extends Message> implements Runnable {
                 final String signature = signer.sign(messageJson, queue.getHook().getPrivKey());
                 int statusCode = postSender.doPost(queue.getHook().getUrl(), messageJson, signature);
                 if (statusCode != HttpStatus.SC_OK) {
-                    log.warn("Wrong status code {} from merchant, we try to resend it. MessageId {}", statusCode, message.getId());
+                    log.warn("Wrong status code {} from merchant, we'll try to resend it. Message {}", statusCode, message);
                     throw new PostRequestException("Internal server error for message id = " + message.getId());
                 }
                 log.info("{} is sent to {}", message, queue.getHook());
@@ -52,7 +52,7 @@ public abstract class MessageSender<M extends Message> implements Runnable {
             }
             workerTaskScheduler.done(queue); // required after all messages processed
         } catch (Exception e) {
-            log.warn("Couldn't send message to hook {}. We'll try to resend it", queue.getHook().toString(), e);
+            log.warn("Couldn't send message to hook {}. We'll try to resend it", queue.getHook(), e);
             workerTaskScheduler.fail(queue); // required if fail to send message
         }
     }

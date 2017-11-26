@@ -68,7 +68,7 @@ public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements Qu
     }
 
     @Override
-    public List<CustomerQueue> getWithPolicies(Collection<Long> ids) {
+    public List<CustomerQueue> getWithPolicies(Collection<Long> ids) throws DaoException {
         final String sql =
                 " select q.id, q.hook_id, q.customer_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time, srp.message_type " +
                         " from hook.customer_queue q " +
@@ -87,6 +87,16 @@ public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements Qu
     }
 
     @Override
+    public void disable(long id) throws DaoException {
+        final String sql = " UPDATE hook.customer_queue SET enabled = FALSE where id=:id;";
+        try {
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
+        } catch (NestedRuntimeException e) {
+            log.error("Fail to disable queue: {}", id, e);
+            throw new DaoException(e);
+        }
+    }
+
     public String getMessagesTopic() {
         return Event.TopicEnum.CUSTOMERSTOPIC.getValue();
     }

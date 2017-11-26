@@ -38,7 +38,7 @@ public class HookDaoImpl implements HookDao {
     }
 
     @Override
-    public List<Hook> getPartyHooks(String partyId) {
+    public List<Hook> getPartyHooks(String partyId) throws DaoException {
         log.debug("getPartyHooks request. PartyId = {}", partyId);
         final String sql =
                 " select w.*, k.pub_key, wte.* " +
@@ -60,7 +60,7 @@ public class HookDaoImpl implements HookDao {
             return result;
         } catch (NestedRuntimeException e) {
             String message = "Couldn't getPartyHooks for partyId " + partyId;
-            log.error(message, e);
+            log.warn(message, e);
             throw new DaoException(message);
         }
     }
@@ -96,7 +96,7 @@ public class HookDaoImpl implements HookDao {
     }
 
     @Override
-    public Hook getHookById(long id) {
+    public Hook getHookById(long id) throws DaoException {
         final String sql = "select w.*, k.pub_key, wte.* " +
                 "from hook.webhook w " +
                 "join hook.party_key k " +
@@ -116,14 +116,14 @@ public class HookDaoImpl implements HookDao {
             }
             return result.get(0);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to get hook: " + id, e);
+            log.warn("Fail to get hook {}", id, e);
             throw new DaoException(e);
         }
     }
 
     @Override
     @Transactional
-    public Hook create(Hook hook) {
+    public Hook create(Hook hook) throws DaoException {
         String pubKey = createOrGetPubKey(hook.getPartyId());
         hook.setPubKey(pubKey);
         hook.setEnabled(true);
@@ -144,7 +144,7 @@ public class HookDaoImpl implements HookDao {
             hook.setId(keyHolder.getKey().longValue());
             saveHookFilters(hook.getId(), hook.getFilters());
         } catch (NestedRuntimeException e) {
-            log.error("Fail to createWithPolicy hook {}", hook, e);
+            log.warn("Fail to createWithPolicy hook {}", hook, e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} created.", hook.getId());
@@ -179,7 +179,7 @@ public class HookDaoImpl implements HookDao {
 
     @Override
     @Transactional
-    public void delete(long id) {
+    public void delete(long id) throws DaoException {
         final String sql =
                 " DELETE FROM hook.scheduled_task USING hook.invoicing_queue q WHERE q.hook_id=:id;" +
                 " DELETE FROM hook.scheduled_task USING hook.customer_queue q WHERE q.hook_id=:id;" +
@@ -196,7 +196,7 @@ public class HookDaoImpl implements HookDao {
         }
     }
 
-    private String createOrGetPubKey(String partyId) {
+    private String createOrGetPubKey(String partyId) throws DaoException {
         final String sql = "INSERT INTO hook.party_key(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +
                 "ON CONFLICT(party_id) DO UPDATE SET party_id=:party_id RETURNING pub_key";
@@ -212,7 +212,7 @@ public class HookDaoImpl implements HookDao {
             jdbcTemplate.update(sql, params, keyHolder);
             pubKey = (String) keyHolder.getKeys().get("pub_key");
         } catch (NestedRuntimeException | NullPointerException | ClassCastException e) {
-            log.error("Fail to createOrGetPubKey security keys for party {} ", partyId,  e);
+            log.warn("Fail to createOrGetPubKey security keys for party {} ", partyId,  e);
             throw new DaoException(e);
         }
         return pubKey;

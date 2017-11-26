@@ -27,7 +27,7 @@ public class CustomerTaskDao extends AbstractTaskDao {
     }
 
     @Override
-    public void create(long messageId) {
+    public void create(long messageId) throws DaoException {
         final String sql =
                 " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
                         " select m.id, q.id, w.topic" +

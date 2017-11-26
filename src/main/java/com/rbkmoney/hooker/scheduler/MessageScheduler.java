@@ -16,8 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +44,9 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         this.taskDao = taskDao;
         this.queueDao = queueDao;
         this.messageDao = messageDao;
-        this.executorService = Executors.newFixedThreadPool(numberOfWorkers);
+        this.executorService = new ThreadPoolExecutor(numberOfWorkers, numberOfWorkers,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(numberOfWorkers));
     }
 
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
@@ -66,6 +67,8 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
         final Set<Long> messageIdsToSend = getMessageIdsFilteredByQueues(scheduledTasks, healthyQueues.keySet());
         final Map<Long, M> messagesMap = loadMessages(messageIdsToSend);
+
+        log.info("Schedulled tasks count = {}, after filter = {}", scheduledTasks.size(), messageIdsToSend.size());
 
         for (long queueId : healthyQueues.keySet()) {
             List<Task> tasks = scheduledTasks.get(queueId);
@@ -102,8 +105,12 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         processedQueues.remove(queue.getId());
 
         log.warn("Queue {} failed.", queue.getId());
-        retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType())
-                .onFail(queue.getRetryPolicyRecord());
+        if (retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType())
+                .isFail(queue.getRetryPolicyRecord())) {
+            queueDao.disable(queue.getId());
+            taskDao.removeAll(queue.getId());
+            log.warn("Queue {} was disabled according to retry policy.", queue.getId());
+        }
     }
 
     private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeQueueIds) {

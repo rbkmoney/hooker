@@ -29,12 +29,12 @@ public class PostSender {
         RequestBody body = RequestBody.create(JSON, paramsAsString);
         final Request request = new Request.Builder()
                 .url(url)
-                .addHeader(SIGNATURE_HEADER, "alg=RS256; digest="+signature)
+                .addHeader(SIGNATURE_HEADER, "alg=RS256; digest=" + signature)
                 .post(body)
                 .build();
 
         Response response = httpClient.newCall(request).execute();
-        log.info("Response from hook:  code {}; body: {}", +response.code(), response.body().string());
+        log.info("Response from hook:  code {}; body: {}", response.code(), response.body().string());
         return response.code();
     }
 }

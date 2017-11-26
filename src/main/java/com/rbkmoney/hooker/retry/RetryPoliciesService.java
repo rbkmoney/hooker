@@ -24,24 +24,24 @@ public class RetryPoliciesService {
     @Autowired
     SimpleRetryPolicyDao simpleRetryPolicyDao;
 
-    public RetryPolicy getRetryPolicyByType(RetryPolicyType type){
-        if(RetryPolicyType.SIMPLE.equals(type)){
+    public RetryPolicy getRetryPolicyByType(RetryPolicyType type) {
+        if (RetryPolicyType.SIMPLE.equals(type)) {
             return simpleRetryPolicy;
         } else {
             throw new UnsupportedOperationException("Retry policy for type: " + type.toString() + " not found");
         }
     }
 
-    public List<Queue> filter(Collection<? extends Queue> queues){
+    public List<Queue> filter(Collection<? extends Queue> queues) {
         return queues.stream().
                 filter(q -> getRetryPolicyByType(q.getHook().getRetryPolicyType()).isActive(q.getRetryPolicyRecord()))
                 .collect(Collectors.toList());
     }
 
     public void update(RetryPolicyRecord record) {
-        if(RetryPolicyType.SIMPLE.equals(record.getType())){
-            simpleRetryPolicyDao.update((SimpleRetryPolicyRecord)record);
-        }else {
+        if (RetryPolicyType.SIMPLE.equals(record.getType())) {
+            simpleRetryPolicyDao.update((SimpleRetryPolicyRecord) record);
+        } else {
             throw new UnsupportedOperationException("Retry policy DAO for type: " + record.getType().toString() + " not found");
         }
     }

@@ -78,13 +78,11 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
     @Override
     public List<InvoicingQueue> getWithPolicies(Collection<Long> ids) {
         List<InvoicingQueue> queues = cacheMng.getQueues(ids, InvoicingQueue.class);
-        log.info("ids {}; queues {}", ids, queues.stream().map(Queue::getId).collect(Collectors.toList()));
         if (queues.size() == ids.size()) {
             return queues;
         }
         Set<Long> queueIds = new HashSet<>(ids);
         queues.forEach(h -> queueIds.remove(h.getId()));
-        log.info("after remove queues {}", queues.stream().map(Queue::getId).collect(Collectors.toList()));
         final String sql =
                 " select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time, srp.message_type " +
                         " from hook.invoicing_queue q " +
@@ -106,9 +104,17 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
     }
 
     @Override
+    public void disable(long id) throws DaoException {
+        final String sql = " UPDATE hook.invoicing_queue SET enabled = FALSE where id=:id;";
+        try {
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
+        } catch (NestedRuntimeException e) {
+            log.error("Fail to disable queue: {}", id, e);
+            throw new DaoException(e);
+        }
+    }
+
     public String getMessagesTopic() {
         return Event.TopicEnum.INVOICESTOPIC.getValue();
     }
 }
-
- //select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time from hook.invoicing_queue q join hook.webhook wh on wh.id = q.hook_id and wh.enabled join hook.party_key k on k.party_id = wh.party_id left join hook.simple_retry_policy srp on q.id = srp.queue_id where q.id in (:ids)

@@ -30,7 +30,7 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
     protected abstract String getMessageTopic();
 
     @Override
-    public void remove(long queueId, long messageId) {
+    public void remove(long queueId, long messageId) throws DaoException {
         final String sql = "DELETE FROM hook.scheduled_task where queue_id=:queue_id and message_id=:message_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", queueId)
@@ -38,29 +38,29 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
                     .addValue("message_type", getMessageTopic()));
             log.debug("Task with queueId {} messageId  {} removed from hook.scheduled_task", queueId, messageId);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to delete task by queue_id {} and message_id {}", queueId, messageId, e);
+            log.warn("Fail to delete task by queue_id {} and message_id {}", queueId, messageId, e);
             throw new DaoException(e);
         }
     }
 
     @Override
-    public void removeAll(long queueId) {
+    public void removeAll(long queueId) throws DaoException {
         final String sql = "DELETE FROM hook.scheduled_task where queue_id=:queue_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
             getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", queueId).addValue("message_type", getMessageTopic()));
         } catch (NestedRuntimeException e) {
-            log.error("Fail to delete tasks for hook:" + queueId, e);
+            log.warn("Fail to delete tasks for hook:" + queueId, e);
             throw new DaoException(e);
         }
     }
 
     @Override
-    // should return ordered BY queue_id, message_id
-    public Map<Long, List<Task>> getScheduled(Collection<Long> excludeQueueIds) {
+    // TODO think about limit
+    public Map<Long, List<Task>> getScheduled(Collection<Long> excludeQueueIds) throws DaoException {
         final String sql =
                 " SELECT st.message_id, st.queue_id FROM hook.scheduled_task st WHERE message_type=CAST(:message_type as hook.message_topic)" +
                         (excludeQueueIds.size() > 0 ? " AND st.queue_id not in (:queue_ids)" : "") +
-                        " ORDER BY queue_id ASC, message_id ASC";
+                        " ORDER BY queue_id ASC, message_id ASC LIMIT 10000";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(
                     sql, new MapSqlParameterSource()
@@ -70,7 +70,7 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
             Map<Long, List<Task>> longListMap = splitByQueue(tasks);
             return longListMap;
         } catch (NestedRuntimeException e) {
-            log.error("Fail to get active tasks from scheduled_task", e);
+            log.warn("Fail to get active tasks from scheduled_task", e);
             throw new DaoException(e);
         }
     }
