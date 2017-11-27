@@ -50,10 +50,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
     public void loop() throws InterruptedException {
-        final List<Long> currentlyProcessedQueues;
-        synchronized (processedQueues) {
-            currentlyProcessedQueues = new ArrayList<>(processedQueues);
-        }
+        final List<Long> currentlyProcessedQueues = new ArrayList<>(processedQueues);
 
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedQueues);
         if (scheduledTasks.entrySet().isEmpty()) {
