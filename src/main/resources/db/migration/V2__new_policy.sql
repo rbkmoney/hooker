@@ -43,8 +43,8 @@ ALTER TABLE hook.scheduled_task ADD COLUMN queue_id bigint NOT NULL;
 ALTER TABLE hook.scheduled_task ADD CONSTRAINT scheduled_task_pkey PRIMARY KEY (message_id, queue_id, message_type);
 
 -- create indices
-CREATE INDEX message_invoice_id_idx on hook.message(invoice_id);
-CREATE INDEX customer_message_customer_id_idx on hook.customer_message(customer_id);
+CREATE INDEX IF NOT EXISTS message_invoice_id_idx ON hook.message USING btree(invoice_id);
+CREATE INDEX IF NOT EXISTS customer_message_customer_id_idx ON hook.customer_message USING btree(customer_id);
 
 -- add column topic to webhook
 ALTER TABLE hook.webhook ADD COLUMN topic hook.message_topic;
