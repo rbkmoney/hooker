@@ -17,8 +17,8 @@ import java.util.List;
  */
 public class InvoicingMessageSender extends MessageSender<InvoicingMessage> {
 
-    public InvoicingMessageSender(Queue queue, List<InvoicingMessage> messages, TaskDao taskDao, MessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
-        super(queue, messages, taskDao, workerTaskScheduler, signer, postSender);
+    public InvoicingMessageSender(MessageSender.QueueStatus queueStatus, List<InvoicingMessage> messages, TaskDao taskDao, Signer signer, PostSender postSender) {
+        super(queueStatus, messages, taskDao, signer, postSender);
     }
 
     @Override

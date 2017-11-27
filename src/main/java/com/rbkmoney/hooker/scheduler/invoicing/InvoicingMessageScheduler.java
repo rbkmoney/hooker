@@ -33,7 +33,7 @@ public class InvoicingMessageScheduler extends MessageScheduler<InvoicingMessage
     }
 
     @Override
-    protected MessageSender getMessageSender(Queue queue, List<InvoicingMessage> messagesForQueue, TaskDao taskDao, MessageScheduler messageScheduler, Signer signer, PostSender postSender) {
-        return new InvoicingMessageSender(queue, messagesForQueue, taskDao, messageScheduler, signer, postSender);
+    protected MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<InvoicingMessage> messagesForQueue, TaskDao taskDao, Signer signer, PostSender postSender) {
+        return new InvoicingMessageSender(queueStatus, messagesForQueue, taskDao, signer, postSender);
     }
 }

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -44,9 +45,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         this.taskDao = taskDao;
         this.queueDao = queueDao;
         this.messageDao = messageDao;
-        this.executorService = new ThreadPoolExecutor(numberOfWorkers, numberOfWorkers,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(numberOfWorkers));
+        this.executorService = Executors.newFixedThreadPool(numberOfWorkers);
     }
 
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
@@ -70,6 +69,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
         log.info("Schedulled tasks count = {}, after filter = {}", scheduledTasks.size(), messageIdsToSend.size());
 
+        List<MessageSender<?>> messageSenderList = new ArrayList<>(healthyQueues.keySet().size());
         for (long queueId : healthyQueues.keySet()) {
             List<Task> tasks = scheduledTasks.get(queueId);
             List<M> messagesForQueue = new ArrayList<>();
@@ -81,15 +81,30 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
                     log.error("InvoicingMessage with id {} couldn't be null", task.getMessageId());
                 }
             }
-            MessageSender messageSender = getMessageSender(healthyQueues.get(queueId), messagesForQueue, taskDao, this, signer, postSender);
-            executorService.submit(messageSender);
+            MessageSender messageSender = getMessageSender(new MessageSender.QueueStatus(healthyQueues.get(queueId)), messagesForQueue, taskDao, signer, postSender);
+            messageSenderList.add(messageSender);
+        }
+
+        List<Future<MessageSender.QueueStatus>> futureList = executorService.invokeAll(messageSenderList);
+        for (Future<MessageSender.QueueStatus> status : futureList) {
+            if (!status.isCancelled()) {
+                try {
+                    if (status.get().isSuccess()) {
+                        done(status.get().getQueue());
+                    } else {
+                        fail(status.get().getQueue());
+                    }
+                } catch (ExecutionException e) {
+                    log.error("Unexpected error when get queue");
+                }
+            }
         }
     }
 
-    protected abstract MessageSender getMessageSender(Queue queue, List<M> messagesForQueue, TaskDao taskDao, MessageScheduler messageScheduler, Signer signer, PostSender postSender);
+    protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue, TaskDao taskDao, Signer signer, PostSender postSender);
 
     //worker should invoke this method when it is done with scheduled messages for hookId
-    public void done(Queue queue) {
+    private void done(Queue queue) {
         processedQueues.remove(queue.getId());
 
         //reset fail count for hook
@@ -101,7 +116,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     }
 
     //worker should invoke this method when it is fail to send message to hookId
-    public void fail(Queue queue) {
+    private void fail(Queue queue) {
         processedQueues.remove(queue.getId());
 
         log.warn("Queue {} failed.", queue.getId());
@@ -139,5 +154,19 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
             map.put(message.getId(), message);
         }
         return map;
+    }
+
+    @PreDestroy
+    public void preDestroy(){
+        executorService.shutdownNow();
+        try {
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                log.warn("Failed to stop scheduller in time.");
+            } else {
+                log.info("Poller stopped.");
+            }
+        } catch (InterruptedException e) {
+            log.warn("Waiting for scheduller shutdown is interrupted.");
+        }
     }
 }

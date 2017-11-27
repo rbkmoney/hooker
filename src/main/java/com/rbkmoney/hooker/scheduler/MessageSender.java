@@ -12,50 +12,76 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Created by jeckep on 18.04.17.
  */
 
-public abstract class MessageSender<M extends Message> implements Runnable {
+public abstract class MessageSender<M extends Message> implements Callable<MessageSender.QueueStatus> {
     public static Logger log = LoggerFactory.getLogger(MessageSender.class);
 
-    private Queue queue;
+    private MessageSender.QueueStatus queueStatus;
     private List<M> messages;
     private TaskDao taskDao;
-    private MessageScheduler workerTaskScheduler;
     private Signer signer;
     private PostSender postSender;
 
-    public MessageSender(Queue queue, List<M> messages, TaskDao taskDao, MessageScheduler workerTaskScheduler, Signer signer, PostSender postSender) {
-        this.queue = queue;
+    public MessageSender(MessageSender.QueueStatus queueStatus, List<M> messages, TaskDao taskDao, Signer signer, PostSender postSender) {
+        this.queueStatus = queueStatus;
         this.messages = messages;
         this.taskDao = taskDao;
-        this.workerTaskScheduler = workerTaskScheduler;
         this.signer = signer;
         this.postSender = postSender;
     }
 
     @Override
-    public void run() {
+    public MessageSender.QueueStatus call() throws Exception {
         try {
             for (M message : messages) {
                 final String messageJson = getMessageJson(message);
-                final String signature = signer.sign(messageJson, queue.getHook().getPrivKey());
-                int statusCode = postSender.doPost(queue.getHook().getUrl(), messageJson, signature);
+                final String signature = signer.sign(messageJson, queueStatus.getQueue().getHook().getPrivKey());
+                int statusCode = postSender.doPost(queueStatus.getQueue().getHook().getUrl(), messageJson, signature);
                 if (statusCode != HttpStatus.SC_OK) {
                     log.warn("Wrong status code {} from merchant, we'll try to resend it. Message {}", statusCode, message);
                     throw new PostRequestException("Internal server error for message id = " + message.getId());
                 }
-                log.info("{} is sent to {}", message, queue.getHook());
-                taskDao.remove(queue.getId(), message.getId()); //required after message is sent
+                log.info("{} is sent to {}", message, queueStatus.getQueue().getHook());
+                taskDao.remove(queueStatus.getQueue().getId(), message.getId()); //required after message is sent
             }
-            workerTaskScheduler.done(queue); // required after all messages processed
+            queueStatus.setSuccess(true);
         } catch (Exception e) {
-            log.warn("Couldn't send message to hook {}. We'll try to resend it", queue.getHook(), e);
-            workerTaskScheduler.fail(queue); // required if fail to send message
+            log.warn("Couldn't send message to hook {}. We'll try to resend it", queueStatus.getQueue().getHook(), e);
+            queueStatus.setSuccess(false);
         }
+        return queueStatus;
     }
 
     protected abstract String getMessageJson(M message) throws JsonProcessingException;
+
+
+    public static class QueueStatus {
+        private Queue queue;
+        private boolean isSuccess;
+
+        public QueueStatus(Queue queue) {
+            this.queue = queue;
+        }
+
+        public Queue getQueue() {
+            return queue;
+        }
+
+        public void setQueue(Queue queue) {
+            this.queue = queue;
+        }
+
+        public boolean isSuccess() {
+            return isSuccess;
+        }
+
+        public void setSuccess(boolean success) {
+            isSuccess = success;
+        }
+    }
 }
