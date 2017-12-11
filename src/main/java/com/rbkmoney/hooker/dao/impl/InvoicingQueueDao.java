@@ -1,16 +1,13 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.dao.CacheMng;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingQueue;
-import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.swag_webhook_events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -18,19 +15,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 
 import javax.sql.DataSource;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by inalarsanukaev on 14.11.17.
  */
 public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements QueueDao<InvoicingQueue> {
     Logger log = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    CacheMng cacheMng;
 
     public InvoicingQueueDao(DataSource dataSource) {
         setDataSource(dataSource);
@@ -77,12 +68,6 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
 
     @Override
     public List<InvoicingQueue> getWithPolicies(Collection<Long> ids) {
-        List<InvoicingQueue> queues = cacheMng.getQueues(ids, InvoicingQueue.class);
-        if (queues.size() == ids.size()) {
-            return queues;
-        }
-        Set<Long> queueIds = new HashSet<>(ids);
-        queues.forEach(h -> queueIds.remove(h.getId()));
         final String sql =
                 " select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time, srp.message_type " +
                         " from hook.invoicing_queue q " +
@@ -90,14 +75,10 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
                         " join hook.party_key k on k.party_id = wh.party_id " +
                         " left join hook.simple_retry_policy srp on q.id = srp.queue_id and srp.message_type=CAST(:message_type as hook.message_topic)" +
                         " where q.id in (:ids) and q.enabled";
-        final MapSqlParameterSource params = new MapSqlParameterSource("ids", queueIds)
+        final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids)
                 .addValue("message_type", getMessagesTopic());
-
         try {
-            List<InvoicingQueue> queuesFromDb = getNamedParameterJdbcTemplate().query(sql, params, queueWithPolicyRowMapper);
-            cacheMng.putQueues(queuesFromDb);
-            queues.addAll(queuesFromDb);
-            return queues;
+            return getNamedParameterJdbcTemplate().query(sql, params, queueWithPolicyRowMapper);
         } catch (NestedRuntimeException e) {
             throw new DaoException(e);
         }

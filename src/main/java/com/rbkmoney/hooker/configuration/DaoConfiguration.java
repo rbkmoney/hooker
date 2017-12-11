@@ -26,7 +26,7 @@ public class DaoConfiguration {
     @Bean
     @DependsOn("dbInitializer")
     public InvoicingMessageDao messageDao(DataSource dataSource) {
-        return new InvoicingMessageDaoImpl(dataSource);
+        return new CacheableInvoicingMessageDaoImpl(dataSource);
     }
 
     @Bean
@@ -56,7 +56,7 @@ public class DaoConfiguration {
     @Bean
     @DependsOn("dbInitializer")
     public InvoicingQueueDao invoicingQueueDao(DataSource dataSource) {
-        return new InvoicingQueueDao(dataSource);
+        return new CacheableInvoicingQueueDao(dataSource);
     }
 
     @Bean

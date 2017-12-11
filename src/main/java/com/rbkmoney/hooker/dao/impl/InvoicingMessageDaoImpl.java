@@ -184,10 +184,6 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
     @Override
     public InvoicingMessage getAny(String invoiceId, String type) throws DaoException {
-        InvoicingMessage message = cacheMng.getMessage(invoiceId + type, InvoicingMessage.class);
-        if (message != null) {
-            return message.copy();
-        }
         InvoicingMessage result = null;
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id AND type =:type ORDER BY id DESC LIMIT 1";
         MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, invoiceId).addValue(TYPE, type);
@@ -204,8 +200,6 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         } catch (NestedRuntimeException e) {
             throw new DaoException("InvoicingMessageDaoImpl.getAny error with invoiceId " + invoiceId, e);
         }
-
-        putToCache(result);
         return result;
     }
 
@@ -320,7 +314,6 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             message.setId(keyHolder.getKey().longValue());
             saveCart(message.getId(), message.getInvoice().getCart());
             log.info("InvoicingMessage {} saved to db.", message);
-            putToCache(message);
             queueDao.createWithPolicy(message.getId());
             taskDao.create(message.getId());
         } catch (NestedRuntimeException e) {
@@ -340,35 +333,15 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
     @Override
     public List<InvoicingMessage> getBy(Collection<Long> messageIds) throws DaoException {
-        List<InvoicingMessage> messages = cacheMng.getMessages(messageIds, InvoicingMessage.class);
-
-        if (messages.size() == messageIds.size()) {
-            return messages;
-        }
-
-        Set<Long> ids = new HashSet<>(messageIds);
-        for (InvoicingMessage message : messages) {
-            ids.remove(message.getId());
-        }
-
         final String sql = "SELECT * FROM hook.message WHERE id in (:ids)";
         try {
-            List<InvoicingMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", ids), messageRowMapper);
+            List<InvoicingMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
             log.debug("messagesFromDb {}", messagesFromDb);
-            for(InvoicingMessage message: messagesFromDb){
-                putToCache(message);
-            }
-            messages.addAll(messagesFromDb);
-            return messages;
+            return messagesFromDb;
         }  catch (NestedRuntimeException e) {
             throw new DaoException("InvoicingMessageDaoImpl.getByIds error", e);
         }
     }
 
-    private void putToCache(InvoicingMessage message){
-        if (message != null) {
-            cacheMng.putMessage(message);
-            cacheMng.putMessage(message.getInvoice().getId() + message.getType(), message);
-        }
-    }
+
 }

@@ -6,7 +6,6 @@ import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
 import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.CustomerQueue;
-import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.scheduler.MessageScheduler;
 import com.rbkmoney.hooker.scheduler.MessageSender;
 import com.rbkmoney.hooker.service.PostSender;
