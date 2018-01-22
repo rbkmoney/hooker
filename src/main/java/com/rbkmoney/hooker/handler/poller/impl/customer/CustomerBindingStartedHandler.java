@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
+import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.geck.filter.Filter;
@@ -57,22 +58,7 @@ public class CustomerBindingStartedHandler extends NeedReadCustomerEventHandler 
                         .ip(bindingOrigin.getPaymentResource().getClientInfo().getIpAddress())
                         .fingerprint(bindingOrigin.getPaymentResource().getClientInfo().getFingerprint()));
 
-        String detailsType;
-        String cardNum = null;
-        String paymentSystem = null;
-        String terminalProvider = null;
-
-        if (bindingOrigin.getPaymentResource().getPaymentTool().isSetBankCard()) {
-            detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD.getValue();
-            cardNum = bindingOrigin.getPaymentResource().getPaymentTool().getBankCard().getMaskedPan();
-            paymentSystem = bindingOrigin.getPaymentResource().getPaymentTool().getBankCard().getPaymentSystem().name();
-            paymentResource.setPaymentToolToken(bindingOrigin.getPaymentResource().getPaymentTool().getBankCard().getToken());
-        } else if (bindingOrigin.getPaymentResource().getPaymentTool().isSetPaymentTerminal()) {
-            detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL.getValue();
-        } else {
-            throw new UnsupportedOperationException();
-        }
-        paymentResource.setPaymentToolDetails(getPaymentToolDetails(detailsType, cardNum, paymentSystem, terminalProvider));
+        paymentResource.setPaymentToolDetails(getPaymentToolDetails(bindingOrigin.getPaymentResource().getPaymentTool()));
         CustomerBinding binding = new CustomerBinding()
                 .id(bindingOrigin.getId())
                 .status(CustomerBinding.StatusEnum.fromValue(bindingOrigin.getStatus().getSetField().getFieldName()))

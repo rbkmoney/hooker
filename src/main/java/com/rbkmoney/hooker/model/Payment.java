@@ -2,6 +2,8 @@ package com.rbkmoney.hooker.model;
 
 import com.rbkmoney.swag_webhook_events.*;
 
+import java.util.Arrays;
+
 /**
  * Created by inalarsanukaev on 15.05.17.
  */
@@ -49,16 +51,32 @@ public class Payment {
                             .email(otherPayer.getContactInfo().getEmail())
                             .phoneNumber(otherPayer.getContactInfo().getPhoneNumber()));
             this.payer = copyPayer;
-            if (otherPayer.getPaymentToolDetails() instanceof PaymentToolDetailsBankCard) {
-                PaymentToolDetailsBankCard paymentToolDetails = (PaymentToolDetailsBankCard) otherPayer.getPaymentToolDetails();
+            PaymentToolDetails otherPayerPaymentToolDetails = otherPayer.getPaymentToolDetails();
+            if (otherPayerPaymentToolDetails instanceof PaymentToolDetailsBankCard) {
+                PaymentToolDetailsBankCard paymentToolDetails = (PaymentToolDetailsBankCard) otherPayerPaymentToolDetails;
                 copyPayer.setPaymentToolDetails(new PaymentToolDetailsBankCard()
                         .cardNumberMask(paymentToolDetails.getCardNumberMask())
                         .paymentSystem(paymentToolDetails.getPaymentSystem()));
-            } else if (otherPayer.getPaymentToolDetails() instanceof PaymentToolDetailsPaymentTerminal) {
+            } else if (otherPayerPaymentToolDetails instanceof PaymentToolDetailsPaymentTerminal) {
                 copyPayer.setPaymentToolDetails(new PaymentToolDetailsPaymentTerminal()
-                        .provider(((PaymentToolDetailsPaymentTerminal) otherPayer.getPaymentToolDetails()).getProvider()));
+                        .provider(((PaymentToolDetailsPaymentTerminal) otherPayerPaymentToolDetails).getProvider()));
+            } else if (otherPayerPaymentToolDetails instanceof PaymentToolDetailsDigitalWalletWrapper) {
+                PaymentToolDetailsDigitalWalletWrapper otherPaymentToolDetailsWrapper = (PaymentToolDetailsDigitalWalletWrapper) otherPayerPaymentToolDetails;
+                PaymentToolDetailsDigitalWalletWrapper paymentToolDetails = new PaymentToolDetailsDigitalWalletWrapper();
+                DigitalWalletDetails.DigitalWalletDetailsTypeEnum digitalWalletDetailsType = otherPaymentToolDetailsWrapper.getDigitalWalletDetails().getDigitalWalletDetailsType();
+                switch (digitalWalletDetailsType) {
+                    case DIGITALWALLETDETAILSQIWI:
+                        DigitalWalletDetailsQIWI otehrDigitalWalletDetails = (DigitalWalletDetailsQIWI)otherPaymentToolDetailsWrapper.getDigitalWalletDetails();
+                        paymentToolDetails.setDigitalWalletDetails(new DigitalWalletDetailsQIWI()
+                                .phoneNumberMask(otehrDigitalWalletDetails.getPhoneNumberMask()));
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unknown digitalWalletDetailsType "+ digitalWalletDetailsType +"; must be one of these: "+ Arrays.toString(DigitalWalletDetails.DigitalWalletDetailsTypeEnum.values()));
+                }
+                paymentToolDetails.getDigitalWalletDetails().setDigitalWalletDetailsType(digitalWalletDetailsType);
+                copyPayer.setPaymentToolDetails(paymentToolDetails);
             }
-            copyPayer.getPaymentToolDetails().detailsType(otherPayer.getPaymentToolDetails().getDetailsType());
+            copyPayer.getPaymentToolDetails().detailsType(otherPayerPaymentToolDetails.getDetailsType());
         }
         this.payer.payerType(other.payer.getPayerType());
     }

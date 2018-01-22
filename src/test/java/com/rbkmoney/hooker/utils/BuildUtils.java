@@ -104,7 +104,7 @@ public class BuildUtils {
         if (customerMessage.isBinding()) {
             customerMessage.setCustomerBinding(new CustomerBinding()
                     .id("12456")
-                    .status(CustomerBinding.StatusEnum.PENDING)
+                    .status(CustomerBinding.StatusEnum.SUCCEEDED)
             .paymentResource(new PaymentResource()
             .paymentToolToken("shjfbergiwengriweno")
             .paymentSession("wrgnjwierngweirngi")

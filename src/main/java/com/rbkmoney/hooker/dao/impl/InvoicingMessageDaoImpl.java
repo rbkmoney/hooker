@@ -74,6 +74,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String PAYMENT_CARD_NUMBER_MASK = "payment_card_number_mask";
     public static final String PAYMENT_SYSTEM = "payment_system";
     public static final String PAYMENT_TERMINAL_PROVIDER = "payment_terminal_provider";
+    public static final String PAYMENT_DIGITAL_WALLET_PROVIDER = "payment_digital_wallet_provider";
+    public static final String PAYMENT_DIGITAL_WALLET_ID = "payment_digital_wallet_id";
 
     //TODO refactoring
     private static void setNullPaymentParamValues(MapSqlParameterSource params) {
@@ -95,7 +97,9 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(PAYMENT_TOOL_DETAILS_TYPE, null)
                 .addValue(PAYMENT_CARD_NUMBER_MASK, null)
                 .addValue(PAYMENT_SYSTEM, null)
-                .addValue(PAYMENT_TERMINAL_PROVIDER, null);
+                .addValue(PAYMENT_TERMINAL_PROVIDER, null)
+                .addValue(PAYMENT_DIGITAL_WALLET_PROVIDER, null)
+                .addValue(PAYMENT_DIGITAL_WALLET_ID, null);
     }
 
     private static RowMapper<InvoiceCartPosition> cartPositionRowMapper = (rs, i) -> {
@@ -167,7 +171,9 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                                     .fingerprint(rs.getString(PAYMENT_FINGERPRINT))
                                     .ip(rs.getString(PAYMENT_IP)));
 
-                    payer.setPaymentToolDetails(getPaymentToolDetails(rs.getString(PAYMENT_TOOL_DETAILS_TYPE), rs.getString(PAYMENT_CARD_NUMBER_MASK), rs.getString(PAYMENT_SYSTEM), rs.getString(PAYMENT_TERMINAL_PROVIDER)));
+                    payer.setPaymentToolDetails(getPaymentToolDetails(rs.getString(PAYMENT_TOOL_DETAILS_TYPE),
+                            rs.getString(PAYMENT_CARD_NUMBER_MASK), rs.getString(PAYMENT_SYSTEM), rs.getString(PAYMENT_TERMINAL_PROVIDER),
+                            rs.getString(PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(PAYMENT_DIGITAL_WALLET_ID)));
                     payment.setPayer(payer);
                     break;
                 default:
@@ -240,7 +246,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
                 "payment_id, payment_created_at, payment_status, payment_error_code, payment_error_message, payment_amount, " +
                 "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
-                "payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider) " +
+                "payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider, " +
+                "payment_digital_wallet_provider, payment_digital_wallet_id) " +
                 "VALUES " +
                 "(:event_id, :event_time, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
@@ -248,7 +255,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 ":payment_id, :payment_created_at, :payment_status, :payment_error_code, :payment_error_message, :payment_amount, " +
                 ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
-                ":payment_card_number_mask, :payment_system, :payment_terminal_provider) " +
+                ":payment_card_number_mask, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id) " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())
@@ -302,7 +309,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                             .addValue(PAYMENT_FINGERPRINT, payer.getClientInfo().getFingerprint());
 
                     PaymentToolUtils.setPaymentToolDetailsParam(params, payer.getPaymentToolDetails(),
-                            PAYMENT_TOOL_DETAILS_TYPE, PAYMENT_CARD_NUMBER_MASK, PAYMENT_SYSTEM, PAYMENT_TERMINAL_PROVIDER);
+                            PAYMENT_TOOL_DETAILS_TYPE, PAYMENT_CARD_NUMBER_MASK, PAYMENT_SYSTEM, PAYMENT_TERMINAL_PROVIDER,
+                            PAYMENT_DIGITAL_WALLET_PROVIDER, PAYMENT_DIGITAL_WALLET_ID);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));

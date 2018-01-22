@@ -58,6 +58,8 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
     public static final String BINDING_PAYMENT_CARD_NUMBER_MASK = "binding_payment_card_number_mask";
     public static final String BINDING_PAYMENT_CARD_SYSTEM = "binding_payment_card_system";
     public static final String BINDING_PAYMENT_TERMINAL_PROVIDER = "binding_payment_terminal_provider";
+    public static final String BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER = "binding_payment_digital_wallet_provider";
+    public static final String BINDING_PAYMENT_DIGITAL_WALLET_ID = "binding_payment_digital_wallet_id";
     public static final String BINDING_CLIENT_IP = "binding_client_ip";
     public static final String BINDING_CLIENT_FINGERPRINT = "binding_client_fingerprint";
     public static final String BINDING_STATUS = "binding_status";
@@ -77,6 +79,8 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
                 .addValue(BINDING_PAYMENT_CARD_NUMBER_MASK, null)
                 .addValue(BINDING_PAYMENT_CARD_SYSTEM, null)
                 .addValue(BINDING_PAYMENT_TERMINAL_PROVIDER, null)
+                .addValue(BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER, null)
+                .addValue(BINDING_PAYMENT_DIGITAL_WALLET_ID, null)
                 .addValue(BINDING_CLIENT_IP, null)
                 .addValue(BINDING_CLIENT_FINGERPRINT, null)
                 .addValue(BINDING_STATUS, null)
@@ -114,7 +118,8 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
                     .paymentResource(paymentResource));
 
             paymentResource.setPaymentToolDetails(getPaymentToolDetails(rs.getString(BINDING_PAYMENT_TOOL_DETAILS_TYPE),
-                    rs.getString(BINDING_PAYMENT_CARD_NUMBER_MASK), rs.getString(BINDING_PAYMENT_CARD_SYSTEM), rs.getString(BINDING_PAYMENT_TERMINAL_PROVIDER)));
+                    rs.getString(BINDING_PAYMENT_CARD_NUMBER_MASK), rs.getString(BINDING_PAYMENT_CARD_SYSTEM), rs.getString(BINDING_PAYMENT_TERMINAL_PROVIDER),
+                    rs.getString(BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(BINDING_PAYMENT_DIGITAL_WALLET_ID)));
         }
         return message;
     };
@@ -142,12 +147,14 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
                 "customer_id, customer_shop_id, customer_status, customer_email , customer_phone, customer_metadata, " +
                 "binding_id, binding_payment_tool_token, binding_payment_session, binding_payment_tool_details_type, " +
                 "binding_payment_card_number_mask, binding_payment_card_system, binding_payment_terminal_provider, " +
+                "binding_payment_digital_wallet_provider, binding_payment_digital_wallet_id, " +
                 "binding_client_ip, binding_client_fingerprint, binding_status, binding_error_code, binding_error_message) " +
                 "VALUES " +
                 "(:event_id, :occured_at, CAST(:type as hook.customer_message_type), :party_id, CAST(:event_type as hook.eventtype), " +
                 ":customer_id, :customer_shop_id, CAST(:customer_status as hook.customer_status), :customer_email , :customer_phone, :customer_metadata, " +
                 ":binding_id, :binding_payment_tool_token, :binding_payment_session, CAST(:binding_payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":binding_payment_card_number_mask, :binding_payment_card_system, :binding_payment_terminal_provider, " +
+                ":binding_payment_digital_wallet_provider, :binding_payment_digital_wallet_id, " +
                 ":binding_client_ip, :binding_client_fingerprint, CAST(:binding_status as hook.customer_binding_status), :binding_error_code, :binding_error_message) " +
                 "RETURNING id";
         Customer customer = message.getCustomer();
@@ -179,7 +186,8 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
                     .addValue(BINDING_ERROR_MESSAGE, customerBinding.getError() != null ? customerBinding.getError().getMessage() : null);
 
             PaymentToolUtils.setPaymentToolDetailsParam(params, paymentResource.getPaymentToolDetails(),
-                    BINDING_PAYMENT_TOOL_DETAILS_TYPE, BINDING_PAYMENT_CARD_NUMBER_MASK, BINDING_PAYMENT_CARD_SYSTEM, BINDING_PAYMENT_TERMINAL_PROVIDER);
+                    BINDING_PAYMENT_TOOL_DETAILS_TYPE, BINDING_PAYMENT_CARD_NUMBER_MASK, BINDING_PAYMENT_CARD_SYSTEM, BINDING_PAYMENT_TERMINAL_PROVIDER,
+                    BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER, BINDING_PAYMENT_DIGITAL_WALLET_ID);
         }
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
