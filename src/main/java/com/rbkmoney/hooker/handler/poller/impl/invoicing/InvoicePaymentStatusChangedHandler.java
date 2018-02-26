@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.domain.ExternalFailure;
+import com.rbkmoney.damsel.domain.Failure;
 import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.payment_processing.Event;
@@ -47,9 +47,9 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
         payment.setStatus(paymentOriginStatus.getSetField().getFieldName());
         if (paymentOriginStatus.isSetFailed()) {
             OperationFailure failure = paymentOriginStatus.getFailed().getFailure();
-            if (failure.isSetExternalFailure()) {
-                ExternalFailure external = failure.getExternalFailure();
-                payment.setError(new PaymentStatusError(external.getCode(), external.getDescription()));
+            if (failure.isSetFailure()) {
+                Failure external = failure.getFailure();
+                payment.setError(new PaymentStatusError(external.getCode(), external.getReason()));
             } else if (failure.isSetOperationTimeout()) {
                 payment.setError(new PaymentStatusError("408", "Operation timeout"));
             }

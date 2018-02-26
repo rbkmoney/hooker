@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
-import com.rbkmoney.damsel.domain.ExternalFailure;
+import com.rbkmoney.damsel.domain.Failure;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.damsel.payment_processing.Event;
@@ -45,10 +45,10 @@ public class CustomerBindingFailedHandler extends NeedReadCustomerEventHandler {
         OperationFailure failure = cc.getCustomerBindingChanged().getPayload().getStatusChanged().getStatus().getFailed().getFailure();
         String errCode = null;
         String errMess = null;
-        if (failure.isSetExternalFailure()) {
-            ExternalFailure external = failure.getExternalFailure();
+        if (failure.isSetFailure()) {
+            Failure external = failure.getFailure();
             errCode = external.getCode();
-            errMess = external.getDescription();
+            errMess = external.getReason();
         } else if (failure.isSetOperationTimeout()) {
             errCode = "408";
             errMess = "Operation timeout";
