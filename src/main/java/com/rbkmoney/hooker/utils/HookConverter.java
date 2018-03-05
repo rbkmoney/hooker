@@ -17,21 +17,8 @@ public class HookConverter {
                 hook.getPartyId(),
                 EventFilterUtils.getEventFilter(hook.getFilters()),
                 hook.getUrl(),
-                hook.getPubKey(),
+                buildFormattedPubKey(hook.getPubKey()),
                 hook.isEnabled());
-    }
-
-    public static Hook convert(Webhook webhook){
-        return new Hook(
-                webhook.getId(),
-                webhook.getPartyId(),
-                EventFilterUtils.getTopic(webhook.getEventFilter()),
-                EventFilterUtils.getWebhookAdditionalFilter(webhook.getEventFilter()),
-                webhook.getUrl(),
-                webhook.getPubKey(),
-                null,
-                webhook.isEnabled(),
-                null);
     }
 
     public static Hook convert(WebhookParams webhookParams){
@@ -48,4 +35,9 @@ public class HookConverter {
         return hooks.stream().map(h -> convert(h)).collect(Collectors.toList());
     }
 
+    private static String buildFormattedPubKey(String key) {
+        return "-----BEGIN PUBLIC KEY-----\n" +
+                key.replaceAll("(.{64})", "$1\n") +
+                "\n-----END PUBLIC KEY-----";
+    }
 }
