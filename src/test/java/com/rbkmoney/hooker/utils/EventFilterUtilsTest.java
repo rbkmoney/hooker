@@ -15,7 +15,7 @@ import java.util.HashSet;
 public class EventFilterUtilsTest {
     @Test
     public void getEventFilterByCode() throws Exception {
-        Assert.assertEquals(getEventFilter().getInvoice().getTypes().size(), 4);
+        Assert.assertEquals(getEventFilter().getInvoice().getTypes().size(), 6);
         Assert.assertEquals(getCustomerEventFilter().getCustomer().getTypes().size(), 6);
     }
 
@@ -25,6 +25,8 @@ public class EventFilterUtilsTest {
         eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STARTED, "77"));
         eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED));
         eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED));
+        eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_REFUND_STARTED));
+        eventTypeCodeSet.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED));
         return EventFilterUtils.getEventFilter(eventTypeCodeSet);
     }
 
@@ -41,7 +43,7 @@ public class EventFilterUtilsTest {
 
     @Test
     public void getWebhookAdditionalFilter() throws Exception {
-        Assert.assertEquals(EventFilterUtils.getWebhookAdditionalFilter(getEventFilter()).size(), 4);
+        Assert.assertEquals(EventFilterUtils.getWebhookAdditionalFilter(getEventFilter()).size(), 6);
         Assert.assertEquals(EventFilterUtils.getWebhookAdditionalFilter(getCustomerEventFilter()).size(), 6);
     }
 

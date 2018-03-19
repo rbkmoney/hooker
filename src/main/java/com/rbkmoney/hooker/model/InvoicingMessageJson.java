@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.swag_webhook_events.Event;
 
 import java.util.HashMap;
@@ -32,6 +31,13 @@ public class InvoicingMessageJson {
         paymentStatusesMapping.put("cancelled", "PaymentCancelled");
         paymentStatusesMapping.put("refunded", "PaymentRefunded");
         paymentStatusesMapping.put("failed", "PaymentFailed");
+    }
+
+    private static Map<String, String> refundStatusesMapping = new HashMap<>();
+    static {
+        refundStatusesMapping.put("pending", "RefundCreated");
+        refundStatusesMapping.put("succeeded", "RefundSucceeded");
+        refundStatusesMapping.put("failed", "RefundFailed");
     }
 
     private long eventID;
@@ -84,14 +90,22 @@ public class InvoicingMessageJson {
     }
 
     public static String buildMessageJson(InvoicingMessage message) throws JsonProcessingException {
-        boolean isInvoice = AbstractInvoiceEventHandler.INVOICE.equals(message.getType());
-        InvoicingMessageJson invoicingMessageJson = isInvoice ?  new InvoiceMessageJson() : new PaymentMessageJson(message.getPayment());
+        InvoicingMessageJson invoicingMessageJson = null;
+        if (message.isInvoice()) {
+            invoicingMessageJson = new InvoiceMessageJson();
+            invoicingMessageJson.eventType = invoiceStatusesMapping.get(message.getInvoice().getStatus());
+        } else if (message.isPayment()) {
+            invoicingMessageJson = new PaymentMessageJson(message);
+            invoicingMessageJson.eventType = paymentStatusesMapping.get(message.getPayment().getStatus());
+        } else if (message.isRefund()) {
+            invoicingMessageJson = new RefundMessageJson(message);
+            invoicingMessageJson.eventType = refundStatusesMapping.get(message.getRefund().getStatus());
+        }
         invoicingMessageJson.eventID = message.getEventId();
         invoicingMessageJson.occuredAt = message.getEventTime();
         invoicingMessageJson.topic = Event.TopicEnum.INVOICESTOPIC.getValue();
         invoicingMessageJson.invoice = message.getInvoice();
 
-        invoicingMessageJson.eventType = isInvoice ? invoiceStatusesMapping.get(message.getInvoice().getStatus()) : paymentStatusesMapping.get(message.getPayment().getStatus()) ;
         return new ObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true)
@@ -104,8 +118,8 @@ public class InvoicingMessageJson {
     static class PaymentMessageJson extends InvoicingMessageJson {
         Payment payment;
 
-        public PaymentMessageJson(Payment payment) {
-            this.payment = payment;
+        public PaymentMessageJson(InvoicingMessage message) {
+            this.payment = message.getPayment();
         }
 
         public PaymentMessageJson() {
@@ -117,6 +131,23 @@ public class InvoicingMessageJson {
 
         public void setPayment(Payment payment) {
             this.payment = payment;
+        }
+    }
+
+    static class RefundMessageJson extends PaymentMessageJson {
+        Refund refund;
+
+        public RefundMessageJson(InvoicingMessage message) {
+            super(message);
+            refund = message.getRefund();
+        }
+
+        public Refund getRefund() {
+            return refund;
+        }
+
+        public void setRefund(Refund refund) {
+            this.refund = refund;
         }
     }
 }

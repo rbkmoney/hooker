@@ -39,7 +39,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled"));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled", null));
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_CREATED));
         EventFilter eventFilterByCode = EventFilterUtils.getEventFilter(webhookAdditionalFilters);
         eventFilterByCode.getInvoice().setShopId("1");
@@ -48,7 +48,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         String pubKey1 = hook.getPubKey();
         ids.add(hook.getId());
         webhookAdditionalFilters.clear();
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED, "78", "unpaid", null));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED, "78", "unpaid", null, null));
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STARTED, "78"));
         webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://yandex.ru");
         hook = hookDao.create(HookConverter.convert(webhookParams));
@@ -82,8 +82,8 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void testConstraint(){
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "failed"));
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "pending"));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "failed", "succeeded"));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "pending", null));
         WebhookParams webhookParams  = new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
         Hook hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
@@ -110,7 +110,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled"));
+        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled", "failed"));
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_CREATED));
         hook.setFilters(webhookAdditionalFilters);
 

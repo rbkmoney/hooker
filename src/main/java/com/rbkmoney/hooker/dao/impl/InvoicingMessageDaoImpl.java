@@ -23,6 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.util.*;
 
+import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.INVOICE;
+import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.PAYMENT;
+import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.REFUND;
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
 public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implements InvoicingMessageDao {
@@ -76,6 +79,14 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String PAYMENT_TERMINAL_PROVIDER = "payment_terminal_provider";
     public static final String PAYMENT_DIGITAL_WALLET_PROVIDER = "payment_digital_wallet_provider";
     public static final String PAYMENT_DIGITAL_WALLET_ID = "payment_digital_wallet_id";
+    public static final String REFUND_ID = "refund_id";
+    public static final String REFUND_CREATED_AT = "refund_created_at";
+    public static final String REFUND_STATUS = "refund_status";
+    public static final String REFUND_ERROR_CODE = "refund_error_code";
+    public static final String REFUND_ERROR_MESSAGE = "refund_error_message";
+    public static final String REFUND_AMOUNT = "refund_amount";
+    public static final String REFUND_CURRENCY = "refund_currency";
+    public static final String REFUND_REASON = "refund_reason";
 
     //TODO refactoring
     private static void setNullPaymentParamValues(MapSqlParameterSource params) {
@@ -99,7 +110,15 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(PAYMENT_SYSTEM, null)
                 .addValue(PAYMENT_TERMINAL_PROVIDER, null)
                 .addValue(PAYMENT_DIGITAL_WALLET_PROVIDER, null)
-                .addValue(PAYMENT_DIGITAL_WALLET_ID, null);
+                .addValue(PAYMENT_DIGITAL_WALLET_ID, null)
+                .addValue(REFUND_ID, null)
+                .addValue(REFUND_CREATED_AT, null)
+                .addValue(REFUND_STATUS, null)
+                .addValue(REFUND_ERROR_CODE, null)
+                .addValue(REFUND_ERROR_MESSAGE, null)
+                .addValue(REFUND_AMOUNT, null)
+                .addValue(REFUND_CURRENCY, null)
+                .addValue(REFUND_REASON, null);
     }
 
     private static RowMapper<InvoiceCartPosition> cartPositionRowMapper = (rs, i) -> {
@@ -139,14 +158,14 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         invoice.setMetadata(metadata);
         invoice.setProduct(rs.getString(INVOICE_PRODUCT));
         invoice.setDescription(rs.getString(INVOICE_DESCRIPTION));
-        if (message.isPayment()) {
+        if (message.isPayment() || message.isRefund()) {
             Payment payment = new Payment();
             message.setPayment(payment);
             payment.setId(rs.getString(PAYMENT_ID));
             payment.setCreatedAt(rs.getString(PAYMENT_CREATED_AT));
             payment.setStatus(rs.getString(PAYMENT_STATUS));
             if (rs.getString(PAYMENT_ERROR_CODE) != null && "failed".equals(rs.getString(PAYMENT_STATUS))) {
-                payment.setError(new PaymentStatusError(rs.getString(PAYMENT_ERROR_CODE), rs.getString(PAYMENT_ERROR_MESSAGE)));
+                payment.setError(new StatusError(rs.getString(PAYMENT_ERROR_CODE), rs.getString(PAYMENT_ERROR_MESSAGE)));
             }
             payment.setAmount(rs.getLong(PAYMENT_AMOUNT));
             payment.setCurrency(rs.getString(PAYMENT_CURRENCY));
@@ -181,6 +200,19 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             }
             payment.getPayer().setPayerType(payerType);
         }
+        if (message.isRefund()) {
+            Refund refund = new Refund();
+            message.setRefund(refund);
+            refund.setId(rs.getString(REFUND_ID));
+            refund.setCreatedAt(rs.getString(REFUND_CREATED_AT));
+            refund.setStatus(rs.getString(REFUND_STATUS));
+            if (rs.getString(REFUND_ERROR_CODE) != null && "failed".equals(rs.getString(REFUND_STATUS))) {
+                refund.setError(new StatusError(rs.getString(REFUND_ERROR_CODE), rs.getString(REFUND_ERROR_MESSAGE)));
+            }
+            refund.setAmount(rs.getLong(REFUND_AMOUNT));
+            refund.setCurrency(rs.getString(REFUND_CURRENCY));
+            refund.setReason(rs.getString(REFUND_REASON));
+        }
         return message;
     };
 
@@ -188,11 +220,16 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         setDataSource(dataSource);
     }
 
-    @Override
-    public InvoicingMessage getAny(String invoiceId, String type) throws DaoException {
+    private InvoicingMessage getAny(String invoiceId, String paymentId, String refundId, String type) throws DaoException {
         InvoicingMessage result = null;
-        final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id AND type =:type ORDER BY id DESC LIMIT 1";
-        MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, invoiceId).addValue(TYPE, type);
+        final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id" +
+                " AND (payment_id IS NULL OR payment_id=:payment_id)" +
+                " AND (refund_id IS NULL OR refund_id=:refund_id)" +
+                " AND type =:type ORDER BY id DESC LIMIT 1";
+        MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, invoiceId)
+                .addValue(PAYMENT_ID, paymentId)
+                .addValue(REFUND_ID, refundId)
+                .addValue(TYPE, type);
         try {
             result = getNamedParameterJdbcTemplate().queryForObject(sql, params, messageRowMapper);
             final String sqlCarts = "SELECT * FROM hook.cart_position WHERE message_id =:message_id";
@@ -247,7 +284,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "payment_id, payment_created_at, payment_status, payment_error_code, payment_error_message, payment_amount, " +
                 "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
                 "payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider, " +
-                "payment_digital_wallet_provider, payment_digital_wallet_id) " +
+                "payment_digital_wallet_provider, payment_digital_wallet_id, " +
+                "refund_id, refund_created_at, refund_status, refund_error_code, refund_error_message, refund_amount, refund_currency, refund_reason) " +
                 "VALUES " +
                 "(:event_id, :event_time, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
@@ -255,7 +293,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 ":payment_id, :payment_created_at, :payment_status, :payment_error_code, :payment_error_message, :payment_amount, " +
                 ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
-                ":payment_card_number_mask, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id) " +
+                ":payment_card_number_mask, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, " +
+                ":refund_id, :refund_created_at, :refund_status, :refund_error_code, :refund_error_message, :refund_amount, :refund_currency, :refund_reason) " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())
@@ -277,7 +316,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(INVOICE_DESCRIPTION, message.getInvoice().getDescription());
         //TODO
         setNullPaymentParamValues(params);
-        if (message.isPayment()) {
+        if (message.isPayment() || message.isRefund()) {
             Payment payment = message.getPayment();
             params.addValue(PAYMENT_ID, payment.getId())
                     .addValue(PAYMENT_CREATED_AT,  payment.getCreatedAt())
@@ -316,6 +355,17 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                     throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));
             }
         }
+        if (message.isRefund()) {
+            Refund refund = message.getRefund();
+            params.addValue(REFUND_ID, refund.getId())
+                    .addValue(REFUND_CREATED_AT, refund.getCreatedAt())
+                    .addValue(REFUND_STATUS, refund.getStatus())
+                    .addValue(PAYMENT_ERROR_CODE, refund.getError() != null ? refund.getError().getCode() : null)
+                    .addValue(PAYMENT_ERROR_MESSAGE, refund.getError() != null ? refund.getError().getMessage() : null)
+                    .addValue(REFUND_AMOUNT, refund.getAmount())
+                    .addValue(REFUND_CURRENCY, refund.getCurrency())
+                    .addValue(REFUND_REASON, refund.getReason());
+        }
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
@@ -352,4 +402,18 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     }
 
 
+    @Override
+    public InvoicingMessage getInvoice(String invoiceId) throws DaoException {
+        return getAny(invoiceId, null, null, INVOICE);
+    }
+
+    @Override
+    public InvoicingMessage getPayment(String invoiceId, String paymentId) throws DaoException {
+        return getAny(invoiceId, paymentId, null, PAYMENT);
+    }
+
+    @Override
+    public InvoicingMessage getRefund(String invoiceId, String paymentId, String refundId) throws DaoException {
+        return getAny(invoiceId, paymentId, refundId, REFUND);
+    }
 }

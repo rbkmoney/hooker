@@ -14,6 +14,7 @@ public class InvoicingMessage extends Message {
     private EventType eventType;
     private Invoice invoice;
     private Payment payment;
+    private Refund refund;
 
     public InvoicingMessage(InvoicingMessage other) {
         setId(other.getId());
@@ -27,6 +28,9 @@ public class InvoicingMessage extends Message {
         }
         if (other.payment != null) {
             this.payment = new Payment(other.payment);
+        }
+        if (other.refund != null) {
+            this.refund = new Refund(other.refund);
         }
     }
 
@@ -89,12 +93,24 @@ public class InvoicingMessage extends Message {
         this.payment = payment;
     }
 
+    public Refund getRefund() {
+        return refund;
+    }
+
+    public void setRefund(Refund refund) {
+        this.refund = refund;
+    }
+
     public boolean isInvoice() {
         return AbstractInvoiceEventHandler.INVOICE.equals(getType());
     }
 
     public boolean isPayment() {
         return AbstractInvoiceEventHandler.PAYMENT.equals(getType());
+    }
+
+    public boolean isRefund() {
+        return AbstractInvoiceEventHandler.REFUND.equals(getType());
     }
 
     @Override

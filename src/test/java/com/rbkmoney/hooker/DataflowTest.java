@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -70,7 +71,7 @@ public class DataflowTest extends AbstractIntegrationTest {
 
             hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
             hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
-            hooks.add(hookDao.create(hook("partyId2", "http://" + baseServerUrl + HOOK_3, EventType.INVOICE_PAYMENT_STATUS_CHANGED)));
+            hooks.add(hookDao.create(hook("partyId2", "http://" + baseServerUrl + HOOK_3, EventType.INVOICE_PAYMENT_STATUS_CHANGED, EventType.INVOICE_PAYMENT_REFUND_STARTED)));
         }
     }
 
@@ -80,8 +81,8 @@ public class DataflowTest extends AbstractIntegrationTest {
         final String partyId = new Random().nextInt() + "";
         InvoicingMessage message1 = buildMessage(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status");
         messageDao.create(message1);
-        InvoicingMessage message2 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
-        InvoicingMessage message3 = messageDao.getAny(invoceId, AbstractInvoiceEventHandler.INVOICE);
+        InvoicingMessage message2 = messageDao.getInvoice(invoceId);
+        InvoicingMessage message3 = messageDao.getInvoice(invoceId);
         assertTrue(message1 != message2);
         assertTrue(message2 != message3);
         assertTrue(message1 != message3);
@@ -108,6 +109,9 @@ public class DataflowTest extends AbstractIntegrationTest {
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false);
         messageDao.create(message);
         sourceMessages.add(message);
+        message = buildMessage(AbstractInvoiceEventHandler.REFUND, "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false);
+        messageDao.create(message);
+        sourceMessages.add(message);
 
         List<MockMessage> inv1 = new ArrayList<>();
         List<MockMessage> inv3 = new ArrayList<>();
@@ -119,23 +123,25 @@ public class DataflowTest extends AbstractIntegrationTest {
         for (int i = 0; i < 3; i++) {
             inv1.add(inv1Queue.poll(1, TimeUnit.SECONDS));
         }
-        Assert.assertNotNull(inv1.get(0));
-        Assert.assertNotNull(inv1.get(1));
-        Assert.assertNotNull(inv1.get(2));
+        assertNotNull(inv1.get(0));
+        assertNotNull(inv1.get(1));
+        assertNotNull(inv1.get(2));
 
         for (int i = 0; i < 2; i++) {
             inv3.add(inv3Queue.poll(1, TimeUnit.SECONDS));
         }
-        Assert.assertNotNull(inv3.get(0));
-        Assert.assertNotNull(inv3.get(1));
+        assertNotNull(inv3.get(0));
+        assertNotNull(inv3.get(1));
 
         inv4.add(inv4Queue.poll(1, TimeUnit.SECONDS));
         Assert.assertNull(inv4.get(0));
 
         inv5.add(inv5Queue.poll(1, TimeUnit.SECONDS));
-        Assert.assertNotNull(inv5.get(0));
+        inv5.add(inv5Queue.poll(1, TimeUnit.SECONDS));
+        assertNotNull(inv5.get(0));
         assertEquals(sourceMessages.get(5).getInvoice().getId(), inv5.get(0).getInvoice().getId());
         assertTrue(inv5.get(0).getPayment().getPayer() instanceof CustomerPayer);
+        assertNotNull(inv5.get(1).getRefund());
 
         assertTrue(inv1Queue.isEmpty());
         assertTrue(inv3Queue.isEmpty());
@@ -323,6 +329,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         private String eventType;
         private Invoice invoice;
         private Payment payment;
+        private Refund refund;
 
         public long getEventID() {
             return eventID;
@@ -370,6 +377,14 @@ public class DataflowTest extends AbstractIntegrationTest {
 
         public void setPayment(Payment payment) {
             this.payment = payment;
+        }
+
+        public Refund getRefund() {
+            return refund;
+        }
+
+        public void setRefund(Refund refund) {
+            this.refund = refund;
         }
     }
 }

@@ -44,13 +44,13 @@ public class BuildUtils {
         invoice.setProduct("product");
         invoice.setDescription("description");
         invoice.setCart(cart);
-        if (message.isPayment()) {
+        if (message.isPayment() || message.isRefund()) {
             Payment payment = new Payment();
             message.setPayment(payment);
             payment.setId("123");
             payment.setCreatedAt("13.12.20017");
             payment.setStatus(status);
-            payment.setError(new PaymentStatusError("1", "shit"));
+            payment.setError(new StatusError("1", "shit"));
             payment.setAmount(1);
             payment.setCurrency("RUB");
             payment.setPaymentToolToken("payment tool token");
@@ -76,6 +76,16 @@ public class BuildUtils {
             } else { //if customer
                 payment.setPayer(new CustomerPayer().customerID("12345").payerType(Payer.PayerTypeEnum.CUSTOMERPAYER));
             }
+        }
+
+        if (message.isRefund()) {
+            Refund refund = new Refund();
+            message.setRefund(refund);
+            refund.setId("123");
+            refund.setAmount(115L);
+            refund.setCurrency("RUB");
+            refund.setStatus("status");
+            refund.setReason("kek");
         }
         return message;
     }

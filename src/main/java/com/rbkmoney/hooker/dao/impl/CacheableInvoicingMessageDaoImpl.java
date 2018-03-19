@@ -24,16 +24,40 @@ public class CacheableInvoicingMessageDaoImpl extends InvoicingMessageDaoImpl {
         super.create(message);
         putToCache(message);
     }
+
     @Override
-    public InvoicingMessage getAny(String invoiceId, String type) throws DaoException {
-        InvoicingMessage message = cacheMng.getMessage(invoiceId + type, InvoicingMessage.class);
+    public InvoicingMessage getInvoice(String invoiceId) throws DaoException {
+        InvoicingMessage message = cacheMng.getMessage(invoiceId, InvoicingMessage.class);
         if (message != null) {
             return message.copy();
         }
-        InvoicingMessage result = super.getAny(invoiceId, type);
+        InvoicingMessage result = super.getInvoice(invoiceId);
         putToCache(result);
         return result;
     }
+
+    @Override
+    public InvoicingMessage getPayment(String invoiceId, String paymentId) throws DaoException {
+        InvoicingMessage message = cacheMng.getMessage(invoiceId + "_" + paymentId, InvoicingMessage.class);
+        if (message != null) {
+            return message.copy();
+        }
+        InvoicingMessage result = super.getPayment(invoiceId, paymentId);
+        putToCache(result);
+        return result;
+    }
+
+    @Override
+    public InvoicingMessage getRefund(String invoiceId, String paymentId, String refundId) throws DaoException {
+        InvoicingMessage message = cacheMng.getMessage(invoiceId + "_" + paymentId + "_" + refundId, InvoicingMessage.class);
+        if (message != null) {
+            return message.copy();
+        }
+        InvoicingMessage result = super.getRefund(invoiceId, paymentId, refundId);
+        putToCache(result);
+        return result;
+    }
+
     @Override
     public List<InvoicingMessage> getBy(Collection<Long> ids) throws DaoException {
         List<InvoicingMessage> messages = cacheMng.getMessages(ids, InvoicingMessage.class);
@@ -51,7 +75,7 @@ public class CacheableInvoicingMessageDaoImpl extends InvoicingMessageDaoImpl {
     private void putToCache(InvoicingMessage message){
         if (message != null) {
             cacheMng.putMessage(message);
-            cacheMng.putMessage(message.getInvoice().getId() + message.getType(), message);
+            cacheMng.putMessage(message.getInvoice().getId() + (message.isPayment() ? "_" + message.getPayment().getId() : "") + (message.isRefund() ? "_" + message.getPayment().getId() + "_" + message.getRefund().getId() : ""), message);
         }
     }
 }

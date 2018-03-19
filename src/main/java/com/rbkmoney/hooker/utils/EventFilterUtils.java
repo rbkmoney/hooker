@@ -71,6 +71,26 @@ public class EventFilterUtils {
                         }
                         invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType.status_changed(invoicePaymentStatusChanged)));
                         break;
+                    case INVOICE_PAYMENT_REFUND_STARTED:
+                        invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType.invoice_payment_refund_change(InvoicePaymentRefundChange.invoice_payment_refund_created(new InvoicePaymentRefundCreated()))));
+                        break;
+                    case INVOICE_PAYMENT_REFUND_STATUS_CHANGED:
+                        InvoicePaymentRefundStatusChanged invoicePaymentRefundStatusChanged = new InvoicePaymentRefundStatusChanged();
+                        String invoicePaymentRefundStatus = webhookAdditionalFilter.getInvoicePaymentRefundStatus();
+                        if (invoicePaymentRefundStatus != null) {
+                            InvoicePaymentRefundStatus value1 = new InvoicePaymentRefundStatus();
+                            InvoicePaymentRefundStatus._Fields fields = InvoicePaymentRefundStatus._Fields.findByName(invoicePaymentRefundStatus);
+                            try {
+                                Object tBase = ((StructMetaData) value1.getFieldMetaData().get(fields).valueMetaData).structClass.newInstance();
+                                value1.setFieldValue(fields, tBase);
+                                invoicePaymentRefundStatusChanged.setValue(value1);
+                            } catch (InstantiationException | IllegalAccessException e) {
+                                throw new UnsupportedOperationException("Unknown status " + invoicePaymentRefundStatus + "; must be one of these: " + Arrays.toString(InvoicePaymentRefundStatus._Fields.values()));
+                            }
+                            invoicePaymentRefundStatusChanged.setValue(value1);
+                        }
+                        invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType.invoice_payment_refund_change(InvoicePaymentRefundChange.invoice_payment_refund_status_changed(invoicePaymentRefundStatusChanged))));
+                        break;
                     default:
                         throw new UnsupportedOperationException("Unknown event code " + eventTypeCode + "; must be one of these: " + Arrays.toString(EventType.values()));
                 }
@@ -133,12 +153,23 @@ public class EventFilterUtils {
                         webhookAdditionalFilter.setInvoiceStatus(invoiceEventType.getStatusChanged().getValue().getSetField().getFieldName());
                     }
                 } else if (invoiceEventType.isSetPayment()) {
-                    if (invoiceEventType.getPayment().isSetCreated()) {
+                    InvoicePaymentEventType payment = invoiceEventType.getPayment();
+                    if (payment.isSetCreated()) {
                         webhookAdditionalFilter.setEventType(EventType.INVOICE_PAYMENT_STARTED);
-                    } else if (invoiceEventType.getPayment().isSetStatusChanged()) {
+                    } else if (payment.isSetStatusChanged()) {
                         webhookAdditionalFilter.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
-                        if (invoiceEventType.getPayment().getStatusChanged().isSetValue()) {
-                            webhookAdditionalFilter.setInvoicePaymentStatus(invoiceEventType.getPayment().getStatusChanged().getValue().getSetField().getFieldName());
+                        if (payment.getStatusChanged().isSetValue()) {
+                            webhookAdditionalFilter.setInvoicePaymentStatus(payment.getStatusChanged().getValue().getSetField().getFieldName());
+                        }
+                    } else if (payment.isSetInvoicePaymentRefundChange()) {
+                        InvoicePaymentRefundChange refundChange = payment.getInvoicePaymentRefundChange();
+                        if (refundChange.isSetInvoicePaymentRefundCreated()) {
+                            webhookAdditionalFilter.setEventType(EventType.INVOICE_PAYMENT_REFUND_STARTED);
+                        } else if (refundChange.isSetInvoicePaymentRefundStatusChanged()) {
+                            webhookAdditionalFilter.setEventType(EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED);
+                            if (refundChange.getInvoicePaymentRefundStatusChanged().isSetValue()) {
+                                webhookAdditionalFilter.setInvoicePaymentRefundStatus(refundChange.getInvoicePaymentRefundStatusChanged().getValue().getSetField().getFieldName());
+                            }
                         }
                     }
                 }

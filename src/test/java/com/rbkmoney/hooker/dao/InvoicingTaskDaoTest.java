@@ -48,7 +48,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
         messageDao.create(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true));
-        messageId = messageDao.getAny("2345", AbstractInvoiceEventHandler.INVOICE).getId();
+        messageId = messageDao.getInvoice("2345").getId();
     }
 
     @After

@@ -10,12 +10,14 @@ public class WebhookAdditionalFilter {
     private String shopId;
     private String invoiceStatus;
     private String invoicePaymentStatus;
+    private String invoicePaymentRefundStatus;
 
-    public WebhookAdditionalFilter(EventType eventType, String shopId, String invoiceStatus, String invoicePaymentStatus) {
+    public WebhookAdditionalFilter(EventType eventType, String shopId, String invoiceStatus, String invoicePaymentStatus, String invoicePaymentRefundStatus) {
         this.eventType = eventType;
         this.shopId = shopId;
         this.invoiceStatus = invoiceStatus;
         this.invoicePaymentStatus = invoicePaymentStatus;
+        this.invoicePaymentRefundStatus = invoicePaymentRefundStatus;
     }
 
     public WebhookAdditionalFilter(EventType eventType, String shopId) {
@@ -63,4 +65,11 @@ public class WebhookAdditionalFilter {
         this.invoicePaymentStatus = invoicePaymentStatus;
     }
 
+    public String getInvoicePaymentRefundStatus() {
+        return invoicePaymentRefundStatus;
+    }
+
+    public void setInvoicePaymentRefundStatus(String invoicePaymentRefundStatus) {
+        this.invoicePaymentRefundStatus = invoicePaymentRefundStatus;
+    }
 }

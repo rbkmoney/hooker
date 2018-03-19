@@ -159,12 +159,13 @@ public class HookDaoImpl implements HookDao {
                     .addValue("event_type", webhookAdditionalFilter.getEventType().toString())
                     .addValue("invoice_shop_id", webhookAdditionalFilter.getShopId())
                     .addValue("invoice_status", webhookAdditionalFilter.getInvoiceStatus())
-                    .addValue("invoice_payment_status", webhookAdditionalFilter.getInvoicePaymentStatus());
+                    .addValue("invoice_payment_status", webhookAdditionalFilter.getInvoicePaymentStatus())
+                    .addValue("invoice_payment_refund_status", webhookAdditionalFilter.getInvoicePaymentRefundStatus());
             batchValues.add(mapSqlParameterSource.getValues());
         }
 
-        final String sql = "INSERT INTO hook.webhook_to_events(hook_id, event_type, invoice_shop_id, invoice_status, invoice_payment_status) VALUES (:hook_id, CAST(:event_type AS hook.eventtype)," +
-                " :invoice_shop_id, :invoice_status, :invoice_payment_status)";
+        final String sql = "INSERT INTO hook.webhook_to_events(hook_id, event_type, invoice_shop_id, invoice_status, invoice_payment_status, invoice_payment_refund_status) VALUES (:hook_id, CAST(:event_type AS hook.eventtype)," +
+                " :invoice_shop_id, :invoice_status, :invoice_payment_status, :invoice_payment_refund_status)";
 
         try {
             int updateCount[] = jdbcTemplate.batchUpdate(sql, batchValues.toArray(new Map[size]));
@@ -229,7 +230,8 @@ public class HookDaoImpl implements HookDao {
                     new WebhookAdditionalFilter(EventType.valueOf(rs.getString("event_type")),
                             rs.getString("invoice_shop_id"),
                             rs.getString("invoice_status"),
-                            rs.getString("invoice_payment_status")));
+                            rs.getString("invoice_payment_status"),
+                            rs.getString("invoice_payment_refund_status")));
 
 
 }

@@ -41,6 +41,7 @@ public class InvoicingTaskDao extends AbstractTaskDao {
                         " and (m.shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
                         " and (m.invoice_status = wte.invoice_status or wte.invoice_status is null) " +
                         " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
+                        " and (m.refund_status = wte.invoice_payment_refund_status or wte.invoice_payment_refund_status is null)" +
                         " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
         try {
             int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("message_id", messageId)

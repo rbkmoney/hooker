@@ -14,12 +14,12 @@ import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHandler {
+public class InvoicePaymentRefundStatusChangedHandler extends NeedReadInvoiceEventHandler {
 
     private Filter filter;
-    private EventType eventType = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
+    private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED;
 
-    public InvoicePaymentStatusChangedHandler() {
+    public InvoicePaymentRefundStatusChangedHandler() {
         filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
     }
 
@@ -30,12 +30,14 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
 
     @Override
     protected InvoicingMessage getMessage(String invoiceId, InvoiceChange ic) {
-        return messageDao.getPayment(invoiceId, ic.getInvoicePaymentChange().getId());
+        String paymentId = ic.getInvoicePaymentChange().getId();
+        String refundId = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getId();
+        return messageDao.getRefund(invoiceId, paymentId, refundId);
     }
 
     @Override
     protected String getMessageType() {
-        return PAYMENT;
+        return REFUND;
     }
 
     @Override
@@ -45,16 +47,16 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
 
     @Override
     protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
-        InvoicePaymentStatus paymentOriginStatus = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStatusChanged().getStatus();
-        Payment payment = message.getPayment();
-        payment.setStatus(paymentOriginStatus.getSetField().getFieldName());
-        if (paymentOriginStatus.isSetFailed()) {
-            OperationFailure failure = paymentOriginStatus.getFailed().getFailure();
+        InvoicePaymentRefundStatus refundStatus = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getPayload().getInvoicePaymentRefundStatusChanged().getStatus();
+        Refund refund = message.getRefund();
+        refund.setStatus(refundStatus.getSetField().getFieldName());
+        if (refundStatus.isSetFailed()) {
+            OperationFailure failure = refundStatus.getFailed().getFailure();
             if (failure.isSetFailure()) {
                 Failure external = failure.getFailure();
-                payment.setError(new StatusError(external.getCode(), external.getReason()));
+                refund.setError(new StatusError(external.getCode(), external.getReason()));
             } else if (failure.isSetOperationTimeout()) {
-                payment.setError(new StatusError("408", "Operation timeout"));
+                refund.setError(new StatusError("408", "Operation timeout"));
             }
         }
     }

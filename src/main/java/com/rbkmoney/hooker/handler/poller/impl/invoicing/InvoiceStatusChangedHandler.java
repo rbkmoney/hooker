@@ -32,6 +32,11 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
+    protected InvoicingMessage getMessage(String invoiceId, InvoiceChange ic) {
+        return messageDao.getInvoice(invoiceId);
+    }
+
+    @Override
     protected String getMessageType() {
         return INVOICE;
     }

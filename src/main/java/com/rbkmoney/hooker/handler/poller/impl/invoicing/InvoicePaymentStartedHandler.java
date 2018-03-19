@@ -11,12 +11,10 @@ import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
-import com.rbkmoney.swag_webhook_events.*;
 import com.rbkmoney.swag_webhook_events.ClientInfo;
 import com.rbkmoney.swag_webhook_events.ContactInfo;
 import com.rbkmoney.swag_webhook_events.CustomerPayer;
 import com.rbkmoney.swag_webhook_events.Payer;
-import com.rbkmoney.swag_webhook_events.PaymentResourcePayer;
 import org.springframework.stereotype.Component;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
@@ -89,7 +87,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected InvoicingMessage getMessage(String invoiceId) {
-        return messageDao.getAny(invoiceId, INVOICE);
+    protected InvoicingMessage getMessage(String invoiceId, InvoiceChange ic) {
+        return messageDao.getInvoice(invoiceId);
     }
 }

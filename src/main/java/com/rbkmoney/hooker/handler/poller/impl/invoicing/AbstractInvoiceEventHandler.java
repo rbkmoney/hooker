@@ -13,6 +13,7 @@ public abstract class AbstractInvoiceEventHandler implements Handler<InvoiceChan
 
     public static final String INVOICE = "invoice";
     public static final String PAYMENT = "payment";
+    public static final String REFUND  = "refund";
 
     @Override
     public void handle(InvoiceChange ic, StockEvent value) throws DaoException{
