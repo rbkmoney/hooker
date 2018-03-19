@@ -50,12 +50,7 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
         payment.setStatus(paymentOriginStatus.getSetField().getFieldName());
         if (paymentOriginStatus.isSetFailed()) {
             OperationFailure failure = paymentOriginStatus.getFailed().getFailure();
-            if (failure.isSetFailure()) {
-                Failure external = failure.getFailure();
-                payment.setError(new StatusError(external.getCode(), external.getReason()));
-            } else if (failure.isSetOperationTimeout()) {
-                payment.setError(new StatusError("408", "Operation timeout"));
-            }
+            payment.setError(getStatusError(failure));
         }
     }
 }

@@ -52,12 +52,7 @@ public class InvoicePaymentRefundStatusChangedHandler extends NeedReadInvoiceEve
         refund.setStatus(refundStatus.getSetField().getFieldName());
         if (refundStatus.isSetFailed()) {
             OperationFailure failure = refundStatus.getFailed().getFailure();
-            if (failure.isSetFailure()) {
-                Failure external = failure.getFailure();
-                refund.setError(new StatusError(external.getCode(), external.getReason()));
-            } else if (failure.isSetOperationTimeout()) {
-                refund.setError(new StatusError("408", "Operation timeout"));
-            }
+            refund.setError(getStatusError(failure));
         }
     }
 }
