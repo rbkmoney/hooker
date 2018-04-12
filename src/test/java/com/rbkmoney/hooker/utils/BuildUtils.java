@@ -50,7 +50,13 @@ public class BuildUtils {
             payment.setId("123");
             payment.setCreatedAt("13.12.20017");
             payment.setStatus(status);
-            payment.setError(new StatusError("1", "shit"));
+            PaymentError paymentError = new PaymentError();
+            paymentError.setCode("code");
+            paymentError.setMessage("mess");
+            PaymentErrorSubError subError = new PaymentErrorSubError();
+            subError.setCode("sub_code");
+            paymentError.setSubError(subError);
+            payment.setError(paymentError);
             payment.setAmount(1);
             payment.setCurrency("RUB");
             payment.setPaymentToolToken("payment tool token");

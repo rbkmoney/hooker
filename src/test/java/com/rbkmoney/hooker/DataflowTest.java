@@ -31,9 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by jeckep on 20.04.17.

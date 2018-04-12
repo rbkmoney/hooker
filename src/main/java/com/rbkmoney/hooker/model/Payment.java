@@ -11,7 +11,7 @@ public class Payment {
     private String id;
     private String createdAt;
     private String status;
-    private StatusError error;
+    private PaymentError error;
     private long amount;
     private String currency;
     private String paymentToolToken;
@@ -26,7 +26,10 @@ public class Payment {
         this.createdAt = other.createdAt;
         this.status = other.status;
         if (other.error != null) {
-            this.error = new StatusError(other.error);
+            this.error = new PaymentError();
+            this.error.setCode(other.error.getCode());
+            this.error.setMessage(other.error.getMessage());
+            this.error.setSubError(other.error.getSubError());
         }
         this.amount = other.amount;
         this.currency = other.currency;
@@ -108,11 +111,11 @@ public class Payment {
         this.status = status;
     }
 
-    public StatusError getError() {
+    public PaymentError getError() {
         return error;
     }
 
-    public void setError(StatusError error) {
+    public void setError(PaymentError error) {
         this.error = error;
     }
 

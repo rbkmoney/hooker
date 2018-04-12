@@ -1,14 +1,11 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.domain.Failure;
-import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.model.StatusError;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -43,13 +40,5 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
 
     protected abstract void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message);
 
-    protected StatusError getStatusError(OperationFailure failure) {
-        if (failure.isSetFailure()) {
-            Failure external = failure.getFailure();
-            return new StatusError(external.getCode(), external.getReason());
-        } else if (failure.isSetOperationTimeout()) {
-            return new StatusError("408", "Operation timeout");
-        }
-        return null;
-    }
+
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.rbkmoney.damsel.domain.BankCard;
-import com.rbkmoney.damsel.domain.DigitalWallet;
 import com.rbkmoney.damsel.domain.DigitalWalletProvider;
 import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWalletWrapper;
@@ -15,7 +14,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

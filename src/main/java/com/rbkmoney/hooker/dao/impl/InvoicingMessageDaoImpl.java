@@ -7,6 +7,7 @@ import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
+import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
@@ -23,9 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.util.*;
 
-import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.INVOICE;
-import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.PAYMENT;
-import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.REFUND;
+import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.*;
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
 public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implements InvoicingMessageDao {
@@ -61,8 +60,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String PAYMENT_ID = "payment_id";
     public static final String PAYMENT_CREATED_AT = "payment_created_at";
     public static final String PAYMENT_STATUS = "payment_status";
-    public static final String PAYMENT_ERROR_CODE = "payment_error_code";
-    public static final String PAYMENT_ERROR_MESSAGE = "payment_error_message";
+    public static final String PAYMENT_FAILURE = "payment_failure";
+    public static final String PAYMENT_FAILURE_REASON = "payment_failure_reason";
     public static final String PAYMENT_AMOUNT = "payment_amount";
     public static final String PAYMENT_CURRENCY = "payment_currency";
     public static final String PAYMENT_TOOL_TOKEN = "payment_tool_token";
@@ -82,8 +81,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String REFUND_ID = "refund_id";
     public static final String REFUND_CREATED_AT = "refund_created_at";
     public static final String REFUND_STATUS = "refund_status";
-    public static final String REFUND_ERROR_CODE = "refund_error_code";
-    public static final String REFUND_ERROR_MESSAGE = "refund_error_message";
+    public static final String REFUND_FAILURE = "refund_failure";
+    public static final String REFUND_FAILURE_REASON = "refund_failure_reason";
     public static final String REFUND_AMOUNT = "refund_amount";
     public static final String REFUND_CURRENCY = "refund_currency";
     public static final String REFUND_REASON = "refund_reason";
@@ -93,8 +92,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         params.addValue(PAYMENT_ID, null)
                 .addValue(PAYMENT_CREATED_AT, null)
                 .addValue(PAYMENT_STATUS, null)
-                .addValue(PAYMENT_ERROR_CODE, null)
-                .addValue(PAYMENT_ERROR_MESSAGE, null)
+                .addValue(PAYMENT_FAILURE, null)
+                .addValue(PAYMENT_FAILURE_REASON, null)
                 .addValue(PAYMENT_AMOUNT, null)
                 .addValue(PAYMENT_CURRENCY, null)
                 .addValue(PAYMENT_TOOL_TOKEN, null)
@@ -114,8 +113,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(REFUND_ID, null)
                 .addValue(REFUND_CREATED_AT, null)
                 .addValue(REFUND_STATUS, null)
-                .addValue(REFUND_ERROR_CODE, null)
-                .addValue(REFUND_ERROR_MESSAGE, null)
+                .addValue(REFUND_FAILURE, null)
+                .addValue(REFUND_FAILURE_REASON, null)
                 .addValue(REFUND_AMOUNT, null)
                 .addValue(REFUND_CURRENCY, null)
                 .addValue(REFUND_REASON, null);
@@ -164,8 +163,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             payment.setId(rs.getString(PAYMENT_ID));
             payment.setCreatedAt(rs.getString(PAYMENT_CREATED_AT));
             payment.setStatus(rs.getString(PAYMENT_STATUS));
-            if (rs.getString(PAYMENT_ERROR_CODE) != null && "failed".equals(rs.getString(PAYMENT_STATUS))) {
-                payment.setError(new StatusError(rs.getString(PAYMENT_ERROR_CODE), rs.getString(PAYMENT_ERROR_MESSAGE)));
+            if (rs.getString(PAYMENT_FAILURE) != null && "failed".equals(rs.getString(PAYMENT_STATUS))) {
+                payment.setError(ErrorUtils.toPaymentError(rs.getString(PAYMENT_FAILURE), rs.getString(PAYMENT_FAILURE_REASON)));
             }
             payment.setAmount(rs.getLong(PAYMENT_AMOUNT));
             payment.setCurrency(rs.getString(PAYMENT_CURRENCY));
@@ -206,8 +205,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             refund.setId(rs.getString(REFUND_ID));
             refund.setCreatedAt(rs.getString(REFUND_CREATED_AT));
             refund.setStatus(rs.getString(REFUND_STATUS));
-            if (rs.getString(REFUND_ERROR_CODE) != null && "failed".equals(rs.getString(REFUND_STATUS))) {
-                refund.setError(new StatusError(rs.getString(REFUND_ERROR_CODE), rs.getString(REFUND_ERROR_MESSAGE)));
+            if (rs.getString(REFUND_FAILURE) != null && "failed".equals(rs.getString(REFUND_STATUS))) {
+                refund.setError(ErrorUtils.toPaymentError(rs.getString(REFUND_FAILURE), rs.getString(REFUND_FAILURE_REASON)));
             }
             refund.setAmount(rs.getLong(REFUND_AMOUNT));
             refund.setCurrency(rs.getString(REFUND_CURRENCY));
@@ -281,20 +280,20 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "(event_id, event_time, type, party_id, event_type, " +
                 "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
                 "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
-                "payment_id, payment_created_at, payment_status, payment_error_code, payment_error_message, payment_amount, " +
+                "payment_id, payment_created_at, payment_status, payment_failure, payment_failure_reason, payment_amount, " +
                 "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
                 "payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider, " +
                 "payment_digital_wallet_provider, payment_digital_wallet_id, " +
-                "refund_id, refund_created_at, refund_status, refund_error_code, refund_error_message, refund_amount, refund_currency, refund_reason) " +
+                "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
                 "VALUES " +
                 "(:event_id, :event_time, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
                 ":invoice_currency, :invoice_content_type, :invoice_content_data, :invoice_product, :invoice_description, " +
-                ":payment_id, :payment_created_at, :payment_status, :payment_error_code, :payment_error_message, :payment_amount, " +
+                ":payment_id, :payment_created_at, :payment_status, :payment_failure, :payment_failure_reason, :payment_amount, " +
                 ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":payment_card_number_mask, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, " +
-                ":refund_id, :refund_created_at, :refund_status, :refund_error_code, :refund_error_message, :refund_amount, :refund_currency, :refund_reason) " +
+                ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())
@@ -321,8 +320,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             params.addValue(PAYMENT_ID, payment.getId())
                     .addValue(PAYMENT_CREATED_AT,  payment.getCreatedAt())
                     .addValue(PAYMENT_STATUS, payment.getStatus())
-                    .addValue(PAYMENT_ERROR_CODE, payment.getError() != null ? payment.getError().getCode() : null)
-                    .addValue(PAYMENT_ERROR_MESSAGE, payment.getError() != null ? payment.getError().getMessage() : null)
+                    .addValue(PAYMENT_FAILURE, payment.getError() != null ? ErrorUtils.toStringFailure(payment.getError()) : null)
+                    .addValue(PAYMENT_FAILURE_REASON, payment.getError() != null ? payment.getError().getMessage() : null)
                     .addValue(PAYMENT_AMOUNT, payment.getAmount())
                     .addValue(PAYMENT_CURRENCY, payment.getCurrency())
                     .addValue(PAYMENT_TOOL_TOKEN, payment.getPaymentToolToken())
@@ -360,8 +359,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             params.addValue(REFUND_ID, refund.getId())
                     .addValue(REFUND_CREATED_AT, refund.getCreatedAt())
                     .addValue(REFUND_STATUS, refund.getStatus())
-                    .addValue(PAYMENT_ERROR_CODE, refund.getError() != null ? refund.getError().getCode() : null)
-                    .addValue(PAYMENT_ERROR_MESSAGE, refund.getError() != null ? refund.getError().getMessage() : null)
+                    .addValue(PAYMENT_FAILURE, refund.getError() != null ? refund.getError().getCode() : null)
+                    .addValue(PAYMENT_FAILURE_REASON, refund.getError() != null ? refund.getError().getMessage() : null)
                     .addValue(REFUND_AMOUNT, refund.getAmount())
                     .addValue(REFUND_CURRENCY, refund.getCurrency())
                     .addValue(REFUND_REASON, refund.getReason());

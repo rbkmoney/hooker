@@ -1,7 +1,5 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.domain.Failure;
-import com.rbkmoney.damsel.domain.InvoicePaymentRefundStatus;
 import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.payment_processing.Event;
@@ -10,7 +8,10 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.utils.ErrorUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,7 +51,7 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
         payment.setStatus(paymentOriginStatus.getSetField().getFieldName());
         if (paymentOriginStatus.isSetFailed()) {
             OperationFailure failure = paymentOriginStatus.getFailed().getFailure();
-            payment.setError(getStatusError(failure));
+            payment.setError(ErrorUtils.getPaymentError(failure));
         }
     }
 }

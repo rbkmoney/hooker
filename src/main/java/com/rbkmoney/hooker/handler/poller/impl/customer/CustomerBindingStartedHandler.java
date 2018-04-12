@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
-import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.geck.filter.Filter;
@@ -12,7 +11,6 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.swag_webhook_events.ClientInfo;
 import com.rbkmoney.swag_webhook_events.CustomerBinding;
 import com.rbkmoney.swag_webhook_events.PaymentResource;
-import com.rbkmoney.swag_webhook_events.PaymentToolDetails;
 import org.springframework.stereotype.Component;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
