@@ -27,6 +27,7 @@ public class PaymentToolUtils {
 
     public static PaymentToolDetails getPaymentToolDetails(PaymentTool paymentTool) {
         String detailsType;
+        String bin = null;
         String cardNum = null;
         String paymentSystem = null;
         String terminalProvider = null;
@@ -34,6 +35,7 @@ public class PaymentToolUtils {
         String digitalWalletId = null;
         if (paymentTool.isSetBankCard()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD.getValue();
+            bin = paymentTool.getBankCard().getBin();
             cardNum = paymentTool.getBankCard().getMaskedPan();
             paymentSystem = paymentTool.getBankCard().getPaymentSystem().name();
         } else if (paymentTool.isSetPaymentTerminal()) {
@@ -46,15 +48,16 @@ public class PaymentToolUtils {
         } else {
             throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
-        return getPaymentToolDetails(detailsType, cardNum, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId);
+        return getPaymentToolDetails(detailsType, bin, cardNum, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId);
     }
 
-    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String cardNum, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId) {
+    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String cardNum, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId) {
         PaymentToolDetails.DetailsTypeEnum detailsType = PaymentToolDetails.DetailsTypeEnum.fromValue(sDetailsType);
         PaymentToolDetails paymentToolDetails;
         switch (detailsType) {
             case PAYMENTTOOLDETAILSBANKCARD:
                 paymentToolDetails = new PaymentToolDetailsBankCard()
+                        .bin(bin)
                         .cardNumberMask(cardNum)
                         .paymentSystem(paymentSystem);
                 break;
@@ -86,14 +89,15 @@ public class PaymentToolUtils {
     }
 
     public static void setPaymentToolDetailsParam(MapSqlParameterSource params, PaymentToolDetails paymentToolDetails,
-                                            String detailsTypeParamName, String cardNumParamName, String paymentSystemParamName, String terminalProviderParamName,
+                                            String detailsTypeParamName, String binParamName, String cardNumParamName, String paymentSystemParamName, String terminalProviderParamName,
                                                   String digitalWalletProviderParamName, String digitalWalletIdParamName) {
         PaymentToolDetails.DetailsTypeEnum detailsType = paymentToolDetails.getDetailsType();
         params.addValue(detailsTypeParamName, detailsType.getValue());
         switch (detailsType) {
             case PAYMENTTOOLDETAILSBANKCARD:
                 PaymentToolDetailsBankCard pCard = (PaymentToolDetailsBankCard) paymentToolDetails;
-                params.addValue(cardNumParamName, pCard.getCardNumberMask())
+                params.addValue(binParamName, pCard.getBin())
+                        .addValue(cardNumParamName, pCard.getCardNumberMask())
                         .addValue(paymentSystemParamName, pCard.getPaymentSystem());
                 break;
             case PAYMENTTOOLDETAILSPAYMENTTERMINAL:

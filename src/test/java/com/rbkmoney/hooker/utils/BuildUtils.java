@@ -4,6 +4,7 @@ import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
+import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.swag_webhook_events.*;
 
 import java.util.ArrayList;
