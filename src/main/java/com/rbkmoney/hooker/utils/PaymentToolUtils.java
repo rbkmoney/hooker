@@ -28,7 +28,8 @@ public class PaymentToolUtils {
     public static PaymentToolDetails getPaymentToolDetails(PaymentTool paymentTool) {
         String detailsType;
         String bin = null;
-        String cardNum = null;
+        String lastDigits = null;
+        String cardNumberMask = null;
         String paymentSystem = null;
         String terminalProvider = null;
         String digitalWalletType = null;
@@ -36,7 +37,8 @@ public class PaymentToolUtils {
         if (paymentTool.isSetBankCard()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD.getValue();
             bin = paymentTool.getBankCard().getBin();
-            cardNum = paymentTool.getBankCard().getMaskedPan();
+            cardNumberMask = paymentTool.getBankCard().getMaskedPan();
+            lastDigits = bin + "******" + cardNumberMask;
             paymentSystem = paymentTool.getBankCard().getPaymentSystem().name();
         } else if (paymentTool.isSetPaymentTerminal()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL.getValue();
@@ -48,17 +50,18 @@ public class PaymentToolUtils {
         } else {
             throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
-        return getPaymentToolDetails(detailsType, bin, cardNum, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId);
+        return getPaymentToolDetails(detailsType, bin, lastDigits, cardNumberMask, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId);
     }
 
-    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String cardNum, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId) {
+    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String lastDigits, String cardNumberMask, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId) {
         PaymentToolDetails.DetailsTypeEnum detailsType = PaymentToolDetails.DetailsTypeEnum.fromValue(sDetailsType);
         PaymentToolDetails paymentToolDetails;
         switch (detailsType) {
             case PAYMENTTOOLDETAILSBANKCARD:
                 paymentToolDetails = new PaymentToolDetailsBankCard()
                         .bin(bin)
-                        .cardNumberMask(cardNum)
+                        .lastDigits(lastDigits)
+                        .cardNumberMask(cardNumberMask)
                         .paymentSystem(paymentSystem);
                 break;
             case PAYMENTTOOLDETAILSPAYMENTTERMINAL:
@@ -89,7 +92,7 @@ public class PaymentToolUtils {
     }
 
     public static void setPaymentToolDetailsParam(MapSqlParameterSource params, PaymentToolDetails paymentToolDetails,
-                                            String detailsTypeParamName, String binParamName, String cardNumParamName, String paymentSystemParamName, String terminalProviderParamName,
+                                            String detailsTypeParamName, String binParamName, String lastDigitsParamName, String cardNumberMaskParamName, String paymentSystemParamName, String terminalProviderParamName,
                                                   String digitalWalletProviderParamName, String digitalWalletIdParamName) {
         PaymentToolDetails.DetailsTypeEnum detailsType = paymentToolDetails.getDetailsType();
         params.addValue(detailsTypeParamName, detailsType.getValue());
@@ -97,7 +100,8 @@ public class PaymentToolUtils {
             case PAYMENTTOOLDETAILSBANKCARD:
                 PaymentToolDetailsBankCard pCard = (PaymentToolDetailsBankCard) paymentToolDetails;
                 params.addValue(binParamName, pCard.getBin())
-                        .addValue(cardNumParamName, pCard.getCardNumberMask())
+                        .addValue(lastDigitsParamName, pCard.getLastDigits())
+                        .addValue(cardNumberMaskParamName, pCard.getCardNumberMask())
                         .addValue(paymentSystemParamName, pCard.getPaymentSystem());
                 break;
             case PAYMENTTOOLDETAILSPAYMENTTERMINAL:

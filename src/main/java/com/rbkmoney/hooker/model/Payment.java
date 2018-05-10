@@ -58,6 +58,8 @@ public class Payment {
             if (otherPayerPaymentToolDetails instanceof PaymentToolDetailsBankCard) {
                 PaymentToolDetailsBankCard paymentToolDetails = (PaymentToolDetailsBankCard) otherPayerPaymentToolDetails;
                 copyPayer.setPaymentToolDetails(new PaymentToolDetailsBankCard()
+                        .bin(paymentToolDetails.getBin())
+                        .lastDigits(paymentToolDetails.getLastDigits())
                         .cardNumberMask(paymentToolDetails.getCardNumberMask())
                         .paymentSystem(paymentToolDetails.getPaymentSystem()));
             } else if (otherPayerPaymentToolDetails instanceof PaymentToolDetailsPaymentTerminal) {

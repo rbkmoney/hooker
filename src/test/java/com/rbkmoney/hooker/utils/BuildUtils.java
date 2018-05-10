@@ -77,7 +77,8 @@ public class BuildUtils {
                                 .fingerprint("fingerbox"))
                         .paymentToolDetails(new PaymentToolDetailsBankCard()
                                 .bin("520034")
-                                .cardNumberMask("1234")
+                                .lastDigits("1234")
+                                .cardNumberMask("520034******1234")
                                 .paymentSystem("visa")
                                 .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD))
                         .payerType(Payer.PayerTypeEnum.PAYMENTRESOURCEPAYER));
@@ -128,8 +129,9 @@ public class BuildUtils {
             .paymentSession("wrgnjwierngweirngi")
             .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
             .paymentToolDetails(new PaymentToolDetailsBankCard()
-                    .cardNumberMask("440088")
-                    .cardNumberMask("1234")
+                    .bin("440088")
+                    .lastDigits("1234")
+                    .cardNumberMask("440088******1234")
                     .paymentSystem("visa")
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
             )));
