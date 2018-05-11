@@ -37,8 +37,8 @@ public class PaymentToolUtils {
         if (paymentTool.isSetBankCard()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD.getValue();
             bin = paymentTool.getBankCard().getBin();
-            cardNumberMask = paymentTool.getBankCard().getMaskedPan();
-            lastDigits = bin + "******" + cardNumberMask;
+            lastDigits = paymentTool.getBankCard().getMaskedPan();
+            cardNumberMask = bin + "******" + lastDigits;
             paymentSystem = paymentTool.getBankCard().getPaymentSystem().name();
         } else if (paymentTool.isSetPaymentTerminal()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL.getValue();
