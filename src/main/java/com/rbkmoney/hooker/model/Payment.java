@@ -61,6 +61,7 @@ public class Payment {
                         .bin(paymentToolDetails.getBin())
                         .lastDigits(paymentToolDetails.getLastDigits())
                         .cardNumberMask(paymentToolDetails.getCardNumberMask())
+                        .tokenProvider(paymentToolDetails.getTokenProvider())
                         .paymentSystem(paymentToolDetails.getPaymentSystem()));
             } else if (otherPayerPaymentToolDetails instanceof PaymentToolDetailsPaymentTerminal) {
                 copyPayer.setPaymentToolDetails(new PaymentToolDetailsPaymentTerminal()

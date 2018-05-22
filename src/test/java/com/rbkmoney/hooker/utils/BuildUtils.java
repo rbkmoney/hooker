@@ -133,6 +133,7 @@ public class BuildUtils {
                     .lastDigits("1234")
                     .cardNumberMask("440088******1234")
                     .paymentSystem("visa")
+                    .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.APPLEPAY)
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
             )));
         }

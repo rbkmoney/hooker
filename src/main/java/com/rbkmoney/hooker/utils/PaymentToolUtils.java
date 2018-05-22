@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.rbkmoney.damsel.domain.BankCard;
 import com.rbkmoney.damsel.domain.DigitalWalletProvider;
 import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWalletWrapper;
 import com.rbkmoney.swag_webhook_events.*;
 import org.apache.commons.collections4.MapUtils;
@@ -15,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by inalarsanukaev on 13.10.17.
@@ -31,6 +33,7 @@ public class PaymentToolUtils {
         String lastDigits = null;
         String cardNumberMask = null;
         String paymentSystem = null;
+        String tokenProvider = null;
         String terminalProvider = null;
         String digitalWalletType = null;
         String digitalWalletId = null;
@@ -40,6 +43,9 @@ public class PaymentToolUtils {
             lastDigits = paymentTool.getBankCard().getMaskedPan();
             cardNumberMask = bin + "******" + lastDigits;
             paymentSystem = paymentTool.getBankCard().getPaymentSystem().name();
+            if (paymentTool.getBankCard().isSetTokenProvider()) {
+                tokenProvider = paymentTool.getBankCard().getTokenProvider().name();
+            }
         } else if (paymentTool.isSetPaymentTerminal()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL.getValue();
             terminalProvider = paymentTool.getPaymentTerminal().getTerminalType().name();
@@ -50,10 +56,10 @@ public class PaymentToolUtils {
         } else {
             throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
-        return getPaymentToolDetails(detailsType, bin, lastDigits, cardNumberMask, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId);
+        return getPaymentToolDetails(detailsType, bin, lastDigits, cardNumberMask, tokenProvider, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId);
     }
 
-    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String lastDigits, String cardNumberMask, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId) {
+    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String lastDigits, String cardNumberMask, String tokenProvider, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId) {
         PaymentToolDetails.DetailsTypeEnum detailsType = PaymentToolDetails.DetailsTypeEnum.fromValue(sDetailsType);
         PaymentToolDetails paymentToolDetails;
         switch (detailsType) {
@@ -62,6 +68,7 @@ public class PaymentToolUtils {
                         .bin(bin)
                         .lastDigits(lastDigits)
                         .cardNumberMask(cardNumberMask)
+                        .tokenProvider(TypeUtil.toEnumField(tokenProvider, PaymentToolDetailsBankCard.TokenProviderEnum.class))
                         .paymentSystem(paymentSystem);
                 break;
             case PAYMENTTOOLDETAILSPAYMENTTERMINAL:
@@ -92,7 +99,7 @@ public class PaymentToolUtils {
     }
 
     public static void setPaymentToolDetailsParam(MapSqlParameterSource params, PaymentToolDetails paymentToolDetails,
-                                            String detailsTypeParamName, String binParamName, String lastDigitsParamName, String cardNumberMaskParamName, String paymentSystemParamName, String terminalProviderParamName,
+                                            String detailsTypeParamName, String binParamName, String lastDigitsParamName, String cardNumberMaskParamName, String tokenProviderParamName, String paymentSystemParamName, String terminalProviderParamName,
                                                   String digitalWalletProviderParamName, String digitalWalletIdParamName) {
         PaymentToolDetails.DetailsTypeEnum detailsType = paymentToolDetails.getDetailsType();
         params.addValue(detailsTypeParamName, detailsType.getValue());
@@ -102,6 +109,10 @@ public class PaymentToolUtils {
                 params.addValue(binParamName, pCard.getBin())
                         .addValue(lastDigitsParamName, pCard.getLastDigits())
                         .addValue(cardNumberMaskParamName, pCard.getCardNumberMask())
+                        .addValue(tokenProviderParamName, Optional.ofNullable(pCard.getTokenProvider())
+                                .map(tokenProviderEnum -> tokenProviderEnum.name())
+                                .orElse(null)
+                        )
                         .addValue(paymentSystemParamName, pCard.getPaymentSystem());
                 break;
             case PAYMENTTOOLDETAILSPAYMENTTERMINAL:
@@ -137,6 +148,9 @@ public class PaymentToolUtils {
             rootNode.put("payment_system", pCard.getPaymentSystem().toString());
             rootNode.put("bin", pCard.getBin());
             rootNode.put("masked_pan", pCard.getMaskedPan());
+            if (pCard.isSetTokenProvider()) {
+                rootNode.put("token_provider", pCard.getTokenProvider().name());
+            }
         } else if (paymentTool.isSetPaymentTerminal()) {
             rootNode.put("type", "payment_terminal");
             rootNode.put("terminal_type", paymentTool.getPaymentTerminal().getTerminalType().toString());
