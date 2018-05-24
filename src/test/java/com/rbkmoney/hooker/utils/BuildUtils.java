@@ -79,6 +79,7 @@ public class BuildUtils {
                                 .bin("520034")
                                 .lastDigits("1234")
                                 .cardNumberMask("520034******1234")
+                                .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.APPLEPAY)
                                 .paymentSystem("visa")
                                 .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD))
                         .payerType(Payer.PayerTypeEnum.PAYMENTRESOURCEPAYER));

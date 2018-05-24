@@ -68,7 +68,7 @@ public class PaymentToolUtils {
                         .bin(bin)
                         .lastDigits(lastDigits)
                         .cardNumberMask(cardNumberMask)
-                        .tokenProvider(TypeUtil.toEnumField(tokenProvider, PaymentToolDetailsBankCard.TokenProviderEnum.class))
+                        .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(tokenProvider))
                         .paymentSystem(paymentSystem);
                 break;
             case PAYMENTTOOLDETAILSPAYMENTTERMINAL:
