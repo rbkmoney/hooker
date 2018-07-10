@@ -24,8 +24,8 @@ public class PostSender {
                 .build();
     }
 
-    public int doPost(String url, String paramsAsString, String signature) throws IOException {
-        log.info("Sending message to hook: {}, {}", url, paramsAsString);
+    public int doPost(String url, long messageId, String paramsAsString, String signature) throws IOException {
+        log.info("Sending message with id {}, {} to hook: {} ", messageId, paramsAsString, url);
         RequestBody body = RequestBody.create(JSON, paramsAsString);
         final Request request = new Request.Builder()
                 .url(url)
@@ -34,7 +34,7 @@ public class PostSender {
                 .build();
 
         Response response = httpClient.newCall(request).execute();
-        log.info("Response from hook:  code {}; body: {}", response.code(), response.body().string());
+        log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.code(), response.body().string());
         return response.code();
     }
 }
