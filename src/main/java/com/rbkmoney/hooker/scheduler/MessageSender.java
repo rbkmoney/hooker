@@ -44,17 +44,11 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
                 currentMessage = message;
                 final String messageJson = getMessageJson(message);
                 final String signature = signer.sign(messageJson, queueStatus.getQueue().getHook().getPrivKey());
-                try {
-                    int statusCode = postSender.doPost(queueStatus.getQueue().getHook().getUrl(), message.getId(), messageJson, signature);
-                    if (statusCode != HttpStatus.SC_OK) {
-                        String wrongCodeMessage = String.format("Wrong status code: %d from merchant, we'll try to resend it. Message with id: %d %s", statusCode, message.getId(), message);
-                        log.info(wrongCodeMessage);
-                        throw new PostRequestException(wrongCodeMessage);
-                    }
-                } catch (IOException e) {
-                    String ioExMessage = String.format("Couldn't send message with id %d %s", message.getId(), message);
-                    log.info(ioExMessage, e);
-                    throw new IOException(ioExMessage, e);
+                int statusCode = postSender.doPost(queueStatus.getQueue().getHook().getUrl(), message.getId(), messageJson, signature);
+                if (statusCode != HttpStatus.SC_OK) {
+                    String wrongCodeMessage = String.format("Wrong status code: %d from merchant, we'll try to resend it. Message with id: %d %s", statusCode, message.getId(), message);
+                    log.info(wrongCodeMessage);
+                    throw new PostRequestException(wrongCodeMessage);
                 }
                 taskDao.remove(queueStatus.getQueue().getId(), message.getId()); //required after message is sent
             }
