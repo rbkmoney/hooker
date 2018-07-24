@@ -86,7 +86,7 @@ public final class HttpLoggingInterceptor implements Interceptor {
         /**
          * A {@link Logger} defaults output appropriate for the current platform.
          */
-        Logger DEFAULT = message -> log.info(message);
+        Logger DEFAULT = message -> log.debug(message);
     }
 
     public HttpLoggingInterceptor() {
