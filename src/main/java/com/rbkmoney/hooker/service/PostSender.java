@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.service;
 
+import com.rbkmoney.hooker.logging.HttpLoggingInterceptor;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,11 @@ public class PostSender {
     public static final String SIGNATURE_HEADER = "Content-Signature";
 
     public PostSender(@Value("${merchant.callback.timeout}") int timeout) {
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
         this.httpClient = new OkHttpClient.Builder()
+                .addInterceptor(httpLoggingInterceptor)
                 .connectTimeout(timeout, TimeUnit.SECONDS)
                 .writeTimeout(timeout, TimeUnit.SECONDS)
                 .readTimeout(timeout, TimeUnit.SECONDS)
