@@ -73,6 +73,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String PAYMENT_FINGERPRINT = "payment_fingerprint";
     public static final String PAYMENT_CUSTOMER_ID = "payment_customer_id";
     public static final String PAYMENT_PAYER_TYPE = "payment_payer_type";
+    public static final String PAYMENT_RECURRENT_PARENT_INVOICE_ID = "payment_recurrent_parent_invoice_id";
+    public static final String PAYMENT_RECURRENT_PARENT_PAYMENT_ID = "payment_recurrent_parent_payment_id";
     public static final String PAYMENT_TOOL_DETAILS_TYPE = "payment_tool_details_type";
     public static final String PAYMENT_CARD_BIN = "payment_card_bin";
     public static final String PAYMENT_CARD_LAST_DIGITS = "payment_card_last_digits";
@@ -108,6 +110,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(PAYMENT_FINGERPRINT, null)
                 .addValue(PAYMENT_CUSTOMER_ID, null)
                 .addValue(PAYMENT_PAYER_TYPE, null)
+                .addValue(PAYMENT_RECURRENT_PARENT_INVOICE_ID, null)
+                .addValue(PAYMENT_RECURRENT_PARENT_PAYMENT_ID, null)
                 .addValue(PAYMENT_TOOL_DETAILS_TYPE, null)
                 .addValue(PAYMENT_CARD_BIN, null)
                 .addValue(PAYMENT_CARD_LAST_DIGITS, null)
@@ -201,6 +205,14 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                             rs.getString(PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(PAYMENT_DIGITAL_WALLET_ID)));
                     payment.setPayer(payer);
                     break;
+                case RECURRENTPAYER:
+                    payment.setPayer(new RecurrentPayer()
+                            .recurrentParentPayment(new PaymentRecurrentParent()
+                                    .invoiceID(rs.getString(PAYMENT_RECURRENT_PARENT_INVOICE_ID))
+                                    .paymentID(rs.getString(PAYMENT_RECURRENT_PARENT_PAYMENT_ID)))
+                            .contactInfo(new ContactInfo()
+                                    .email(rs.getString(PAYMENT_EMAIL))
+                                    .phoneNumber(rs.getString(PAYMENT_PHONE))));
                 default:
                     throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));
             }
@@ -289,7 +301,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
                 "payment_id, payment_created_at, payment_status, payment_failure, payment_failure_reason, payment_amount, " +
                 "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
-                "payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_bin, payment_card_last_digits, payment_card_number_mask, payment_card_token_provider, payment_system, payment_terminal_provider, " +
+                "payment_customer_id, payment_payer_type, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id, payment_tool_details_type, payment_card_bin, payment_card_last_digits, payment_card_number_mask, payment_card_token_provider, payment_system, payment_terminal_provider, " +
                 "payment_digital_wallet_provider, payment_digital_wallet_id, " +
                 "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
                 "VALUES " +
@@ -298,7 +310,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 ":invoice_currency, :invoice_content_type, :invoice_content_data, :invoice_product, :invoice_description, " +
                 ":payment_id, :payment_created_at, :payment_status, :payment_failure, :payment_failure_reason, :payment_amount, " +
                 ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
-                ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
+                ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), :payment_recurrent_parent_invoice_id, :payment_recurrent_parent_payment_id, CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, " +
                 ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
                 "RETURNING id";
@@ -356,6 +368,11 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                     PaymentToolUtils.setPaymentToolDetailsParam(params, payer.getPaymentToolDetails(),
                             PAYMENT_TOOL_DETAILS_TYPE, PAYMENT_CARD_BIN, PAYMENT_CARD_LAST_DIGITS, PAYMENT_CARD_NUMBER_MASK, PAYMENT_CARD_TOKEN_PROVIDER, PAYMENT_SYSTEM, PAYMENT_TERMINAL_PROVIDER,
                             PAYMENT_DIGITAL_WALLET_PROVIDER, PAYMENT_DIGITAL_WALLET_ID);
+                    break;
+                case RECURRENTPAYER:
+                    RecurrentPayer recurrentPayer = (RecurrentPayer) payment.getPayer();
+                    params.addValue(PAYMENT_RECURRENT_PARENT_INVOICE_ID, recurrentPayer.getRecurrentParentPayment().getInvoiceID())
+                            .addValue(PAYMENT_RECURRENT_PARENT_PAYMENT_ID, recurrentPayer.getRecurrentParentPayment().getPaymentID());
                     break;
                 default:
                     throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));

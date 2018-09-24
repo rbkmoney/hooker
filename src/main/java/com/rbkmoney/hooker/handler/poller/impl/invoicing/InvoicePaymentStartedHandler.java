@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 import com.rbkmoney.damsel.domain.DisposablePaymentResource;
 import com.rbkmoney.damsel.domain.InvoicePayment;
 import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.damsel.domain.RecurrentPayer;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
@@ -14,10 +15,7 @@ import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
-import com.rbkmoney.swag_webhook_events.ClientInfo;
-import com.rbkmoney.swag_webhook_events.ContactInfo;
-import com.rbkmoney.swag_webhook_events.CustomerPayer;
-import com.rbkmoney.swag_webhook_events.Payer;
+import com.rbkmoney.swag_webhook_events.*;
 import org.springframework.stereotype.Component;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
@@ -76,9 +74,8 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
                             .ip(resourceOrigin.getClientInfo().getIpAddress())
                             .fingerprint(resourceOrigin.getClientInfo().getFingerprint()));
             payer.payerType(Payer.PayerTypeEnum.PAYMENTRESOURCEPAYER);
+            payer.setPaymentToolDetails(PaymentToolUtils.getPaymentToolDetails(paymentTool));
             payment.setPayer(payer);
-
-            payer.setPaymentToolDetails(getPaymentToolDetails(paymentTool));
         } else if (paymentOrigin.getPayer().isSetCustomer()) {
             com.rbkmoney.damsel.domain.CustomerPayer customerPayerOrigin = paymentOrigin.getPayer().getCustomer();
             payment.setPaymentToolToken(PaymentToolUtils.getPaymentToolToken(customerPayerOrigin.getPaymentTool()));
@@ -86,6 +83,17 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
             payment.setPayer(new CustomerPayer()
                     .customerID(paymentOrigin.getPayer().getCustomer().getCustomerId())
                     .payerType(Payer.PayerTypeEnum.CUSTOMERPAYER));
+        } else if (paymentOrigin.getPayer().isSetRecurrent()) {
+            RecurrentPayer recurrentParentOrigin = paymentOrigin.getPayer().getRecurrent();
+            payment.setContactInfo(new PaymentContactInfo(recurrentParentOrigin.getContactInfo().getEmail(), recurrentParentOrigin.getContactInfo().getPhoneNumber()));
+            payment.setPayer(new com.rbkmoney.swag_webhook_events.RecurrentPayer()
+                    .recurrentParentPayment(new PaymentRecurrentParent()
+                            .invoiceID(recurrentParentOrigin.getRecurrentParent().getInvoiceId())
+                            .paymentID(recurrentParentOrigin.getRecurrentParent().getPaymentId()))
+                    .contactInfo(new ContactInfo()
+                            .email(recurrentParentOrigin.getContactInfo().getEmail())
+                            .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber())));
+            payment.setContactInfo(new PaymentContactInfo(recurrentParentOrigin.getContactInfo().getEmail(), recurrentParentOrigin.getContactInfo().getPhoneNumber()));
         }
     }
 

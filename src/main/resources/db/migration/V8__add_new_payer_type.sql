@@ -1,0 +1,1 @@
+ALTER TYPE hook.payment_payer_type ADD VALUE 'RecurrentPayer';

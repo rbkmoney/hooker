@@ -42,6 +42,15 @@ public class Payment {
         if (other.payer instanceof CustomerPayer) {
             this.payer = new CustomerPayer()
                     .customerID(((CustomerPayer) other.payer).getCustomerID());
+        } else if (other.payer instanceof RecurrentPayer) {
+            RecurrentPayer otherPayer = (RecurrentPayer) other.payer;
+            this.payer = new RecurrentPayer()
+                    .contactInfo(new ContactInfo()
+                            .email(otherPayer.getContactInfo().getEmail())
+                            .phoneNumber(otherPayer.getContactInfo().getPhoneNumber()))
+                    .recurrentParentPayment(new PaymentRecurrentParent()
+                    .invoiceID(otherPayer.getRecurrentParentPayment().getInvoiceID())
+                    .paymentID(otherPayer.getRecurrentParentPayment().getPaymentID()));
         } else if (other.payer instanceof PaymentResourcePayer) {
             PaymentResourcePayer otherPayer = (PaymentResourcePayer) other.payer;
             PaymentResourcePayer copyPayer = new PaymentResourcePayer()
