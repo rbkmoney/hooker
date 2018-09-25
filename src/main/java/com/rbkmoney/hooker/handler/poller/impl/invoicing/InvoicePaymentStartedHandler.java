@@ -92,7 +92,8 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
                             .paymentID(recurrentParentOrigin.getRecurrentParent().getPaymentId()))
                     .contactInfo(new ContactInfo()
                             .email(recurrentParentOrigin.getContactInfo().getEmail())
-                            .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber())));
+                            .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber()))
+                    .payerType(Payer.PayerTypeEnum.RECURRENTPAYER));
             payment.setContactInfo(new PaymentContactInfo(recurrentParentOrigin.getContactInfo().getEmail(), recurrentParentOrigin.getContactInfo().getPhoneNumber()));
         }
     }
