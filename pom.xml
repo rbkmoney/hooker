@@ -22,7 +22,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <postgresql.jdbc.version>42.2.5</postgresql.jdbc.version>
         <dockerfile.base.service.tag>22c57470c4fc47161894f036b7cf9d70f42b75f5</dockerfile.base.service.tag>
-        <damsel.version>1.267-a95c2b3-epic</damsel.version>
+        <damsel.version>1.256-2afe121</damsel.version>
         <shared.resources.version>0.2.1</shared.resources.version>
 
         <db.host.name>db-pg-shared</db.host.name>
