@@ -86,7 +86,7 @@ public final class HttpLoggingInterceptor implements Interceptor {
         /**
          * A {@link Logger} defaults output appropriate for the current platform.
          */
-        Logger DEFAULT = message -> log.debug(message);
+        Logger DEFAULT = message -> log.info(message);
     }
 
     public HttpLoggingInterceptor() {
@@ -99,7 +99,7 @@ public final class HttpLoggingInterceptor implements Interceptor {
 
     private final Logger logger;
 
-    private volatile Level level = Level.BODY;
+    private volatile Level level = Level.BASIC;
 
     /**
      * Change the level at which this interceptor logs.
