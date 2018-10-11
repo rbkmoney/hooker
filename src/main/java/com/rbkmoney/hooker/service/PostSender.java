@@ -43,8 +43,9 @@ public class PostSender {
                 .post(body)
                 .build();
 
-        Response response = httpClient.newCall(request).execute();
-        log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.code(), response.body() != null ? response.peekBody(RESPONSE_MAX_LENGTH).string() : "<empty>");
-        return response.code();
+        try (Response response = httpClient.newCall(request).execute()) {
+            log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.code(), response.body() != null ? response.peekBody(RESPONSE_MAX_LENGTH).string() : "<empty>");
+            return response.code();
+        }
     }
 }
