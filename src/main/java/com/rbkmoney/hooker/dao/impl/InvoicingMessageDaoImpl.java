@@ -213,6 +213,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                             .contactInfo(new ContactInfo()
                                     .email(rs.getString(PAYMENT_EMAIL))
                                     .phoneNumber(rs.getString(PAYMENT_PHONE))));
+                    break;
                 default:
                     throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));
             }
