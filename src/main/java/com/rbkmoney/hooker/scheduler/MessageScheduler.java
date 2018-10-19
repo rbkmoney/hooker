@@ -52,12 +52,19 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     public void loop() throws InterruptedException {
         final List<Long> currentlyProcessedQueues = new ArrayList<>(processedQueues);
 
+        log.debug("currentlyProcessedQueues {}", processedQueues);
+
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedQueues);
+
+        log.debug("scheduledTasks {}", scheduledTasks);
+
         if (scheduledTasks.entrySet().isEmpty()) {
             return;
         }
         final Map<Long, Queue> healthyQueues = loadQueues(scheduledTasks.keySet())
                 .stream().collect(Collectors.toMap(Queue::getId, v -> v));
+
+        log.debug("healthyQueues {}", healthyQueues);
 
         processedQueues.addAll(healthyQueues.keySet());
 
@@ -131,6 +138,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
     private List<Queue> loadQueues(Collection<Long> queueIds) {
         List<? extends Queue> queuesWaitingMessages = queueDao.getWithPolicies(queueIds);
+        log.debug("queuesWaitingMessages {}", queuesWaitingMessages.stream().map(Queue::getId).collect(Collectors.toList()));
         return retryPoliciesService.filter(queuesWaitingMessages);
     }
 
