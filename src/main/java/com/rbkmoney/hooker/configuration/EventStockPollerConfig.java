@@ -19,19 +19,22 @@ import java.util.List;
 public class EventStockPollerConfig {
 
     @Value("${bm.pooling.url}")
-    Resource bmUri;
+    private Resource bmUri;
 
     @Value("${bm.pooling.delay}")
-    int pollDelay;
+    private int pollDelay;
 
     @Value("${bm.pooling.maxPoolSize}")
-    int maxPoolSize;
+    private int maxPoolSize;
+
+    @Value("${bm.pooling.maxQuerySize}")
+    private int maxQuerySize;
 
     @Autowired
-    List<Handler> pollingEventHandlers;
+    private List<Handler> pollingEventHandlers;
 
     @Autowired
-    EventService eventService;
+    private EventService eventService;
 
     @Bean(destroyMethod = "destroy")
     public EventPublisher eventPublisher() throws IOException {
@@ -40,6 +43,7 @@ public class EventStockPollerConfig {
                 .withEventHandler(new EventStockHandler(pollingEventHandlers))
                 .withMaxPoolSize(maxPoolSize)
                 .withPollDelay(pollDelay)
+                .withMaxQuerySize(maxQuerySize)
                 .build();
     }
 
