@@ -19,9 +19,10 @@ public class CacheableInvoicingMessageDaoImpl extends InvoicingMessageDaoImpl {
     public CacheableInvoicingMessageDaoImpl(DataSource dataSource) {
         super(dataSource);
     }
+
     @Override
-    public void create(InvoicingMessage message) throws DaoException {
-        super.create(message);
+    public void createEvent(InvoicingMessage message) throws DaoException {
+        super.createEvent(message);
         putToCache(message);
     }
 

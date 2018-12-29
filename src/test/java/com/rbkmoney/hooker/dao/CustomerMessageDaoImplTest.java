@@ -33,7 +33,7 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         if(!messagesCreated){
-            messageDao.create(buildCustomerMessage(1L,"1234", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "124", "4356", Customer.StatusEnum.READY));
+            messageDao.createEvent(buildCustomerMessage(1L,"1234", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "124", "4356", Customer.StatusEnum.READY));
             messagesCreated = true;
         }
     }

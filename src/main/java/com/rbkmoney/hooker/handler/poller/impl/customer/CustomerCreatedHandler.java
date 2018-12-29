@@ -56,6 +56,6 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
                         .phoneNumber(customerCreatedOrigin.getContactInfo().getPhoneNumber()))
                 .metadata(new CustomerUtils().getResult(customerCreatedOrigin.getMetadata()));
         customerMessage.setCustomer(customer);
-        customerDao.create(customerMessage);
+        customerDao.createEvent(customerMessage);
     }
 }

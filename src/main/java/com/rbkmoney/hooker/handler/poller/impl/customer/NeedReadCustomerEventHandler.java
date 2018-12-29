@@ -30,7 +30,7 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
         message.setOccuredAt(event.getCreatedAt());
         modifyMessage(cc, event, message);
 
-        customerDao.create(message);
+        customerDao.createEvent(message);
     }
 
     protected CustomerMessage getCustomerMessage(String customerId) {

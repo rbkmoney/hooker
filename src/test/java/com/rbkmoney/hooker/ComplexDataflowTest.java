@@ -84,16 +84,16 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid");
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured");
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed");
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed");
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
 
         List<DataflowTest.MockMessage> hooks = new ArrayList<>();

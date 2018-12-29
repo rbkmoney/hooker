@@ -65,6 +65,7 @@ public class InvoicePaymentRefundStartedHandler extends NeedReadInvoiceEventHand
             refund.setCurrency(cashFlow.get(0).getVolume().getCurrency().getSymbolicCode());
         }
         refund.setReason(refundOrigin.getReason());
+        messageDao.createData(message);
     }
 
     public static long getAmount(List<FinalCashFlowPosting> finalCashFlow) {

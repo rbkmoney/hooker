@@ -78,7 +78,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         final String invoceId = "asgsdhghdhtfugny78989";
         final String partyId = new Random().nextInt() + "";
         InvoicingMessage message1 = buildMessage(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status");
-        messageDao.create(message1);
+        messageDao.createEvent(message1);
         InvoicingMessage message2 = messageDao.getInvoice(invoceId);
         InvoicingMessage message3 = messageDao.getInvoice(invoceId);
         assertTrue(message1 != message2);
@@ -90,25 +90,25 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true);
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status");
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status");
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "4", "qwe", EventType.INVOICE_CREATED, "status");
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false);
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false);
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.REFUND, "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false);
-        messageDao.create(message);
+        messageDao.createEvent(message);
         sourceMessages.add(message);
 
         List<MockMessage> inv1 = new ArrayList<>();

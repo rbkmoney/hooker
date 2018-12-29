@@ -12,6 +12,8 @@ import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
+import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
+import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,12 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
 
     @Autowired
     InvoicingMessageDao messageDao;
+
+    @Autowired
+    InvoicingQueueDao queueDao;
+
+    @Autowired
+    InvoicingTaskDao taskDao;
 
     private Filter filter;
 
@@ -77,7 +85,10 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
                 invoice.getCart().add(icp);
             }
         }
-        messageDao.create(message);
+        messageDao.createData(message);
+        messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
     }
 
     @Override

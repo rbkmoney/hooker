@@ -147,7 +147,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
 
     @Override
     @Transactional
-    public void create(CustomerMessage message) throws DaoException {
+    public void createEvent(CustomerMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.customer_message " +
                 "(event_id, occured_at, type, party_id, event_type, " +
                 "customer_id, customer_shop_id, customer_status, customer_email , customer_phone, customer_metadata, " +
@@ -203,8 +203,13 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
             queueDao.createWithPolicy(message.getId());
             taskDao.create(message.getId());
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Couldn't create customerMessage with customerId " + customer.getId(), e);
+            throw new DaoException("Couldn't createEvent customerMessage with customerId " + customer.getId(), e);
         }
+    }
+
+    @Override
+    public void createData(CustomerMessage message) throws DaoException {
+
     }
 
     @Override
