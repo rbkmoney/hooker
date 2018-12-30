@@ -34,7 +34,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     @Autowired
     CacheMng cacheMng;
 
-    public static final String ID = "m.id";
+    public static final String ID = "id";
     public static final String EVENT_ID = "event_id";
     public static final String EVENT_TIME = "event_time";
     public static final String TYPE = "type";
