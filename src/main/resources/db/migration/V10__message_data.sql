@@ -49,7 +49,8 @@ CREATE INDEX IF NOT EXISTS message_data_invoice_id_idx ON hook.message_data USIN
 
 INSERT INTO hook.message_data(id, type, invoice_id, party_id, payment_id, shop_id, invoice_amount, invoice_currency, invoice_created_at, invoice_content_type, invoice_content_data, invoice_product, invoice_description, invoice_due_date, payment_created_at, payment_amount, payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider, payment_digital_wallet_provider, payment_digital_wallet_id, refund_id, refund_created_at, refund_amount, refund_currency, refund_reason, payment_card_bin, payment_card_last_digits, payment_card_token_provider, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id)
 SELECT                        id, type, invoice_id, party_id, payment_id, shop_id, invoice_amount, invoice_currency, invoice_created_at, invoice_content_type, invoice_content_data, invoice_product, invoice_description, invoice_due_date, payment_created_at, payment_amount, payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider, payment_digital_wallet_provider, payment_digital_wallet_id, refund_id, refund_created_at, refund_amount, refund_currency, refund_reason, payment_card_bin, payment_card_last_digits, payment_card_token_provider, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id
-FROM hook.message;
+FROM hook.message
+WHERE id > 260;
 --message--
 
 ALTER TABLE hook.message DROP COLUMN type;
