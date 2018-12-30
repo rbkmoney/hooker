@@ -1,5 +1,5 @@
 --message_data--
-CREATE TABLE hook.message_data
+CREATE TABLE IF NOT EXISTS hook.message_data
 (
   id bigserial not null,
   type character varying NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE hook.message_data
   CONSTRAINT message_data_pkey PRIMARY KEY (id)
 );
 
-CREATE INDEX message_data_invoice_id_idx ON hook.message_data USING btree(invoice_id);
+CREATE INDEX IF NOT EXISTS message_data_invoice_id_idx ON hook.message_data USING btree(invoice_id);
 
 INSERT INTO hook.message_data(id, type, invoice_id, party_id, payment_id, shop_id, invoice_amount, invoice_currency, invoice_created_at, invoice_content_type, invoice_content_data, invoice_product, invoice_description, invoice_due_date, payment_created_at, payment_amount, payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider, payment_digital_wallet_provider, payment_digital_wallet_id, refund_id, refund_created_at, refund_amount, refund_currency, refund_reason, payment_card_bin, payment_card_last_digits, payment_card_token_provider, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id)
 SELECT                        id, type, invoice_id, party_id, payment_id, shop_id, invoice_amount, invoice_currency, invoice_created_at, invoice_content_type, invoice_content_data, invoice_product, invoice_description, invoice_due_date, payment_created_at, payment_amount, payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider, payment_digital_wallet_provider, payment_digital_wallet_id, refund_id, refund_created_at, refund_amount, refund_currency, refund_reason, payment_card_bin, payment_card_last_digits, payment_card_token_provider, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id
@@ -94,7 +94,8 @@ ALTER TABLE hook.message ADD COLUMN message_data_id bigint;
 
 UPDATE hook.message SET message_data_id = id;
 
+CREATE INDEX IF NOT EXISTS cart_message_data_id_idx ON hook.cart_position(message_id);
+
 ALTER TABLE hook.cart_position DROP CONSTRAINT fk_cart_to_message;
 
 ALTER TABLE hook.message ADD CONSTRAINT message_data_fk FOREIGN KEY (message_data_id) REFERENCES hook.message_data(id);
-ALTER TABLE hook.cart_position ADD CONSTRAINT fk_cart_to_message_data FOREIGN KEY (message_id) REFERENCES hook.message_data(id);

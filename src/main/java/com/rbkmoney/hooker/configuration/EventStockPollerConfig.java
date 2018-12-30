@@ -58,7 +58,7 @@ public class EventStockPollerConfig {
         if (lastEventId != null) {
             eventIDRange.setFromExclusive(lastEventId);
         } else {
-            eventIDRange.setFromNow();
+         //   eventIDRange.setFromNow();
         }
         return new EventFlowFilter(new EventConstraint(eventIDRange));
     }

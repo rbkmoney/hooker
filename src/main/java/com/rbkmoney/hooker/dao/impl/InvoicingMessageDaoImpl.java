@@ -427,9 +427,10 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
-            message.setId(keyHolder.getKey().longValue());
-            message.setMessageDataId(keyHolder.getKey().longValue());
-            saveCart(message.getId(), message.getInvoice().getCart());
+            long messageDataId = keyHolder.getKey().longValue();
+            message.setId(messageDataId);
+            message.setMessageDataId(messageDataId);
+            saveCart(messageDataId, message.getInvoice().getCart());
             log.info("Message_data {} saved to db.", message);
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't createData message with invoice_id "+ message.getInvoice().getId(), e);
