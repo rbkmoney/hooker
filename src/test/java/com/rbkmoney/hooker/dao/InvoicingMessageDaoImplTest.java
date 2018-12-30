@@ -37,9 +37,15 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         if(!messagesCreated){
-            messageDao.createEvent(buildMessage(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
-            messageDao.createEvent(buildMessage(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), true));
-            messageDao.createEvent(buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false));
+            InvoicingMessage inv1 = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1234", "56678", EventType.INVOICE_CREATED, "status");
+            messageDao.createData(inv1);
+            messageDao.createEvent(inv1);
+            InvoicingMessage inv2 = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1234", "56678", EventType.INVOICE_CREATED, "status", cart(), true);
+            messageDao.createData(inv2);
+            messageDao.createEvent(inv2);
+            InvoicingMessage inv3 = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false);
+            messageDao.createData(inv3);
+            messageDao.createEvent(inv3);
             messagesCreated = true;
         }
     }

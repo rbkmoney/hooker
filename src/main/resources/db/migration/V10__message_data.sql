@@ -96,4 +96,7 @@ ALTER TABLE hook.message ADD COLUMN message_data_id bigint;
 
 UPDATE hook.message SET message_data_id = id;
 
+ALTER TABLE hook.cart_position DROP CONSTRAINT fk_cart_to_message;
+
 ALTER TABLE hook.message ADD CONSTRAINT message_data_fk FOREIGN KEY (message_data_id) REFERENCES hook.message_data(id);
+ALTER TABLE hook.cart_position ADD CONSTRAINT fk_cart_to_message_data FOREIGN KEY (message_id) REFERENCES hook.message_data(id);

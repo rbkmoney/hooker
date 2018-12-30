@@ -3,6 +3,8 @@ package com.rbkmoney.hooker;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
+import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
+import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
@@ -39,6 +41,13 @@ import static org.junit.Assert.assertTrue;
 @TestPropertySource(properties = {"message.scheduler.delay=500"})
 public class ComplexDataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(ComplexDataflowTest.class);
+
+
+    @Autowired
+    InvoicingTaskDao taskDao;
+
+    @Autowired
+    InvoicingQueueDao queueDao;
 
     @Autowired
     HookDao hookDao;
@@ -84,16 +93,28 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid");
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured");
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed");
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed");
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
 
         List<DataflowTest.MockMessage> hooks = new ArrayList<>();

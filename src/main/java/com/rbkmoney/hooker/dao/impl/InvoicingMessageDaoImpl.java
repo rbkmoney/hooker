@@ -88,7 +88,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String REFUND_REASON = "refund_reason";
 
     //TODO refactoring
-    private static void setNullPaymentParamValues(MapSqlParameterSource params) {
+    private static void setNullPaymentDataParamValues(MapSqlParameterSource params) {
         params.addValue(PAYMENT_ID, null)
                 .addValue(PAYMENT_CREATED_AT, null)
                 .addValue(PAYMENT_AMOUNT, null)
@@ -117,6 +117,15 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(REFUND_AMOUNT, null)
                 .addValue(REFUND_CURRENCY, null)
                 .addValue(REFUND_REASON, null);
+    }
+
+    private static void setNullPaymentEventParamValues(MapSqlParameterSource params) {
+        params.addValue(PAYMENT_STATUS, null)
+                .addValue(PAYMENT_FAILURE, null)
+                .addValue(PAYMENT_FAILURE_REASON, null)
+                .addValue(REFUND_STATUS, null)
+                .addValue(REFUND_FAILURE, null)
+                .addValue(REFUND_FAILURE_REASON, null);
     }
 
     private static RowMapper<InvoiceCartPosition> cartPositionRowMapper = (rs, i) -> {
@@ -288,11 +297,13 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public void createEvent(InvoicingMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.message " +
                 "(event_id, event_time, event_type, " +
+                "invoice_id, party_id, shop_id, " +
                 "invoice_status, invoice_reason, " +
                 "payment_status, payment_failure, payment_failure_reason, " +
                 "refund_status, refund_failure, refund_failure_reason) " +
                 "VALUES " +
                 "(:event_id, :event_time, CAST(:event_type as hook.eventtype), " +
+                ":invoice_id, :party_id, :shop_id, " +
                 ":invoice_status, :invoice_reason, " +
                 ":payment_status, :payment_failure, :payment_failure_reason, " +
                 ":refund_status, :refund_failure, :refund_failure_reason) " +
@@ -301,8 +312,12 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(EVENT_ID, message.getEventId())
                 .addValue(EVENT_TIME, message.getEventTime())
                 .addValue(EVENT_TYPE, message.getEventType().toString())
+                .addValue(INVOICE_ID, message.getInvoice().getId())
+                .addValue(PARTY_ID, message.getPartyId())
+                .addValue(SHOP_ID, message.getInvoice().getShopID())
                 .addValue(INVOICE_STATUS, message.getInvoice().getStatus())
                 .addValue(INVOICE_REASON, message.getInvoice().getReason());
+        setNullPaymentEventParamValues(params);
         if (message.isPayment() || message.isRefund()) {
             Payment payment = message.getPayment();
             params.addValue(PAYMENT_STATUS, payment.getStatus())
@@ -356,7 +371,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(INVOICE_PRODUCT, message.getInvoice().getProduct())
                 .addValue(INVOICE_DESCRIPTION, message.getInvoice().getDescription());
         //TODO
-        setNullPaymentParamValues(params);
+        setNullPaymentDataParamValues(params);
         if (message.isPayment() || message.isRefund()) {
             Payment payment = message.getPayment();
             params.addValue(PAYMENT_ID, payment.getId())

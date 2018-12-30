@@ -209,7 +209,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
 
     @Override
     public void createData(CustomerMessage message) throws DaoException {
-
+        throw new RuntimeException("Not implemented yet");
     }
 
     @Override

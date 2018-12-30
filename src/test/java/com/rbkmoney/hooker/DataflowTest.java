@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
+import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
+import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.swag_webhook_events.CustomerPayer;
@@ -39,6 +41,12 @@ import static org.junit.Assert.*;
 @TestPropertySource(properties = {"message.scheduler.delay=500"})
 public class DataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(DataflowTest.class);
+
+    @Autowired
+    InvoicingTaskDao taskDao;
+
+    @Autowired
+    InvoicingQueueDao queueDao;
 
     @Autowired
     HookDao hookDao;
@@ -78,6 +86,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         final String invoceId = "asgsdhghdhtfugny78989";
         final String partyId = new Random().nextInt() + "";
         InvoicingMessage message1 = buildMessage(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status");
+        messageDao.createData(message1);
         messageDao.createEvent(message1);
         InvoicingMessage message2 = messageDao.getInvoice(invoceId);
         InvoicingMessage message3 = messageDao.getInvoice(invoceId);
@@ -90,25 +99,46 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true);
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status");
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status");
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "4", "qwe", EventType.INVOICE_CREATED, "status");
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false);
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false);
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.REFUND, "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false);
+        messageDao.createData(message);
         messageDao.createEvent(message);
+        queueDao.createWithPolicy(message.getId());
+        taskDao.create(message.getId());
         sourceMessages.add(message);
 
         List<MockMessage> inv1 = new ArrayList<>();
