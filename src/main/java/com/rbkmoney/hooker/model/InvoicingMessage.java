@@ -8,6 +8,7 @@ import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHan
  */
 public class InvoicingMessage extends Message {
     private long eventId;
+    private long messageDataId;
     private String eventTime;
     private String type;
     private String partyId;
@@ -18,6 +19,7 @@ public class InvoicingMessage extends Message {
 
     public InvoicingMessage(InvoicingMessage other) {
         setId(other.getId());
+        this.messageDataId = other.messageDataId;
         this.eventId = other.eventId;
         this.eventTime = other.eventTime;
         this.type = other.type;
@@ -35,6 +37,14 @@ public class InvoicingMessage extends Message {
     }
 
     public InvoicingMessage() {
+    }
+
+    public long getMessageDataId() {
+        return messageDataId;
+    }
+
+    public void setMessageDataId(long messageDataId) {
+        this.messageDataId = messageDataId;
     }
 
     public long getEventId() {

@@ -35,6 +35,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     CacheMng cacheMng;
 
     public static final String ID = "id";
+    public static final String MESSAGE_DATA_ID = "message_data_id";
     public static final String EVENT_ID = "event_id";
     public static final String EVENT_TIME = "event_time";
     public static final String TYPE = "type";
@@ -144,6 +145,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     private static RowMapper<InvoicingMessage> messageRowMapper = (rs, i) -> {
         InvoicingMessage message = new InvoicingMessage();
         message.setId(rs.getLong(ID));
+        message.setMessageDataId(rs.getLong(MESSAGE_DATA_ID));
         message.setEventId(rs.getLong(EVENT_ID));
         message.setEventTime(rs.getString(EVENT_TIME));
         message.setType(rs.getString(TYPE));
@@ -238,7 +240,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
     private InvoicingMessage getAny(String invoiceId, String paymentId, String refundId, String type) throws DaoException {
         InvoicingMessage result = null;
-        final String sql = "SELECT * FROM hook.message m " +
+        final String sql = "SELECT m.id as id, m.*, md.* FROM hook.message m " +
                 " JOIN hook.message_data md " +
                 " ON m.message_data_id = m.id" +
                 " WHERE md.invoice_id =:invoice_id" +
@@ -296,19 +298,20 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     @Transactional
     public void createEvent(InvoicingMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.message " +
-                "(event_id, event_time, event_type, " +
+                "(message_data_id, event_id, event_time, event_type, " +
                 "invoice_id, party_id, shop_id, " +
                 "invoice_status, invoice_reason, " +
                 "payment_status, payment_failure, payment_failure_reason, " +
                 "refund_status, refund_failure, refund_failure_reason) " +
                 "VALUES " +
-                "(:event_id, :event_time, CAST(:event_type as hook.eventtype), " +
+                "(:message_data_id, :event_id, :event_time, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :party_id, :shop_id, " +
                 ":invoice_status, :invoice_reason, " +
                 ":payment_status, :payment_failure, :payment_failure_reason, " +
                 ":refund_status, :refund_failure, :refund_failure_reason) " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue(MESSAGE_DATA_ID, message.getMessageDataId())
                 .addValue(EVENT_ID, message.getEventId())
                 .addValue(EVENT_TIME, message.getEventTime())
                 .addValue(EVENT_TYPE, message.getEventType().toString())
@@ -425,6 +428,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
+            message.setMessageDataId(keyHolder.getKey().longValue());
             saveCart(message.getId(), message.getInvoice().getCart());
             log.info("Message_data {} saved to db.", message);
         } catch (NestedRuntimeException e) {
@@ -444,7 +448,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
     @Override
     public List<InvoicingMessage> getBy(Collection<Long> messageIds) throws DaoException {
-        final String sql = "SELECT * FROM hook.message m JOIN hook.message_data md ON m.message_data_id = md.id  WHERE m.id in (:ids)";
+        final String sql = "SELECT m.id as id, m.*, md.* FROM hook.message m JOIN hook.message_data md ON m.message_data_id = md.id  WHERE m.id in (:ids)";
         try {
             List<InvoicingMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
             log.debug("messagesFromDb {}", messagesFromDb);
