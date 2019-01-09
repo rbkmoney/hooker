@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -41,6 +42,7 @@ public class HookerService implements WebhookManagerSrv.Iface {
     }
 
     @Override
+    @Transactional
     public Webhook create(WebhookParams webhookParams) throws TException {
         Hook hook = hookDao.create(HookConverter.convert(webhookParams));
         log.info("Webhook created: {}", hook);
@@ -48,6 +50,7 @@ public class HookerService implements WebhookManagerSrv.Iface {
     }
 
     @Override
+    @Transactional
     public void delete(long id) throws WebhookNotFound{
         try {
             hookDao.delete(id);

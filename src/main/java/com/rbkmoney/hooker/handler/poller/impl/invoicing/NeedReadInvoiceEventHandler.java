@@ -9,6 +9,7 @@ import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by jeckep on 13.04.17.
@@ -21,6 +22,7 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
     InvoicingTaskDao taskDao;
 
     @Override
+    @Transactional
     protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
         final String invoiceId = event.getSource().getInvoiceId();
         //getAny any saved message for related invoice

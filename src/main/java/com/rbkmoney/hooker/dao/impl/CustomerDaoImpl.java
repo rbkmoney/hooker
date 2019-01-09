@@ -9,14 +9,12 @@ import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -32,12 +30,6 @@ import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements CustomerDao {
 
     Logger log = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    CustomerQueueDao queueDao;
-
-    @Autowired
-    CustomerTaskDao taskDao;
 
     public static final String ID = "id";
     public static final String EVENT_ID = "event_id";
@@ -146,7 +138,6 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
     }
 
     @Override
-    @Transactional
     public void createEvent(CustomerMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.customer_message " +
                 "(event_id, occured_at, type, party_id, event_type, " +
@@ -200,8 +191,6 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
             log.info("CustomerMessage {} saved to db.", message);
-            queueDao.createWithPolicy(message.getId());
-            taskDao.create(message.getId());
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't createEvent customerMessage with customerId " + customer.getId(), e);
         }

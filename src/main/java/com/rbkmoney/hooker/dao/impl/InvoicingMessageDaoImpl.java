@@ -20,7 +20,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -267,7 +266,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         return result;
     }
 
-    private void saveCart(Long messageId, Collection<InvoiceCartPosition> cart) {
+    public void saveCart(Long messageId, Collection<InvoiceCartPosition> cart) {
         if (cart == null || cart.isEmpty()) return;
         int size = cart.size();
         List<Map<String, Object>> batchValues = new ArrayList<>(size);
@@ -295,7 +294,6 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     }
 
     @Override
-    @Transactional
     public void createEvent(InvoicingMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.message " +
                 "(message_data_id, event_id, event_time, event_type, " +

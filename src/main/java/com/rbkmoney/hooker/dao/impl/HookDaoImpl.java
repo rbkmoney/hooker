@@ -16,7 +16,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -122,7 +121,6 @@ public class HookDaoImpl implements HookDao {
     }
 
     @Override
-    @Transactional
     public Hook create(Hook hook) throws DaoException {
         String pubKey = createOrGetPubKey(hook.getPartyId());
         hook.setPubKey(pubKey);
@@ -151,7 +149,7 @@ public class HookDaoImpl implements HookDao {
         return hook;
     }
 
-    private void saveHookFilters(long hookId, Collection<WebhookAdditionalFilter> webhookAdditionalFilters) {
+    public void saveHookFilters(long hookId, Collection<WebhookAdditionalFilter> webhookAdditionalFilters) {
         int size = webhookAdditionalFilters.size();
         List<Map<String, Object>> batchValues = new ArrayList<>(size);
         for (WebhookAdditionalFilter webhookAdditionalFilter : webhookAdditionalFilters) {
@@ -179,7 +177,6 @@ public class HookDaoImpl implements HookDao {
     }
 
     @Override
-    @Transactional
     public void delete(long id) throws DaoException {
         final String sql =
                 " DELETE FROM hook.scheduled_task st USING hook.invoicing_queue q WHERE st.queue_id = q.id AND q.hook_id=:id;" +

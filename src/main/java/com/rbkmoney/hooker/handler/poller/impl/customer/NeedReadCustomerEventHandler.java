@@ -4,9 +4,11 @@ import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by inalarsanukaev on 12.10.17.
@@ -16,7 +18,11 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
     @Autowired
     CustomerDao customerDao;
 
+    @Autowired
+    CustomerTaskDao taskDao;
+
     @Override
+    @Transactional
     protected void saveEvent(CustomerChange cc, Event event) throws DaoException {
         final String customerId = event.getSource().getCustomerId();
         //getAny any saved message for related invoice
@@ -31,6 +37,7 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
         modifyMessage(cc, event, message);
 
         customerDao.createEvent(message);
+        taskDao.create(message.getId());
     }
 
     protected CustomerMessage getCustomerMessage(String customerId) {

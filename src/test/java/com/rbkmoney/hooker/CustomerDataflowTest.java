@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
+import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
+import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerQueue;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.BuildUtils;
@@ -51,6 +54,12 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     @Autowired
     CustomerDao customerDao;
 
+    @Autowired
+    CustomerQueueDao customerQueueDao;
+
+    @Autowired
+    CustomerTaskDao customerTaskDao;
+
     BlockingQueue<MockMessage> cust1Queue = new LinkedBlockingDeque<>(10);
     BlockingQueue<MockMessage> cust2Queue = new LinkedBlockingDeque<>(10);
     BlockingQueue<MockMessage> cust3Queue = new LinkedBlockingDeque<>(10);
@@ -83,21 +92,33 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
         List<CustomerMessage> sourceMessages = new ArrayList<>();
         CustomerMessage message = BuildUtils.buildCustomerMessage(1L, "partyId1", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
         customerDao.createEvent(message);
+        customerQueueDao.createWithPolicy(message.getId());
+        customerTaskDao.create(message.getId());
         sourceMessages.add(message);
         message = BuildUtils.buildCustomerMessage(2L, "partyId1", EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
         customerDao.createEvent(message);
+        customerQueueDao.createWithPolicy(message.getId());
+        customerTaskDao.create(message.getId());
         sourceMessages.add(message);
         message = BuildUtils.buildCustomerMessage(3L, "partyId2", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
         customerDao.createEvent(message);
+        customerQueueDao.createWithPolicy(message.getId());
+        customerTaskDao.create(message.getId());
         sourceMessages.add(message);
         message = BuildUtils.buildCustomerMessage(4L, "partyId2", EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
         customerDao.createEvent(message);
+        customerQueueDao.createWithPolicy(message.getId());
+        customerTaskDao.create(message.getId());
         sourceMessages.add(message);
         message = BuildUtils.buildCustomerMessage(5L, "partyId2", EventType.CUSTOMER_BINDING_STARTED, AbstractCustomerEventHandler.BINDING, "2", "2342", Customer.StatusEnum.READY);
         customerDao.createEvent(message);
+        customerQueueDao.createWithPolicy(message.getId());
+        customerTaskDao.create(message.getId());
         sourceMessages.add(message);
         message = BuildUtils.buildCustomerMessage(6L, "partyId2", EventType.CUSTOMER_BINDING_SUCCEEDED, AbstractCustomerEventHandler.BINDING, "3", "2342", Customer.StatusEnum.READY);
         customerDao.createEvent(message);
+        customerQueueDao.createWithPolicy(message.getId());
+        customerTaskDao.create(message.getId());
         sourceMessages.add(message);
 
         List<MockMessage> cust1 = new ArrayList<>();

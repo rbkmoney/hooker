@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PreDestroy;
 import java.util.*;
@@ -107,8 +108,8 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
     protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue, TaskDao taskDao, Signer signer, PostSender postSender);
 
-    //worker should invoke this method when it is done with scheduled messages for hookId
-    private void done(Queue queue) {
+    @Transactional
+    public void done(Queue queue) {
         processedQueues.remove(queue.getId());
 
         //reset fail count for hook
@@ -119,8 +120,8 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         }
     }
 
-    //worker should invoke this method when it is fail to send message to hookId
-    private void fail(Queue queue) {
+    @Transactional
+    public void fail(Queue queue) {
         processedQueues.remove(queue.getId());
 
         log.warn("Queue {} failed.", queue.getId());

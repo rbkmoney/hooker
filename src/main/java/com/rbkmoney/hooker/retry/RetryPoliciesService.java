@@ -38,6 +38,7 @@ public class RetryPoliciesService {
                 .collect(Collectors.toList());
     }
 
+
     public void update(RetryPolicyRecord record) {
         if (RetryPolicyType.SIMPLE.equals(record.getType())) {
             simpleRetryPolicyDao.update((SimpleRetryPolicyRecord) record);
