@@ -25,12 +25,12 @@
         <damsel.version>1.256-2afe121</damsel.version>
         <shared.resources.version>0.2.1</shared.resources.version>
 
-        <db.host.name>db-pg-shared</db.host.name>
+        <db.host.name>localhost</db.host.name>
         <db.host.port>5432</db.host.port>
-        <db.name>hooker</db.name>
+        <db.name>hook</db.name>
         <db.url>jdbc:postgresql://${db.host.name}:${db.host.port}/${db.name}</db.url>
-        <db.user>hooker</db.user>
-        <db.password>hooker</db.password>
+        <db.user>postgres</db.user>
+        <db.password>postgres</db.password>
         <db.schema>hook</db.schema>
     </properties>
 
