@@ -1,11 +1,9 @@
 package com.rbkmoney.hooker.configuration;
 
 import com.rbkmoney.eventstock.client.*;
-import com.rbkmoney.eventstock.client.poll.EventFlowFilter;
 import com.rbkmoney.eventstock.client.poll.PollingEventPublisherBuilder;
 import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.handler.poller.EventStockHandler;
-import com.rbkmoney.hooker.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -33,14 +31,22 @@ public class EventStockPollerConfig {
     @Autowired
     private List<Handler> pollingEventHandlers;
 
-    @Autowired
-    private EventService eventService;
-
     @Bean(destroyMethod = "destroy")
-    public EventPublisher eventPublisher() throws IOException {
+    public EventPublisher eventPublisherMod0(EventStockHandler eventStockHandlerMod0) throws IOException {
         return new PollingEventPublisherBuilder()
                 .withURI(bmUri.getURI())
-                .withEventHandler(new EventStockHandler(pollingEventHandlers))
+                .withEventHandler(eventStockHandlerMod0)
+                .withMaxPoolSize(maxPoolSize)
+                .withPollDelay(pollDelay)
+                .withMaxQuerySize(maxQuerySize)
+                .build();
+    }
+
+    @Bean(destroyMethod = "destroy")
+    public EventPublisher eventPublisherMod1(EventStockHandler eventStockHandlerMod1) throws IOException {
+        return new PollingEventPublisherBuilder()
+                .withURI(bmUri.getURI())
+                .withEventHandler(eventStockHandlerMod1)
                 .withMaxPoolSize(maxPoolSize)
                 .withPollDelay(pollDelay)
                 .withMaxQuerySize(maxQuerySize)
@@ -48,19 +54,13 @@ public class EventStockPollerConfig {
     }
 
     @Bean
-    public SubscriberConfig subscriberConfig() {
-        return new DefaultSubscriberConfig(eventFilter());
+    public EventStockHandler eventStockHandlerMod0(){
+        return new EventStockHandler(pollingEventHandlers, 0);
     }
 
-    public EventFilter eventFilter() {
-        EventConstraint.EventIDRange eventIDRange = new EventConstraint.EventIDRange();
-        Long lastEventId = eventService.getLastEventId();
-        if (lastEventId != null) {
-            eventIDRange.setFromExclusive(lastEventId);
-        } else {
-            eventIDRange.setFromNow();
-        }
-        return new EventFlowFilter(new EventConstraint(eventIDRange));
+    @Bean
+    public EventStockHandler eventStockHandlerMod1(){
+        return new EventStockHandler(pollingEventHandlers, 1);
     }
 
 }

@@ -18,9 +18,9 @@ public class EventService {
     @Autowired
     CustomerDao customerDao;
 
-    public Long getLastEventId() {
-        Long invLastEventId = messageDao.getMaxEventId();
-        Long custLastEventId = customerDao.getMaxEventId();
+    public Long getLastEventId(int div, int mod) {
+        Long invLastEventId = messageDao.getMaxEventId(div, mod);
+        Long custLastEventId = customerDao.getMaxEventId(div, mod);
         Long max = invLastEventId;
         if (invLastEventId == null) {
             max = custLastEventId;

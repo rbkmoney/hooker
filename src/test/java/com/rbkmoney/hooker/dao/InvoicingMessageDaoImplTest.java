@@ -1,9 +1,11 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.handler.poller.EventStockHandler;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.utils.HashUtils;
 import com.rbkmoney.swag_webhook_events.CustomerPayer;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +77,6 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getMaxEventId() {
-        assertEquals(messageDao.getMaxEventId().longValue(), 5555);
+        assertEquals(messageDao.getMaxEventId(EventStockHandler.DIVIDER, HashUtils.getIntHash("1234") % 2).longValue(), 5555);
     }
 }
