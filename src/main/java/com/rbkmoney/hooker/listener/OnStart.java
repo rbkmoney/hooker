@@ -9,28 +9,25 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class OnStart implements ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
-    private EventPublisher eventPublisherMod0;
+    private List<EventPublisher> eventPublishers;
 
     @Autowired
-    private EventPublisher eventPublisherMod1;
-
-    @Autowired
-    private EventStockHandler eventStockHandlerMod0;
-
-    @Autowired
-    private EventStockHandler eventStockHandlerMod1;
+    private List<EventStockHandler> eventStockHandlers;
 
     @Autowired
     private EventService eventService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        eventPublisherMod0.subscribe(buildSubscriberConfig(eventStockHandlerMod0));
-        eventPublisherMod1.subscribe(buildSubscriberConfig(eventStockHandlerMod1));
+        for (int i = 0; i < eventPublishers.size(); ++i) {
+            eventPublishers.get(i).subscribe(buildSubscriberConfig(eventStockHandlers.get(i)));
+        }
     }
 
     public SubscriberConfig buildSubscriberConfig(EventStockHandler eventStockHandler) {
@@ -39,7 +36,7 @@ public class OnStart implements ApplicationListener<ApplicationReadyEvent> {
 
     public EventFilter eventFilter(EventStockHandler eventStockHandler) {
         EventConstraint.EventIDRange eventIDRange = new EventConstraint.EventIDRange();
-        Long lastEventId = eventService.getLastEventId(EventStockHandler.DIVIDER, eventStockHandler.getMod());
+        Long lastEventId = eventService.getLastEventId(eventStockHandler.getDivider(), eventStockHandler.getMod());
         if (lastEventId != null) {
             eventIDRange.setFromExclusive(lastEventId);
         } else {

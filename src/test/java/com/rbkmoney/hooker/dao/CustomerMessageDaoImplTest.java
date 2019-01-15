@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -29,6 +30,9 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Autowired
     CustomerDao messageDao;
+
+    @Value("${bm.pooling.workersCount}")
+    private int workersCount;
 
     private static boolean messagesCreated = false;
 
@@ -48,6 +52,6 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getMaxEventId() {
-        assertEquals(messageDao.getMaxEventId(EventStockHandler.DIVIDER, HashUtils.getIntHash("124") % 2).longValue(), 1L);
+        assertEquals(messageDao.getMaxEventId(workersCount, HashUtils.getIntHash("124") % workersCount).longValue(), 1L);
     }
 }

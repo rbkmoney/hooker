@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -28,39 +29,33 @@ public class EventStockPollerConfig {
     @Value("${bm.pooling.maxQuerySize}")
     private int maxQuerySize;
 
+    @Value("${bm.pooling.workersCount}")
+    private int workersCount;
+
     @Autowired
     private List<Handler> pollingEventHandlers;
 
-    @Bean(destroyMethod = "destroy")
-    public EventPublisher eventPublisherMod0(EventStockHandler eventStockHandlerMod0) throws IOException {
-        return new PollingEventPublisherBuilder()
-                .withURI(bmUri.getURI())
-                .withEventHandler(eventStockHandlerMod0)
-                .withMaxPoolSize(maxPoolSize)
-                .withPollDelay(pollDelay)
-                .withMaxQuerySize(maxQuerySize)
-                .build();
-    }
-
-    @Bean(destroyMethod = "destroy")
-    public EventPublisher eventPublisherMod1(EventStockHandler eventStockHandlerMod1) throws IOException {
-        return new PollingEventPublisherBuilder()
-                .withURI(bmUri.getURI())
-                .withEventHandler(eventStockHandlerMod1)
-                .withMaxPoolSize(maxPoolSize)
-                .withPollDelay(pollDelay)
-                .withMaxQuerySize(maxQuerySize)
-                .build();
+    @Bean
+    public List<EventStockHandler> eventStockHandlers() {
+        List<EventStockHandler> eventStockHandlers = new ArrayList<>();
+        for (int i = 0; i < workersCount; ++i) {
+            eventStockHandlers.add(new EventStockHandler(pollingEventHandlers, workersCount, i));
+        }
+        return eventStockHandlers;
     }
 
     @Bean
-    public EventStockHandler eventStockHandlerMod0(){
-        return new EventStockHandler(pollingEventHandlers, 0);
+    public List<EventPublisher> eventPublishers(List<EventStockHandler> eventStockHandlers) throws IOException {
+        List<EventPublisher> eventPublishers = new ArrayList<>();
+        for (int i = 0; i < workersCount; ++i) {
+            eventPublishers.add(new PollingEventPublisherBuilder()
+                .withURI(bmUri.getURI())
+                .withEventHandler(eventStockHandlers.get(i))
+                .withMaxPoolSize(maxPoolSize)
+                .withPollDelay(pollDelay)
+                .withMaxQuerySize(maxQuerySize)
+                .build());
+        }
+        return eventPublishers;
     }
-
-    @Bean
-    public EventStockHandler eventStockHandlerMod1(){
-        return new EventStockHandler(pollingEventHandlers, 1);
-    }
-
 }

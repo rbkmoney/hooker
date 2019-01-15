@@ -20,16 +20,21 @@ public class EventStockHandler implements EventHandler<StockEvent> {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    public static final int DIVIDER = 2;
     private static final int INITIAL_VALUE = 3;
     private final AtomicInteger count = new AtomicInteger(INITIAL_VALUE);
 
     private final List<Handler> pollingEventHandlers;
+    private final int divider;
     private final int mod;
 
-    public EventStockHandler(List<Handler> pollingEventHandlers, int mod) {
+    public EventStockHandler(List<Handler> pollingEventHandlers, int divider, int mod) {
         this.pollingEventHandlers = pollingEventHandlers;
+        this.divider = divider;
         this.mod = mod;
+    }
+
+    public int getDivider() {
+        return divider;
     }
 
     public int getMod() {
@@ -50,7 +55,7 @@ public class EventStockHandler implements EventHandler<StockEvent> {
             sourceId = processingEvent.getSource().getCustomerId();
         } else return EventAction.CONTINUE;
 
-        if (!HashUtils.checkHashMod(sourceId, DIVIDER, mod)) {
+        if (!HashUtils.checkHashMod(sourceId, divider, mod)) {
             return EventAction.CONTINUE;
         }
 
