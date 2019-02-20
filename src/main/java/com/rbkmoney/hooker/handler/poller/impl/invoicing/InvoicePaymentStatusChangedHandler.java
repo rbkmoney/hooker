@@ -1,5 +1,7 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
+import com.rbkmoney.damsel.domain.Cash;
+import com.rbkmoney.damsel.domain.InvoicePaymentCaptured;
 import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.payment_processing.Event;
@@ -52,6 +54,13 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
         if (paymentOriginStatus.isSetFailed()) {
             OperationFailure failure = paymentOriginStatus.getFailed().getFailure();
             payment.setError(ErrorUtils.getPaymentError(failure));
+        } else if (paymentOriginStatus.isSetCaptured()) {
+            InvoicePaymentCaptured invoicePaymentCaptured = paymentOriginStatus.getCaptured();
+            if (invoicePaymentCaptured.isSetCost()) {
+                Cash cost = invoicePaymentCaptured.getCost();
+                payment.setAmount(cost.getAmount());
+                payment.setCurrency(cost.getCurrency().getSymbolicCode());
+            }
         }
     }
 }
