@@ -3,6 +3,9 @@ package com.rbkmoney.hooker.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,6 +13,9 @@ import java.util.stream.Collectors;
 /**
  * Created by inalarsanukaev on 15.05.17.
  */
+@NoArgsConstructor
+@Getter
+@Setter
 @JsonPropertyOrder({"id", "shopID", "createdAt", "status", "reason", "dueDate", "amount", "currency", "metadata", "product", "description"})
 public class Invoice {
     private String id;
@@ -44,106 +50,7 @@ public class Invoice {
         this.product = other.product;
         this.description = other.description;
         if (other.cart != null && !other.cart.isEmpty()) {
-            this.cart = other.cart.stream().map(c -> new InvoiceCartPosition(c)).collect(Collectors.toList());
+            this.cart = other.cart.stream().map(InvoiceCartPosition::new).collect(Collectors.toList());
         }
-    }
-
-    public Invoice() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getShopID() {
-        return shopID;
-    }
-
-    public void setShopID(String shopID) {
-        this.shopID = shopID;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public String getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(String dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public long getAmount() {
-        return amount;
-    }
-
-    public void setAmount(long amount) {
-        this.amount = amount;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public InvoiceContent getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(InvoiceContent metadata) {
-        this.metadata = metadata;
-    }
-
-    public String getProduct() {
-        return product;
-    }
-
-    public void setProduct(String product) {
-        this.product = product;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public List<InvoiceCartPosition> getCart() {
-        return cart;
-    }
-
-    public void setCart(List<InvoiceCartPosition> cart) {
-        this.cart = cart;
     }
 }

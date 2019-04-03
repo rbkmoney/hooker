@@ -1,17 +1,13 @@
 package com.rbkmoney.hooker.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by inalarsanukaev on 14.11.17.
  */
+@Getter
+@Setter
 public class InvoicingQueue extends Queue {
     private String invoiceId;
-
-    public String getInvoiceId() {
-        return invoiceId;
-    }
-
-    public void setInvoiceId(String invoiceId) {
-        this.invoiceId = invoiceId;
-    }
-
 }

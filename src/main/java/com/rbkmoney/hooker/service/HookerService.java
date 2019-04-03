@@ -7,10 +7,9 @@ import com.rbkmoney.damsel.webhooker.WebhookParams;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.HookConverter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,11 +18,11 @@ import java.util.List;
  * Created by inalarsanukaev on 06.04.17.
  */
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class HookerService implements WebhookManagerSrv.Iface {
-    private Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    HookDao hookDao;
+    private final HookDao hookDao;
 
     @Override
     public List<Webhook> getList(String s) throws TException {

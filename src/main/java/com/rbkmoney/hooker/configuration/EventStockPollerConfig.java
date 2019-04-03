@@ -1,10 +1,10 @@
 package com.rbkmoney.hooker.configuration;
 
-import com.rbkmoney.eventstock.client.*;
+import com.rbkmoney.eventstock.client.EventPublisher;
 import com.rbkmoney.eventstock.client.poll.PollingEventPublisherBuilder;
 import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.handler.poller.EventStockHandler;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class EventStockPollerConfig {
 
     @Value("${bm.pooling.url}")
@@ -32,8 +33,7 @@ public class EventStockPollerConfig {
     @Value("${bm.pooling.workersCount}")
     private int workersCount;
 
-    @Autowired
-    private List<Handler> pollingEventHandlers;
+    private final List<Handler> pollingEventHandlers;
 
     @Bean
     public List<EventStockHandler> eventStockHandlers() {

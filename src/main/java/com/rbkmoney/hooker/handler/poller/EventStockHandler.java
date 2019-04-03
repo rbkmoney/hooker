@@ -10,15 +10,13 @@ import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.utils.HashUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class EventStockHandler implements EventHandler<StockEvent> {
-
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private static final int INITIAL_VALUE = 3;
     private final AtomicInteger count = new AtomicInteger(INITIAL_VALUE);

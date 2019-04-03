@@ -1,12 +1,18 @@
 package com.rbkmoney.hooker.model;
 
 import com.rbkmoney.swag_webhook_events.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Arrays;
 
 /**
  * Created by inalarsanukaev on 15.05.17.
  */
+@NoArgsConstructor
+@Getter
+@Setter
 public class Payment {
     private String id;
     private String createdAt;
@@ -96,102 +102,4 @@ public class Payment {
         this.payer.payerType(other.payer.getPayerType());
     }
 
-    public Payment() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public PaymentError getError() {
-        return error;
-    }
-
-    public void setError(PaymentError error) {
-        this.error = error;
-    }
-
-    public long getAmount() {
-        return amount;
-    }
-
-    public void setAmount(long amount) {
-        this.amount = amount;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public String getPaymentToolToken() {
-        return paymentToolToken;
-    }
-
-    public void setPaymentToolToken(String paymentToolToken) {
-        this.paymentToolToken = paymentToolToken;
-    }
-
-    public String getPaymentSession() {
-        return paymentSession;
-    }
-
-    public void setPaymentSession(String paymentSession) {
-        this.paymentSession = paymentSession;
-    }
-
-    public PaymentContactInfo getContactInfo() {
-        return contactInfo;
-    }
-
-    public void setContactInfo(PaymentContactInfo contactInfo) {
-        this.contactInfo = contactInfo;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public String getFingerprint() {
-        return fingerprint;
-    }
-
-    public void setFingerprint(String fingerprint) {
-        this.fingerprint = fingerprint;
-    }
-
-    public Payer getPayer() {
-        return payer;
-    }
-
-    public void setPayer(Payer payer) {
-        this.payer = payer;
-    }
 }

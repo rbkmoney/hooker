@@ -6,16 +6,15 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rbkmoney.damsel.json.Value;
 import com.rbkmoney.geck.common.stack.ObjectStack;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
 /**
  * Created by inalarsanukaev on 20.10.17.
  */
+@Slf4j
 public class CustomerUtils {
-    static Logger log = LoggerFactory.getLogger(CustomerUtils.class);
 
     private ObjectStack<String> names = new ObjectStack<>();
     private ObjectStack<JsonNodeWrapper> nodes = new ObjectStack<>();

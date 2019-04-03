@@ -10,8 +10,7 @@ import com.rbkmoney.hooker.retry.RetryPoliciesService;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -23,9 +22,8 @@ import java.util.stream.Collectors;
 /**
  * Created by jeckep on 17.04.17.
  */
-
+@Slf4j
 public abstract class MessageScheduler<M extends Message, Q extends Queue> {
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     private TaskDao taskDao;
     private QueueDao<Q> queueDao;

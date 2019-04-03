@@ -2,21 +2,17 @@ package com.rbkmoney.hooker.service;
 
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class EventService {
 
-    Logger log = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    InvoicingMessageDao messageDao;
-
-    @Autowired
-    CustomerDao customerDao;
+    private final InvoicingMessageDao messageDao;
+    private final CustomerDao customerDao;
 
     public Long getLastEventId(int div, int mod) {
         Long invLastEventId = messageDao.getMaxEventId(div, mod);

@@ -4,7 +4,7 @@ import com.rbkmoney.eventstock.client.*;
 import com.rbkmoney.eventstock.client.poll.EventFlowFilter;
 import com.rbkmoney.hooker.handler.poller.EventStockHandler;
 import com.rbkmoney.hooker.service.EventService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -12,16 +12,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class OnStart implements ApplicationListener<ApplicationReadyEvent> {
 
-    @Autowired
-    private List<EventPublisher> eventPublishers;
-
-    @Autowired
-    private List<EventStockHandler> eventStockHandlers;
-
-    @Autowired
-    private EventService eventService;
+    private final List<EventPublisher> eventPublishers;
+    private final List<EventStockHandler> eventStockHandlers;
+    private final EventService eventService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {

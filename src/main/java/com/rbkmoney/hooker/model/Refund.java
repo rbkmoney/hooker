@@ -2,7 +2,13 @@ package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.rbkmoney.swag_webhook_events.PaymentError;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@NoArgsConstructor
+@Getter
+@Setter
 public class Refund {
     private String id;
     private String createdAt;
@@ -29,63 +35,4 @@ public class Refund {
         this.reason = other.reason;
     }
 
-    public Refund() {
-
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public PaymentError getError() {
-        return error;
-    }
-
-    public void setError(PaymentError error) {
-        this.error = error;
-    }
-
-    public Long getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Long amount) {
-        this.amount = amount;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
 }

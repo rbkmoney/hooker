@@ -5,8 +5,7 @@ import com.rbkmoney.woody.api.event.CompositeServiceEventListener;
 import com.rbkmoney.woody.thrift.impl.http.THServiceBuilder;
 import com.rbkmoney.woody.thrift.impl.http.event.HttpServiceEventLogListener;
 import com.rbkmoney.woody.thrift.impl.http.event.ServiceEventLogListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.*;
@@ -14,9 +13,8 @@ import javax.servlet.annotation.WebServlet;
 import java.io.IOException;
 
 @WebServlet("/hook")
+@Slf4j
 public class HookerServlet extends GenericServlet {
-
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     private Servlet thriftServlet;
 
@@ -24,6 +22,7 @@ public class HookerServlet extends GenericServlet {
     private WebhookManagerSrv.Iface requestHandler;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void init(ServletConfig config) throws ServletException {
         log.info("Hooker servlet init.");
         super.init(config);

@@ -8,6 +8,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.swag_webhook_events.Event;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -15,8 +16,6 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
@@ -37,8 +36,8 @@ import static org.junit.Assert.assertTrue;
  * Created by jeckep on 20.04.17.
  */
 @TestPropertySource(properties = {"message.scheduler.delay=500"})
+@Slf4j
 public class ComplexDataflowTest extends AbstractIntegrationTest {
-    private static Logger log = LoggerFactory.getLogger(ComplexDataflowTest.class);
 
     @Autowired
     HookDao hookDao;
@@ -127,7 +126,7 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     }
 
     private Dispatcher dispatcher() {
-        final Dispatcher dispatcher = new Dispatcher() {
+        return new Dispatcher() {
 
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
@@ -146,7 +145,6 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
                 return new MockResponse().setBody(HOOK_1).setResponseCode(200);
             }
         };
-        return dispatcher;
     }
 
     private String webserver(Dispatcher dispatcher) {

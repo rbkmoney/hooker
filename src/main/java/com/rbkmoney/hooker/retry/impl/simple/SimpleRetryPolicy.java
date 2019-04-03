@@ -3,7 +3,7 @@ package com.rbkmoney.hooker.retry.impl.simple;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.retry.RetryPolicy;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
+@RequiredArgsConstructor
 public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
 
-    @Autowired
-    SimpleRetryPolicyDao simpleRetryPolicyDao;
+    private final SimpleRetryPolicyDao simpleRetryPolicyDao;
 
     private long[] delays = {30, 300, 900, 3600,
             3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600,

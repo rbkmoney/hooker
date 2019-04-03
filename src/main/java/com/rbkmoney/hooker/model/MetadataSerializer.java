@@ -13,7 +13,7 @@ import java.util.HashMap;
  */
 public class MetadataSerializer extends JsonSerializer<InvoiceContent> {
 
-    //it's thread-safe object, parni
+    //it's thread-safe object, parni)))
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override

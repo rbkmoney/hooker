@@ -1,8 +1,7 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.model.Task;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,8 +16,8 @@ import java.util.stream.Collectors;
 /**
  * Created by jeckep on 17.04.17.
  */
+@Slf4j
 public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport implements TaskDao {
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     public AbstractTaskDao(DataSource dataSource) {
         setDataSource(dataSource);

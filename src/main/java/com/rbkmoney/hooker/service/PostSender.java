@@ -1,9 +1,8 @@
 package com.rbkmoney.hooker.service;
 
 import com.rbkmoney.hooker.logging.HttpLoggingInterceptor;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -11,8 +10,9 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class PostSender {
-    Logger log = LoggerFactory.getLogger(this.getClass());
+
     private final OkHttpClient httpClient;
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public static final String SIGNATURE_HEADER = "Content-Signature";

@@ -1,0 +1,50 @@
+server.port: @server.port@
+
+spring:
+  application:
+    name: @name@
+    description: @description@
+  flyway.schemas: hook
+info:
+  version: @version@
+  responsible: Inal Arsanukaev
+  stage: dev
+  damsel.version: @damsel.version@
+
+bm.pooling:
+  url: http://localhost:8022/repo
+  maxPoolSize: 1
+  delay: 5000
+  maxQuerySize: 500
+  workersCount: 5
+
+# connection timeout
+merchant.callback.timeout: 10
+
+spring.datasource:
+  type: com.zaxxer.hikari.HikariDataSource
+  driver-class-name: org.postgresql.Driver
+  url: @db.url@
+  username: @db.user@
+  password: @db.password@
+  hikari:
+    maximum-pool-size: 10
+    idle-timeout: 30000
+
+
+message:
+  scheduler.delay: 1000
+  sender.number: 10
+
+spring.cache:
+  cache-names: messagesByInvoice,messagesById,queues
+  caffeine.spec: maximumSize=1000,expireAfterWrite=60s
+
+management:
+  security:
+    flag: false
+  metrics:
+    export:
+      statsd:
+        enabled: false
+        flavor: etsy

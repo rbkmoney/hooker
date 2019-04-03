@@ -4,7 +4,7 @@ import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicy;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -16,13 +16,11 @@ import java.util.stream.Collectors;
  */
 
 @Service
+@RequiredArgsConstructor
 public class RetryPoliciesService {
 
-    @Autowired
-    SimpleRetryPolicy simpleRetryPolicy;
-
-    @Autowired
-    SimpleRetryPolicyDao simpleRetryPolicyDao;
+    private final SimpleRetryPolicy simpleRetryPolicy;
+    private final SimpleRetryPolicyDao simpleRetryPolicyDao;
 
     public RetryPolicy getRetryPolicyByType(RetryPolicyType type) {
         if (RetryPolicyType.SIMPLE.equals(type)) {

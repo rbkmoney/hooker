@@ -2,7 +2,7 @@ package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Queue;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
@@ -16,13 +16,13 @@ import java.util.stream.Collectors;
  * Created by inalarsanukaev on 23.11.17.
  */
 @Component
+@RequiredArgsConstructor
 public class CacheMng {
     private static final String MESSAGES_BY_INVOICE = "messagesByInvoice";
     private static final String MESSAGES_BY_IDS = "messagesById";
     private static final String QUEUES = "queues";
 
-    @Autowired
-    private CacheManager cacheMng;
+    private final CacheManager cacheMng;
 
     public void putMessage(Message message){
         cacheMng.getCache(MESSAGES_BY_IDS).put(message.getId(), message);

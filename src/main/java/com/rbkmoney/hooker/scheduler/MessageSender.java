@@ -7,20 +7,17 @@ import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import com.rbkmoney.hooker.service.err.PostRequestException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
  * Created by jeckep on 18.04.17.
  */
-
+@Slf4j
 public abstract class MessageSender<M extends Message> implements Callable<MessageSender.QueueStatus> {
-    public static Logger log = LoggerFactory.getLogger(MessageSender.class);
 
     private MessageSender.QueueStatus queueStatus;
     private List<M> messages;

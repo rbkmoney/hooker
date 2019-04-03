@@ -1,11 +1,18 @@
 package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Created by inalarsanukaev on 27.09.17.
  */
-
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class InvoiceCartPosition {
     private String product;
     private Long price;
@@ -22,56 +29,5 @@ public class InvoiceCartPosition {
         if (other.taxMode != null) {
             this.taxMode = new TaxMode(other.taxMode.getRate());
         }
-    }
-
-    public InvoiceCartPosition() {
-    }
-
-    public InvoiceCartPosition(String product, Long price, int quantity, Long cost, TaxMode taxMode) {
-        this.product = product;
-        this.price = price;
-        this.quantity = quantity;
-        this.cost = cost;
-        this.taxMode = taxMode;
-    }
-
-    public String getProduct() {
-        return product;
-    }
-
-    public void setProduct(String product) {
-        this.product = product;
-    }
-
-    public Long getPrice() {
-        return price;
-    }
-
-    public void setPrice(Long price) {
-        this.price = price;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public Long getCost() {
-        return cost;
-    }
-
-    public void setCost(Long cost) {
-        this.cost = cost;
-    }
-
-    public TaxMode getTaxMode() {
-        return taxMode;
-    }
-
-    public void setTaxMode(TaxMode taxMode) {
-        this.taxMode = taxMode;
     }
 }

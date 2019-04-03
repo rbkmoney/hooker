@@ -4,14 +4,16 @@ package com.rbkmoney.hooker;
  * Created by inalarsanukaev on 11.05.17.
  */
 
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,15 +22,14 @@ import java.io.IOException;
 /**
  * @since 12.04.17
  **/
-@Ignore
-public class MockServer {
+@Slf4j
+public class MockServerTest {
 
-    Logger log = LoggerFactory.getLogger(this.getClass());
-
-    int PORT = 8089;
+    private static final int PORT = 8089;
+    private static final String body = "xyi";
 
     @Test
-    public void test() throws Exception {
+    public void testMockServer() throws Exception {
 
         final Dispatcher dispatcher = new Dispatcher() {
 
@@ -42,7 +43,7 @@ public class MockServer {
                     e.printStackTrace();
                 }
                 log.info("\nRequest: " + request.getRequestLine() + "\nBody: " + byteArrayOutputStream.toString());
-                return new MockResponse().setBody("xyi").setResponseCode(200);
+                return new MockResponse().setBody(body).setResponseCode(200);
             }
         };
         // Create a MockWebServer. These are lean enough that you can create a new
@@ -56,8 +57,33 @@ public class MockServer {
         log.info("Server started on port: " + server.getPort());
         log.info("To run it : \n ngrok http " + PORT);
 
-        while (true) {
-            server.takeRequest();
-        }
+        // process request
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    server.takeRequest();
+                } catch (InterruptedException e) {
+                    try {
+                        server.shutdown();
+                    } catch (IOException e1) {
+                        new RuntimeException(e1);
+                    }
+                }
+            }
+        });
+
+        thread.start();
+
+        OkHttpClient client = new OkHttpClient.Builder().build();
+
+        Response response = client.newCall(new Request.Builder()
+                .url("http://" + server.getHostName() + ":" + server.getPort())
+                .get()
+                .build()
+        ).execute();
+
+        Assert.assertEquals(body, response.body().string());
+
+        thread.interrupt();
     }
 }

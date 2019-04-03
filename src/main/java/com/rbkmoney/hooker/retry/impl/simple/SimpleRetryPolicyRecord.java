@@ -2,10 +2,18 @@ package com.rbkmoney.hooker.retry.impl.simple;
 
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Created by jeckep on 18.04.17.
  */
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class SimpleRetryPolicyRecord extends RetryPolicyRecord {
     public static RetryPolicyType type = RetryPolicyType.SIMPLE;
 
@@ -13,52 +21,6 @@ public class SimpleRetryPolicyRecord extends RetryPolicyRecord {
     String messageType;
     int failCount;
     long lastFailTime;
-
-    public SimpleRetryPolicyRecord(long queueId, String messageType, int failCount, long lastFailTime) {
-        this.queueId = queueId;
-        this.messageType = messageType;
-        this.failCount = failCount;
-        this.lastFailTime = lastFailTime;
-    }
-
-    public SimpleRetryPolicyRecord() {
-    }
-
-    public static void setType(RetryPolicyType type) {
-        SimpleRetryPolicyRecord.type = type;
-    }
-
-    public long getQueueId() {
-        return queueId;
-    }
-
-    public void setQueueId(long queueId) {
-        this.queueId = queueId;
-    }
-
-    public String getMessageType() {
-        return messageType;
-    }
-
-    public void setMessageType(String messageType) {
-        this.messageType = messageType;
-    }
-
-    public int getFailCount() {
-        return failCount;
-    }
-
-    public void setFailCount(int failCount) {
-        this.failCount = failCount;
-    }
-
-    public long getLastFailTime() {
-        return lastFailTime;
-    }
-
-    public void setLastFailTime(long lastFailTime) {
-        this.lastFailTime = lastFailTime;
-    }
 
     @Override
     public boolean isFailed() {

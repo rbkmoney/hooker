@@ -1,16 +1,13 @@
 package com.rbkmoney.hooker.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by inalarsanukaev on 20.11.17.
  */
+@Getter
+@Setter
 public class Message {
     private long id;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 }

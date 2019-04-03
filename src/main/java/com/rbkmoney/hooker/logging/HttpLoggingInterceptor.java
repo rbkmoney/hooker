@@ -1,10 +1,10 @@
 package com.rbkmoney.hooker.logging;
 
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import okhttp3.internal.http.HttpHeaders;
 import okio.Buffer;
 import okio.BufferedSource;
-import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -18,9 +18,9 @@ import java.util.concurrent.TimeUnit;
  * this class should not be considered stable and may change slightly between releases. If you need
  * a stable logging format, use your own interceptor.
  */
+@Slf4j
 public final class HttpLoggingInterceptor implements Interceptor {
     private static final Charset UTF8 = Charset.forName("UTF-8");
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(HttpLoggingInterceptor.class);
 
     public enum Level {
         /**
@@ -86,7 +86,7 @@ public final class HttpLoggingInterceptor implements Interceptor {
         /**
          * A {@link Logger} defaults output appropriate for the current platform.
          */
-        Logger DEFAULT = message -> log.info(message);
+        Logger DEFAULT = log::info;
     }
 
     public HttpLoggingInterceptor() {
