@@ -62,6 +62,9 @@ public class ErrorUtils {
     }
 
     private static PaymentErrorSubError getSubErrorTree(String[] codes) {
+        if (codes.length == 1)
+            return null;
+
         List<PaymentErrorSubError> subErrors = Arrays.stream(codes)
                 .map(code -> new PaymentErrorSubError().code(code))
                 .collect(Collectors.toList());
