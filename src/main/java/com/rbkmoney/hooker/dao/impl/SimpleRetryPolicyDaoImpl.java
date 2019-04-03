@@ -3,8 +3,7 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
@@ -14,9 +13,8 @@ import javax.sql.DataSource;
 /**
  * Created by jeckep on 17.04.17.
  */
-
+@Slf4j
 public class SimpleRetryPolicyDaoImpl extends NamedParameterJdbcDaoSupport implements SimpleRetryPolicyDao {
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     public SimpleRetryPolicyDaoImpl(DataSource dataSource) {
         setDataSource(dataSource);

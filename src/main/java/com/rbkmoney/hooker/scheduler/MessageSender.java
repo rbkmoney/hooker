@@ -51,6 +51,7 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
             }
             queueStatus.setSuccess(true);
         } catch (Exception e) {
+            assert currentMessage != null;
             log.warn("Couldn't send message with id {} {} to hook {}. We'll try to resend it", currentMessage.getId(), currentMessage, queueStatus.getQueue().getHook(), e);
             queueStatus.setSuccess(false);
         }

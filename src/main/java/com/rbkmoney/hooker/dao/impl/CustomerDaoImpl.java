@@ -7,8 +7,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -21,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
@@ -29,9 +27,8 @@ import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 /**
  * Created by inalarsanukaev on 13.10.17.
  */
+@Slf4j
 public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements CustomerDao {
-
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     CustomerQueueDao queueDao;

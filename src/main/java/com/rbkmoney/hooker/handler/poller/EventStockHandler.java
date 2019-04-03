@@ -73,6 +73,7 @@ public class EventStockHandler implements EventHandler<StockEvent> {
                                 Thread.sleep(3000);
                             } catch (InterruptedException e1) {
                                 log.warn("Waiting for retry is interrupted");
+                                Thread.currentThread().interrupt();
                             }
                             return EventAction.RETRY;
                         }

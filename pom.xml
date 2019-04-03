@@ -17,6 +17,8 @@
     </parent>
 
     <properties>
+        <sonar.jacoco.reportPath>target/sites/jacoco/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.cobertura.reportPath>target/site/cobertura/coverage.xml</sonar.cobertura.reportPath>
         <project.maintainer>Inal Arsanukaev &lt;i.arsanukaev@rbkmoney.com&gt;</project.maintainer>
         <server.port>8022</server.port>
         <exposed.ports>${server.port}</exposed.ports>
@@ -265,6 +267,27 @@
                     <execution>
                         <goals>
                             <goal>process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.2</version>
+                <configuration>
+                    <destFile>${sonar.jacoco.reportPath}</destFile>
+                    <append>true</append>
+                    <excludes>
+                        <exclude>com/rbkmoney/hooker/constant/**/*</exclude>
+                        <exclude>com/rbkmoney/hooker/model/**/*</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                 </executions>

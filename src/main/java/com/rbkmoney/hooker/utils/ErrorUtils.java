@@ -6,6 +6,10 @@ import com.rbkmoney.damsel.domain.SubFailure;
 import com.rbkmoney.swag_webhook_events.PaymentError;
 import com.rbkmoney.swag_webhook_events.PaymentErrorSubError;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ErrorUtils {
 
     public static PaymentError getPaymentError(OperationFailure operationFailure) {
@@ -53,22 +57,19 @@ public class ErrorUtils {
 
     public static PaymentError toPaymentError(String failure, String failureReason) {
         String[] codes = failure.split(":");
-        PaymentError paymentError = new PaymentError();
-        paymentError.setCode(codes[0]);
-        paymentError.setMessage(failureReason);
-        if (codes.length > 1) {
-            PaymentErrorSubError previousSubError = null;
-            for (int i = 1; i < codes.length; ++i){
-                PaymentErrorSubError subError = new PaymentErrorSubError();
-                subError.setCode(codes[i]);
-                if (i == 1) {
-                    paymentError.setSubError(subError);
-                } else {
-                    previousSubError.setSubError(subError);
-                }
-                previousSubError = subError;
-            }
+
+        return new PaymentError().code(codes[0]).message(failureReason).subError(getSubErrorTree(codes));
+    }
+
+    private static PaymentErrorSubError getSubErrorTree(String[] codes) {
+        List<PaymentErrorSubError> subErrors = Arrays.stream(codes)
+                .map(code -> new PaymentErrorSubError().code(code))
+                .collect(Collectors.toList());
+
+        for (int i = 1; i < subErrors.size() - 1; i++) {
+            subErrors.get(i).setSubError(subErrors.get(i + 1));
         }
-        return paymentError;
+
+        return subErrors.get(1);
     }
 }

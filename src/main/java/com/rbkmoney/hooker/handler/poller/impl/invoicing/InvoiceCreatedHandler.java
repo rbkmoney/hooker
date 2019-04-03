@@ -35,7 +35,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
 
     @Override
     @Transactional
-    protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
+    public void saveEvent(InvoiceChange ic, Event event) throws DaoException {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         InvoicingMessage message = new InvoicingMessage();

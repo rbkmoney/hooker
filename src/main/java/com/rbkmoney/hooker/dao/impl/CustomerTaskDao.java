@@ -3,8 +3,7 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.dao.AbstractTaskDao;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.swag_webhook_events.Event;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
@@ -13,9 +12,8 @@ import javax.sql.DataSource;
 /**
  * Created by jeckep on 17.04.17.
  */
+@Slf4j
 public class CustomerTaskDao extends AbstractTaskDao {
-
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     public CustomerTaskDao(DataSource dataSource) {
         super(dataSource);

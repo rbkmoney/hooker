@@ -3,16 +3,15 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.dao.CacheMng;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.model.Refund;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -28,8 +27,8 @@ import java.util.*;
 import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.*;
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
+@Slf4j
 public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implements InvoicingMessageDao {
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     CacheMng cacheMng;

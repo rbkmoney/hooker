@@ -64,6 +64,7 @@ public class InvoicingMessageJson {
             invoicingMessageJson = new RefundMessageJson(message);
             invoicingMessageJson.eventType = refundStatusesMapping.get(message.getRefund().getStatus());
         }
+        assert invoicingMessageJson != null;
         invoicingMessageJson.eventID = message.getEventId();
         invoicingMessageJson.occuredAt = message.getEventTime();
         invoicingMessageJson.topic = Event.TopicEnum.INVOICESTOPIC.getValue();

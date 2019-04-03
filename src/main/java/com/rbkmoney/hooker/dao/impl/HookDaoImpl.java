@@ -7,8 +7,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
 import com.rbkmoney.hooker.service.crypt.Signer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
@@ -24,9 +23,8 @@ import java.util.stream.Collectors;
 /**
  * Created by inal on 28.11.2016.
  */
-
+@Slf4j
 public class HookDaoImpl implements HookDao {
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     Signer signer;

@@ -6,8 +6,7 @@ import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingQueue;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.swag_webhook_events.Event;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -20,8 +19,8 @@ import java.util.List;
 /**
  * Created by inalarsanukaev on 14.11.17.
  */
+@Slf4j
 public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements QueueDao<InvoicingQueue> {
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     public InvoicingQueueDao(DataSource dataSource) {
         setDataSource(dataSource);

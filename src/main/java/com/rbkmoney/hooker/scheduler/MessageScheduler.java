@@ -170,6 +170,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
             }
         } catch (InterruptedException e) {
             log.warn("Waiting for scheduller shutdown is interrupted.");
+            Thread.currentThread().interrupt();
         }
     }
 }
