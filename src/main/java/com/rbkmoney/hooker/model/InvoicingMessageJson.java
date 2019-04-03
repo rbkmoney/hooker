@@ -64,7 +64,9 @@ public class InvoicingMessageJson {
             invoicingMessageJson = new RefundMessageJson(message);
             invoicingMessageJson.eventType = refundStatusesMapping.get(message.getRefund().getStatus());
         }
-        assert invoicingMessageJson != null;
+        if (invoicingMessageJson == null) {
+            throw new NullPointerException("Message is not Refund or Payment or Invoice: " + message);
+        }
         invoicingMessageJson.eventID = message.getEventId();
         invoicingMessageJson.occuredAt = message.getEventTime();
         invoicingMessageJson.topic = Event.TopicEnum.INVOICESTOPIC.getValue();
