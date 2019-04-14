@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.configuration;
 
 import com.rbkmoney.hooker.serde.MachineEventDeserializer;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SslConfigs;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
@@ -19,11 +21,13 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.LoggingErrorHandler;
 import org.springframework.retry.support.RetryTemplate;
 
+import javax.annotation.PreDestroy;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
 public class KafkaConfig {
 
     private static final String GROUP_ID = "HookerListener";
@@ -46,6 +50,8 @@ public class KafkaConfig {
     private String clientStoreCertPath;
     @Value("${kafka.ssl.enable}")
     private boolean kafkaSslEnable;
+
+    private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
 
     @Bean
     public Map<String, Object> consumerConfigs() {
@@ -87,5 +93,10 @@ public class KafkaConfig {
         factory.setConcurrency(concurrency);
         factory.setRetryTemplate(retryTemplate);
         return factory;
+    }
+
+    @PreDestroy
+    public void stopKafka() {
+        kafkaListenerEndpointRegistry.stop();
     }
 }

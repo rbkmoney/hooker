@@ -12,6 +12,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.time.Duration;
@@ -24,6 +25,13 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Slf4j
 public abstract class AbstractIntegrationTest {
+    public static final String SOURCE_ID = "source_id";
+    public static final String SOURCE_NS = "source_ns";
+
+    private static final String CONFLUENT_PLATFORM_VERSION = "5.0.1";
+
+    @ClassRule
+    public static KafkaContainer kafka = new KafkaContainer(CONFLUENT_PLATFORM_VERSION).withEmbeddedZookeeper();
 
     @ClassRule
     public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer("postgres:9.6")
@@ -39,7 +47,8 @@ public abstract class AbstractIntegrationTest {
                     "spring.datasource.password=" + postgres.getPassword(),
                     "flyway.url=" + postgres.getJdbcUrl(),
                     "flyway.user=" + postgres.getUsername(),
-                    "flyway.password=" + postgres.getPassword()
+                    "flyway.password=" + postgres.getPassword(),
+                    "kafka.bootstrap.servers=" + kafka.getBootstrapServers()
             ).applyTo(configurableApplicationContext);
             Flyway flyway = Flyway.configure()
                     .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
