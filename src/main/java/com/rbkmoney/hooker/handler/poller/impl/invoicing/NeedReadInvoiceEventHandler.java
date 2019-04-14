@@ -1,11 +1,11 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -16,8 +16,8 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
     InvoicingMessageDao messageDao;
 
     @Override
-    protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
-        final String invoiceId = event.getSource().getInvoiceId();
+    protected void saveEvent(InvoiceChange ic, MachineEvent event) throws DaoException {
+        final String invoiceId = event.getSourceId();
         //getAny any saved message for related invoice
         InvoicingMessage message = getMessage(invoiceId, ic);
         if (message == null) {
@@ -25,7 +25,7 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         }
         message.setEventType(getEventType());
         message.setType(getMessageType());
-        message.setEventId(event.getId());
+        message.setEventId(event.getEventId());
         message.setEventTime(event.getCreatedAt());
         modifyMessage(ic, event, message);
 
@@ -38,7 +38,7 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
 
     protected abstract EventType getEventType();
 
-    protected abstract void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message);
+    protected abstract void modifyMessage(InvoiceChange ic, MachineEvent event, InvoicingMessage message);
 
 
 }

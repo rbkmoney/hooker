@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.domain.InvoiceCart;
 import com.rbkmoney.damsel.domain.InvoiceLine;
 import com.rbkmoney.damsel.msgpack.Value;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -13,6 +12,7 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +35,11 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
 
     @Override
     @Transactional
-    public void saveEvent(InvoiceChange ic, Event event) throws DaoException {
+    public void saveEvent(InvoiceChange ic, MachineEvent event) throws DaoException {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventId(event.getId());
+        message.setEventId(event.getEventId());
         message.setEventTime(event.getCreatedAt());
         message.setType(INVOICE);
         message.setPartyId(invoiceOrigin.getOwnerId());

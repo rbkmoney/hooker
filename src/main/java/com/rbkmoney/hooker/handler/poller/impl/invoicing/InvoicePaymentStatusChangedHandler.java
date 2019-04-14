@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.domain.Cash;
 import com.rbkmoney.damsel.domain.InvoicePaymentCaptured;
 import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
 import com.rbkmoney.damsel.domain.OperationFailure;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -14,6 +13,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.utils.ErrorUtils;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -47,7 +47,7 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
+    protected void modifyMessage(InvoiceChange ic, MachineEvent event, InvoicingMessage message) {
         InvoicePaymentStatus paymentOriginStatus = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStatusChanged().getStatus();
         Payment payment = message.getPayment();
         payment.setStatus(paymentOriginStatus.getSetField().getFieldName());

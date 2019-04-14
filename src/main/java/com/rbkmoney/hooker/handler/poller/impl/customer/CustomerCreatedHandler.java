@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
@@ -11,6 +10,7 @@ import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.swag_webhook_events.ContactInfo;
 import com.rbkmoney.swag_webhook_events.Customer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,10 +39,10 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
     }
 
     @Override
-    protected void saveEvent(CustomerChange cc, Event event) throws DaoException {
+    protected void saveEvent(CustomerChange cc, MachineEvent event) throws DaoException {
         com.rbkmoney.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
-        customerMessage.setEventId(event.getId());
+        customerMessage.setEventId(event.getEventId());
         customerMessage.setOccuredAt(event.getCreatedAt());
         customerMessage.setType(CUSTOMER);
         customerMessage.setPartyId(customerCreatedOrigin.getOwnerId());

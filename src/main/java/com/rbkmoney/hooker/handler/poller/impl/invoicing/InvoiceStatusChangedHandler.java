@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
 import com.rbkmoney.damsel.domain.InvoiceStatus;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -10,6 +9,7 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,7 +47,7 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
+    protected void modifyMessage(InvoiceChange ic, MachineEvent event, InvoicingMessage message) {
         InvoiceStatus statusOrigin = ic.getInvoiceStatusChanged().getStatus();
         message.getInvoice().setStatus(statusOrigin.getSetField().getFieldName());
         if (statusOrigin.isSetCancelled()) {

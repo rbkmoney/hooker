@@ -2,7 +2,6 @@ package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
 import com.rbkmoney.damsel.domain.FinalCashFlowPosting;
 import com.rbkmoney.damsel.domain.InvoicePaymentRefund;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundCreated;
 import com.rbkmoney.geck.filter.Filter;
@@ -12,6 +11,7 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Refund;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -48,7 +48,7 @@ public class InvoicePaymentRefundStartedHandler extends NeedReadInvoiceEventHand
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
+    protected void modifyMessage(InvoiceChange ic, MachineEvent event, InvoicingMessage message) {
         InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getPayload().getInvoicePaymentRefundCreated();
         Refund refund = new Refund();
         message.setRefund(refund);

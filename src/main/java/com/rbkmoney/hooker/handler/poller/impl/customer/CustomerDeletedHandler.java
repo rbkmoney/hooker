@@ -1,13 +1,13 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,7 +38,7 @@ public class CustomerDeletedHandler extends NeedReadCustomerEventHandler {
     }
 
     @Override
-    protected void modifyMessage(CustomerChange cc, Event event, CustomerMessage message) {
+    protected void modifyMessage(CustomerChange cc, MachineEvent event, CustomerMessage message) {
 
     }
 }
