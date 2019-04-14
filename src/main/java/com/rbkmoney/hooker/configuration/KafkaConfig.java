@@ -83,8 +83,8 @@ public class KafkaConfig {
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> kafkaListenerContainerFactory(
             ConsumerFactory<String, MachineEvent> consumerFactory,
-            RetryTemplate retryTemplate
-    ) {
+            RetryTemplate retryTemplate) {
+
         ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.getContainerProperties().setAckOnError(false);

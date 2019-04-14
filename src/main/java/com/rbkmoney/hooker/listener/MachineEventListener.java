@@ -22,8 +22,11 @@ public class MachineEventListener implements MessageListener {
 
     @KafkaListener(topics = "${kafka.invoice.topic}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(MachineEvent message, Acknowledgment ack) {
+        log.debug("Got machineEvent: {}", message);
         handle(message, ack);
+        log.debug("Handled machineEvent {}", message);
         ack.acknowledge();
+        log.debug("Ack for machineEvent {} sent", message);
     }
 
     @Override
@@ -34,7 +37,8 @@ public class MachineEventListener implements MessageListener {
             for (InvoiceChange invoiceChange : payload.getInvoiceChanges()) {
                 try {
                     handlerManager.getHandler(invoiceChange)
-                            .ifPresent(handler -> handler.handle(invoiceChange, machineEvent));
+                            .ifPresentOrElse(handler -> handler.handle(invoiceChange, machineEvent),
+                                    () -> log.debug("Handler for invoiceChange {} wasn't found (machineEvent {})", invoiceChange, machineEvent));
                 } catch (Exception ex) {
                     log.error("Failed to handle invoice change, invoiceChange='{}'", invoiceChange, ex);
                     throw ex;
@@ -44,7 +48,8 @@ public class MachineEventListener implements MessageListener {
             for (CustomerChange customerChange : payload.getCustomerChanges()) {
                 try {
                     handlerManager.getHandler(customerChange)
-                            .ifPresent(handler -> handler.handle(customerChange, machineEvent));
+                            .ifPresentOrElse(handler -> handler.handle(customerChange, machineEvent),
+                                    () -> log.debug("Handler for customerChange {} wasn't found (machineEvent {})", customerChange, machineEvent));
                 } catch (Exception ex) {
                     log.error("Failed to handle customer change, customerChange='{}'", customerChange, ex);
                     throw ex;
