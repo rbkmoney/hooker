@@ -36,6 +36,8 @@
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
         <db.schema>hook</db.schema>
+
+        <geck.version>0.6.9</geck.version>
     </properties>
 
     <dependencies>
@@ -59,6 +61,11 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${postgresql.jdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>eventstock-client</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
             <groupId>net.logstash.logback</groupId>
@@ -91,6 +98,21 @@
                     <artifactId>hibernate-validator</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney.woody</groupId>
+            <artifactId>woody-thrift</artifactId>
+            <version>1.1.15</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney.geck</groupId>
+            <artifactId>common</artifactId>
+            <version>${geck.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney.geck</groupId>
+            <artifactId>filter</artifactId>
+            <version>${geck.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
