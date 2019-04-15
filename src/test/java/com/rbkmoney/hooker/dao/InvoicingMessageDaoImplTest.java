@@ -4,7 +4,6 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.utils.HashUtils;
 import com.rbkmoney.swag_webhook_events.CustomerPayer;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -33,9 +31,6 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Autowired
     InvoicingMessageDao messageDao;
-
-    @Value("${bm.pooling.workersCount}")
-    private int workersCount;
 
     private static boolean messagesCreated = false;
 
@@ -78,8 +73,4 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
         assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);
     }
 
-    @Test
-    public void getMaxEventId() {
-        assertEquals(messageDao.getMaxEventId(workersCount, HashUtils.getIntHash("1234") % workersCount).longValue(), 5555);
-    }
 }

@@ -403,16 +403,6 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     }
 
     @Override
-    public Long getMaxEventId(int div, int mod) {
-        final String sql = "select event_id from hook.message where ('x0'||substr(md5(invoice_id), 1, 7))::bit(32)::int % :div = :mod order by event_id desc limit 1";
-        try {
-            return getNamedParameterJdbcTemplate().queryForObject(sql, new MapSqlParameterSource("div", div).addValue("mod", mod), Long.class);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
-    @Override
     public List<InvoicingMessage> getBy(Collection<Long> messageIds) throws DaoException {
         final String sql = "SELECT * FROM hook.message WHERE id in (:ids)";
         try {
