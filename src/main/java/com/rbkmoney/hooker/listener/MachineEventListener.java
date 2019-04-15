@@ -23,14 +23,14 @@ public class MachineEventListener implements MessageListener {
     @KafkaListener(topics = "${kafka.invoice.topic}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(MachineEvent message, Acknowledgment ack) {
         log.debug("Got machineEvent: {}", message);
-        handle(message, ack);
+        handle(message);
         log.debug("Handled machineEvent {}", message);
         ack.acknowledge();
         log.debug("Ack for machineEvent {} sent", message);
     }
 
     @Override
-    public void handle(MachineEvent machineEvent, Acknowledgment ack) {
+    public void handle(MachineEvent machineEvent) {
         EventPayload payload = eventParser.parseEvent(machineEvent);
         log.info("EventPayload payload: {}", payload);
         if (payload.isSetInvoiceChanges()) {
