@@ -48,11 +48,11 @@ retry-policy:
 kafka:
   bootstrap.servers: kenny-kafka1.bst1.rbkmoney.net:9092
   invoice.topic: mg-invoice-100-2
-  concurrency: 1
+  concurrency: 5
   ssl:
     enable: false
-    keystore-location:
-    keystore-password:
-    key-password:
-    server-password:
-    server-keystore-location:
+    keystore-location: "src/main/resources/cert/kenny-k.struzhkin.p12"
+    keystore-password: "kenny"
+    key-password: "kenny"
+    server-password: "kenny12"
+    server-keystore-location: "src/main/resources/cert/truststore.p12"
