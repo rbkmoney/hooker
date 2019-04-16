@@ -19,24 +19,23 @@ import java.util.ArrayList;
 
 import static org.mockito.ArgumentMatchers.any;
 
-public class MachineEventListenerTest {
+public class MachineEventHandlerImplTest {
 
     @Mock
     private HandlerManager handlerManager;
     @Mock
     private Handler handler;
-
     @Mock
     private SourceEventParser eventParser;
     @Mock
     private Acknowledgment ack;
 
-    private MachineEventListener machineEventListener;
+    private MachineEventHandlerImpl machineEventHandler;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        machineEventListener = new MachineEventListener(handlerManager, eventParser);
+        machineEventHandler = new MachineEventHandlerImpl(handlerManager, eventParser);
     }
 
     @Test
@@ -50,7 +49,7 @@ public class MachineEventListenerTest {
         event.setPayload(payload);
         Mockito.when(eventParser.parseEvent(message)).thenReturn(payload);
 
-        machineEventListener.listen(message, ack);
+        machineEventHandler.handle(message, ack);
 
         Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
         Mockito.verify(handler, Mockito.times(0)).handle(any(), any());
@@ -61,7 +60,7 @@ public class MachineEventListenerTest {
     public void listenEmptyException() {
         MachineEvent message = new MachineEvent();
         Mockito.when(eventParser.parseEvent(message)).thenThrow(new ParseException());
-        machineEventListener.listen(message, ack);
+        machineEventHandler.handle(message, ack);
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
     }
@@ -78,7 +77,7 @@ public class MachineEventListenerTest {
         Mockito.when(eventParser.parseEvent(message)).thenReturn(payload);
         Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
 
-        machineEventListener.listen(message, ack);
+        machineEventHandler.handle(message, ack);
 
         Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
         Mockito.verify(handler, Mockito.times(1)).handle(any(), any());

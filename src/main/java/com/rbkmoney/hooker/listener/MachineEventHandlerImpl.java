@@ -8,29 +8,21 @@ import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MachineEventListener implements MessageListener {
+public class MachineEventHandlerImpl implements MachineEventHandler {
 
     private final HandlerManager handlerManager;
     private final SourceEventParser eventParser;
 
-    @KafkaListener(topics = "${kafka.invoice.topic}", containerFactory = "kafkaListenerContainerFactory")
-    public void listen(MachineEvent message, Acknowledgment ack) {
-        log.debug("Got machineEvent: {}", message);
-        handle(message);
-        log.debug("Handled machineEvent {}", message);
-        ack.acknowledge();
-        log.debug("Ack for machineEvent {} sent", message);
-    }
-
     @Override
-    public void handle(MachineEvent machineEvent) {
+    @Transactional
+    public void handle(MachineEvent machineEvent, Acknowledgment ack) {
         EventPayload payload = eventParser.parseEvent(machineEvent);
         log.info("EventPayload payload: {}", payload);
         if (payload.isSetInvoiceChanges()) {
@@ -56,5 +48,8 @@ public class MachineEventListener implements MessageListener {
                 }
             }
         }
+        ack.acknowledge();
+        log.debug("Ack for machineEvent {} sent", machineEvent);
     }
+
 }

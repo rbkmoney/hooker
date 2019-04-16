@@ -4,7 +4,8 @@ import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.hooker.configuration.KafkaConfig;
 import com.rbkmoney.hooker.configuration.RetryConfig;
 import com.rbkmoney.hooker.converter.SourceEventParser;
-import com.rbkmoney.hooker.listener.MachineEventListener;
+import com.rbkmoney.hooker.listener.KafkaMachineEventListener;
+import com.rbkmoney.hooker.listener.MachineEventHandlerImpl;
 import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
@@ -27,8 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 
 @Slf4j
 @TestPropertySource(properties = "kafka.ssl.enable=false")
-@ContextConfiguration(classes = {KafkaConfig.class, KafkaAutoConfiguration.class, MachineEventListener.class, RetryConfig.class})
-public class MachineEventListenerKafkaTest extends KafkaAbstractTest {
+@ContextConfiguration(classes = {KafkaConfig.class, KafkaAutoConfiguration.class, KafkaMachineEventListener.class, MachineEventHandlerImpl.class, RetryConfig.class})
+public class KafkaMachineEventListenerKafkaTest extends KafkaAbstractTest {
 
     @MockBean
     HandlerManager handlerManager;
