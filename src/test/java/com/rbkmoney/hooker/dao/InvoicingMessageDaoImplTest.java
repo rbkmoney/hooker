@@ -18,8 +18,7 @@ import java.util.Arrays;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by inalarsanukaev on 09.04.17.
@@ -71,6 +70,14 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
 
         InvoicingMessage payment = messageDao.getPayment("1234", "123");
         assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);
+    }
+
+    @Test
+    public void testIsDuplicate(){
+        InvoicingMessage invoicingMessage = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false);
+        assertTrue(messageDao.isDuplicate(invoicingMessage));
+        invoicingMessage.getPayment().setStatus("processed");
+        assertFalse(messageDao.isDuplicate(invoicingMessage));
     }
 
 }

@@ -429,4 +429,30 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public InvoicingMessage getRefund(String invoiceId, String paymentId, String refundId) throws DaoException {
         return getAny(invoiceId, paymentId, refundId, REFUND);
     }
+
+    @Override
+    public boolean isDuplicate(InvoicingMessage message) {
+        String sql = "SELECT count(*) FROM hook.message WHERE invoice_id=:invoice_id" +
+                " AND type=:type" +
+                " AND event_type=CAST(:event_type as hook.eventtype)" +
+                " AND invoice_status=:invoice_status" +
+                " AND (payment_id IS NULL OR payment_id=:payment_id)" +
+                " AND (payment_status IS NULL OR payment_status=:payment_status)" +
+                " AND (refund_id IS NULL OR refund_id=:refund_id)" +
+                " AND (refund_status IS NULL OR refund_status=:refund_status)";
+        MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, message.getInvoice().getId())
+                .addValue(TYPE, message.getType())
+                .addValue(EVENT_TYPE, message.getEventType().toString())
+                .addValue(INVOICE_STATUS, message.getInvoice().getStatus())
+                .addValue(PAYMENT_ID, message.isPayment() ? message.getPayment().getId() : null)
+                .addValue(PAYMENT_STATUS, message.isPayment() ? message.getPayment().getStatus() : null)
+                .addValue(REFUND_ID, message.isRefund() ? message.getRefund().getId() : null)
+                .addValue(REFUND_STATUS, message.isRefund() ? message.getRefund().getStatus() : null);
+        try {
+            int count = getNamedParameterJdbcTemplate().queryForObject(sql, params, Integer.class);
+            return count > 0;
+        } catch (NestedRuntimeException e) {
+            throw new DaoException("InvoicingMessageDaoImpl.isDuplicate error", e);
+        }
+    }
 }

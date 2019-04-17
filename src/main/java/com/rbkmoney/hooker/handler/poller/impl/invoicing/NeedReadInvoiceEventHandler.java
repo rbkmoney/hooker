@@ -28,8 +28,9 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         message.setEventId(event.getEventId());
         message.setEventTime(event.getCreatedAt());
         modifyMessage(ic, event, message);
-
-        messageDao.create(message);
+        if (!messageDao.isDuplicate(message)) {
+            messageDao.create(message);
+        }
     }
 
     protected abstract InvoicingMessage getMessage(String invoiceId, InvoiceChange ic);
