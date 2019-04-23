@@ -222,18 +222,18 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     }
 
     public static class MockMessage {
-        private long eventID;
+        private Long eventID;
         private String occuredAt;
         private String topic;
         private String eventType;
         private Customer customer;
         private CustomerBinding binding;
 
-        public long getEventID() {
+        public Long getEventID() {
             return eventID;
         }
 
-        public void setEventID(long eventID) {
+        public void setEventID(Long eventID) {
             this.eventID = eventID;
         }
 

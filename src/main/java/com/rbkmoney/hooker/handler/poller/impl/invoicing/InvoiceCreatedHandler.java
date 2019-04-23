@@ -12,7 +12,6 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,12 +34,14 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
 
     @Override
     @Transactional
-    public void saveEvent(InvoiceChange ic, MachineEvent event) throws DaoException {
+    public void saveEvent(InvoiceChange ic, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventId(event.getEventId());
-        message.setEventTime(event.getCreatedAt());
+        message.setEventId(eventId);
+        message.setEventTime(eventCreatedAt);
+        message.setSequenceId(sequenceId);
+        message.setChangeId(changeId);
         message.setType(INVOICE);
         message.setPartyId(invoiceOrigin.getOwnerId());
         message.setEventType(eventType);

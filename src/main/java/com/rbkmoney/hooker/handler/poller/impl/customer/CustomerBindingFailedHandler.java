@@ -41,7 +41,7 @@ public class CustomerBindingFailedHandler extends NeedReadCustomerEventHandler {
     }
 
     @Override
-    protected void modifyMessage(CustomerChange cc, MachineEvent event, CustomerMessage message) {
+    protected void modifyMessage(CustomerChange cc, CustomerMessage message) {
         OperationFailure failure = cc.getCustomerBindingChanged().getPayload().getStatusChanged().getStatus().getFailed().getFailure();
         String errCode = null;
         String errMess = null;

@@ -42,6 +42,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String ID = "id";
     public static final String EVENT_ID = "event_id";
     public static final String EVENT_TIME = "event_time";
+    public static final String SEQUENCE_ID = "sequence_id";
+    public static final String CHANGE_ID = "change_id";
     public static final String TYPE = "type";
     public static final String PARTY_ID = "party_id";
     public static final String EVENT_TYPE = "event_type";
@@ -148,6 +150,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         message.setId(rs.getLong(ID));
         message.setEventId(rs.getLong(EVENT_ID));
         message.setEventTime(rs.getString(EVENT_TIME));
+        message.setSequenceId(rs.getLong(SEQUENCE_ID));
+        message.setChangeId(rs.getInt(CHANGE_ID));
         message.setType(rs.getString(TYPE));
         message.setPartyId(rs.getString(PARTY_ID));
         message.setEventType(EventType.valueOf(rs.getString(EVENT_TYPE)));
@@ -296,7 +300,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     @Transactional
     public void create(InvoicingMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.message" +
-                "(event_id, event_time, type, party_id, event_type, " +
+                "(event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
                 "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
                 "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
                 "payment_id, payment_created_at, payment_status, payment_failure, payment_failure_reason, payment_amount, " +
@@ -305,7 +309,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "payment_digital_wallet_provider, payment_digital_wallet_id, " +
                 "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
                 "VALUES " +
-                "(:event_id, :event_time, :type, :party_id, CAST(:event_type as hook.eventtype), " +
+                "(:event_id, :event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
                 ":invoice_currency, :invoice_content_type, :invoice_content_data, :invoice_product, :invoice_description, " +
                 ":payment_id, :payment_created_at, :payment_status, :payment_failure, :payment_failure_reason, :payment_amount, " +
@@ -317,6 +321,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())
                 .addValue(EVENT_TIME, message.getEventTime())
+                .addValue(SEQUENCE_ID, message.getSequenceId())
+                .addValue(CHANGE_ID, message.getChangeId())
                 .addValue(TYPE, message.getType())
                 .addValue(PARTY_ID, message.getPartyId())
                 .addValue(EVENT_TYPE, message.getEventType().toString())
@@ -399,6 +405,16 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             taskDao.create(message.getId());
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't create message with invoice_id "+ message.getInvoice().getId(), e);
+        }
+    }
+
+    @Override
+    public Long getMaxEventId(int div, int mod) {
+        final String sql = "select event_id from hook.message where ('x0'||substr(md5(invoice_id), 1, 7))::bit(32)::int % :div = :mod order by event_id desc limit 1";
+        try {
+            return getNamedParameterJdbcTemplate().queryForObject(sql, new MapSqlParameterSource("div", div).addValue("mod", mod), Long.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
     }
 

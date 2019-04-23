@@ -44,7 +44,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, MachineEvent event, InvoicingMessage message) {
+    protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
         InvoicePayment paymentOrigin = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
         Payment payment = new Payment();
         message.setPayment(payment);

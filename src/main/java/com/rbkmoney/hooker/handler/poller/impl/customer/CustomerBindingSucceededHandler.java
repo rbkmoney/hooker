@@ -39,7 +39,7 @@ public class CustomerBindingSucceededHandler extends NeedReadCustomerEventHandle
     }
 
     @Override
-    protected void modifyMessage(CustomerChange cc, MachineEvent event, CustomerMessage message) {
+    protected void modifyMessage(CustomerChange cc, CustomerMessage message) {
         message.getCustomerBinding().setStatus(CustomerBinding.StatusEnum.SUCCEEDED);
     }
 }

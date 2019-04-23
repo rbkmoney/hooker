@@ -48,7 +48,7 @@ public class InvoicePaymentRefundStartedHandler extends NeedReadInvoiceEventHand
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, MachineEvent event, InvoicingMessage message) {
+    protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
         InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getPayload().getInvoicePaymentRefundCreated();
         Refund refund = new Refund();
         message.setRefund(refund);

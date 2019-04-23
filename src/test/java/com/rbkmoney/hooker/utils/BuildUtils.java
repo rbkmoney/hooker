@@ -20,7 +20,7 @@ public class BuildUtils {
 
     public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventId(5555);
+        message.setEventId(5555L);
         message.setEventTime("time");
         message.setType(type);
         message.setPartyId(partyId);

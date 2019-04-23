@@ -48,7 +48,7 @@ public class CustomerBindingStartedHandler extends NeedReadCustomerEventHandler 
     }
 
     @Override
-    protected void modifyMessage(CustomerChange cc, MachineEvent event, CustomerMessage message) {
+    protected void modifyMessage(CustomerChange cc, CustomerMessage message) {
         com.rbkmoney.damsel.payment_processing.CustomerBinding bindingOrigin = cc.getCustomerBindingChanged().getPayload().getStarted().getBinding();
         PaymentResource paymentResource = new PaymentResource()
                 .paymentSession(bindingOrigin.getPaymentResource().getPaymentSessionId())

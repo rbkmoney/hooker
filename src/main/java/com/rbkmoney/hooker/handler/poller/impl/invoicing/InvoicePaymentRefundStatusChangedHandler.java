@@ -47,7 +47,7 @@ public class InvoicePaymentRefundStatusChangedHandler extends NeedReadInvoiceEve
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, MachineEvent event, InvoicingMessage message) {
+    protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
         InvoicePaymentRefundStatus refundStatus = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getPayload().getInvoicePaymentRefundStatusChanged().getStatus();
         Refund refund = message.getRefund();
         refund.setStatus(refundStatus.getSetField().getFieldName());

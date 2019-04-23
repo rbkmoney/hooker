@@ -17,18 +17,19 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
     CustomerDao customerDao;
 
     @Override
-    protected void saveEvent(CustomerChange cc, MachineEvent event) throws DaoException {
-        final String customerId = event.getSourceId();
+    protected void saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
         //getAny any saved message for related invoice
-        CustomerMessage message = getCustomerMessage(customerId);
+        CustomerMessage message = getCustomerMessage(sourceId);
         if (message == null) {
-            throw new DaoException("CustomerMessage for customer with id " + customerId + " not exist");
+            throw new DaoException("CustomerMessage for customer with id " + sourceId + " not exist");
         }
         message.setEventType(getEventType());
         message.setType(getMessageType());
-        message.setEventId(event.getEventId());
-        message.setOccuredAt(event.getCreatedAt());
-        modifyMessage(cc, event, message);
+        message.setEventId(eventId);
+        message.setOccuredAt(eventCreatedAt);
+        message.setSequenceId(sequenceId);
+        message.setChangeId(changeId);
+        modifyMessage(cc, message);
 
         customerDao.create(message);
     }
@@ -41,5 +42,5 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
 
     protected abstract EventType getEventType();
 
-    protected abstract void modifyMessage(CustomerChange cc, MachineEvent event, CustomerMessage message);
+    protected abstract void modifyMessage(CustomerChange cc, CustomerMessage message);
 }

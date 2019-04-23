@@ -14,7 +14,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerMessage extends Message {
-    private long eventId;
+    private Long eventId;
+    private Long sequenceId;
+    private Integer changeId;
     private String type;
     private String occuredAt;
     private String partyId;

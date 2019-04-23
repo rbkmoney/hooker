@@ -8,6 +8,7 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.swag_webhook_events.Customer;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,7 +39,6 @@ public class CustomerDeletedHandler extends NeedReadCustomerEventHandler {
     }
 
     @Override
-    protected void modifyMessage(CustomerChange cc, MachineEvent event, CustomerMessage message) {
-
+    protected void modifyMessage(CustomerChange cc, CustomerMessage message) {
     }
 }

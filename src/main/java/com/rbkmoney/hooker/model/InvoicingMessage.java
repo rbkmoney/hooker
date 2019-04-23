@@ -13,7 +13,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class InvoicingMessage extends Message {
-    private long eventId;
+    private Long eventId;
+    private Long sequenceId;
+    private Integer changeId;
     private String eventTime;
     private String type;
     private String partyId;
@@ -25,6 +27,8 @@ public class InvoicingMessage extends Message {
     public InvoicingMessage(InvoicingMessage other) {
         setId(other.getId());
         this.eventId = other.eventId;
+        this.sequenceId = other.sequenceId;
+        this.changeId = other.changeId;
         this.eventTime = other.eventTime;
         this.type = other.type;
         this.partyId = other.partyId;

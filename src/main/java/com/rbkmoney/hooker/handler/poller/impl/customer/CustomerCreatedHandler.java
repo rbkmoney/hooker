@@ -10,7 +10,6 @@ import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.swag_webhook_events.ContactInfo;
 import com.rbkmoney.swag_webhook_events.Customer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,11 +38,13 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
     }
 
     @Override
-    protected void saveEvent(CustomerChange cc, MachineEvent event) throws DaoException {
+    protected void saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
         com.rbkmoney.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
-        customerMessage.setEventId(event.getEventId());
-        customerMessage.setOccuredAt(event.getCreatedAt());
+        customerMessage.setEventId(eventId);
+        customerMessage.setOccuredAt(eventCreatedAt);
+        customerMessage.setSequenceId(sequenceId);
+        customerMessage.setChangeId(changeId);
         customerMessage.setType(CUSTOMER);
         customerMessage.setPartyId(customerCreatedOrigin.getOwnerId());
         customerMessage.setEventType(eventType);

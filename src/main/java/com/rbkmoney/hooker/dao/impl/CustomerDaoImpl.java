@@ -40,6 +40,8 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
     public static final String EVENT_ID = "event_id";
     public static final String TYPE = "type";
     public static final String OCCURED_AT = "occured_at";
+    public static final String SEQUENCE_ID = "sequence_id";
+    public static final String CHANGE_ID = "change_id";
     public static final String PARTY_ID = "party_id";
     public static final String EVENT_TYPE = "event_type";
     public static final String CUSTOMER_ID = "customer_id";
@@ -97,6 +99,8 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         message.setEventId(rs.getLong(EVENT_ID));
         message.setPartyId(rs.getString(PARTY_ID));
         message.setOccuredAt(rs.getString(OCCURED_AT));
+        message.setSequenceId(rs.getLong(SEQUENCE_ID));
+        message.setChangeId(rs.getInt(CHANGE_ID));
         message.setType(rs.getString(TYPE));
         message.setEventType(EventType.valueOf(rs.getString(EVENT_TYPE)));
         message.setCustomer(new Customer()
@@ -146,14 +150,14 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
     @Transactional
     public void create(CustomerMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.customer_message " +
-                "(event_id, occured_at, type, party_id, event_type, " +
+                "(event_id, occured_at, sequence_id, change_id, type, party_id, event_type, " +
                 "customer_id, customer_shop_id, customer_status, customer_email , customer_phone, customer_metadata, " +
                 "binding_id, binding_payment_tool_token, binding_payment_session, binding_payment_tool_details_type, " +
                 "binding_payment_card_bin, binding_payment_card_last_digits, binding_payment_card_number_mask, binding_payment_card_token_provider, binding_payment_card_system, binding_payment_terminal_provider, " +
                 "binding_payment_digital_wallet_provider, binding_payment_digital_wallet_id, " +
                 "binding_client_ip, binding_client_fingerprint, binding_status, binding_error_code, binding_error_message) " +
                 "VALUES " +
-                "(:event_id, :occured_at, CAST(:type as hook.customer_message_type), :party_id, CAST(:event_type as hook.eventtype), " +
+                "(:event_id, :occured_at, :sequence_id, :change_id, CAST(:type as hook.customer_message_type), :party_id, CAST(:event_type as hook.eventtype), " +
                 ":customer_id, :customer_shop_id, CAST(:customer_status as hook.customer_status), :customer_email , :customer_phone, :customer_metadata, " +
                 ":binding_id, :binding_payment_tool_token, :binding_payment_session, CAST(:binding_payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":binding_payment_card_bin, :binding_payment_card_last_digits, :binding_payment_card_number_mask, :binding_payment_card_token_provider, :binding_payment_card_system, :binding_payment_terminal_provider, " +
@@ -164,6 +168,8 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())
                 .addValue(OCCURED_AT, message.getOccuredAt())
+                .addValue(SEQUENCE_ID, message.getSequenceId())
+                .addValue(CHANGE_ID, message.getChangeId())
                 .addValue(TYPE, message.getType())
                 .addValue(PARTY_ID, message.getPartyId())
                 .addValue(EVENT_TYPE, message.getEventType().name())
@@ -201,6 +207,16 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
             taskDao.create(message.getId());
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't create customerMessage with customerId " + customer.getId(), e);
+        }
+    }
+
+    @Override
+    public Long getMaxEventId(int div, int mod) {
+        final String sql = "select event_id from hook.customer_message where ('x0'||substr(md5(customer_id), 1, 7))::bit(32)::int % :div = :mod order by event_id desc limit 1";
+        try {
+            return getNamedParameterJdbcTemplate().queryForObject(sql, new MapSqlParameterSource("div", div).addValue("mod", mod), Long.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
     }
 

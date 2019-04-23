@@ -39,7 +39,7 @@ public class CustomerReadyHandler extends NeedReadCustomerEventHandler {
     }
 
     @Override
-    protected void modifyMessage(CustomerChange cc, MachineEvent event, CustomerMessage message) {
+    protected void modifyMessage(CustomerChange cc, CustomerMessage message) {
         message.getCustomer().setStatus(Customer.StatusEnum.READY);
     }
 }

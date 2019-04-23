@@ -26,10 +26,12 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
         EventPayload payload = eventParser.parseEvent(machineEvent);
         log.info("EventPayload payload: {}", payload);
         if (payload.isSetInvoiceChanges()) {
-            for (InvoiceChange invoiceChange : payload.getInvoiceChanges()) {
+            for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
+                InvoiceChange invoiceChange = payload.getInvoiceChanges().get(i);
                 try {
+                    int j = i;
                     handlerManager.getHandler(invoiceChange)
-                            .ifPresentOrElse(handler -> handler.handle(invoiceChange, machineEvent),
+                            .ifPresentOrElse(handler -> handler.handle(invoiceChange, null, machineEvent.getCreatedAt(), machineEvent.getSourceId(), machineEvent.getEventId(), j),
                                     () -> log.debug("Handler for invoiceChange {} wasn't found (machineEvent {})", invoiceChange, machineEvent));
                 } catch (Exception ex) {
                     log.error("Failed to handle invoice change, invoiceChange='{}'", invoiceChange, ex);
@@ -37,10 +39,12 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
                 }
             }
         } else if (payload.isSetCustomerChanges()) {
-            for (CustomerChange customerChange : payload.getCustomerChanges()) {
+            for (int i = 0; i < payload.getCustomerChanges().size(); ++i) {
+                CustomerChange customerChange = payload.getCustomerChanges().get(i);
                 try {
+                    int j = i;
                     handlerManager.getHandler(customerChange)
-                            .ifPresentOrElse(handler -> handler.handle(customerChange, machineEvent),
+                            .ifPresentOrElse(handler -> handler.handle(customerChange, null, machineEvent.getCreatedAt(), machineEvent.getSourceId(), machineEvent.getEventId(), j),
                                     () -> log.debug("Handler for customerChange {} wasn't found (machineEvent {})", customerChange, machineEvent));
                 } catch (Exception ex) {
                     log.error("Failed to handle customer change, customerChange='{}'", customerChange, ex);

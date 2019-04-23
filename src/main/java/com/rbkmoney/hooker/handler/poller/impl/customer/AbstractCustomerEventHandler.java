@@ -8,15 +8,15 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 /**
  * Created by inalarsanukaev on 07.04.17.
  */
-public abstract class AbstractCustomerEventHandler implements Handler<CustomerChange, MachineEvent> {
+public abstract class AbstractCustomerEventHandler implements Handler<CustomerChange> {
 
     public static final String CUSTOMER = "customer";
     public static final String BINDING = "binding";
 
     @Override
-    public void handle(CustomerChange c, MachineEvent machineEvent) throws DaoException{
-        saveEvent(c, machineEvent);
+    public void handle(CustomerChange c, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException{
+        saveEvent(c, eventId, eventCreatedAt, sourceId, sequenceId, changeId);
     }
 
-    protected abstract void saveEvent(CustomerChange cc, MachineEvent machineEvent) throws DaoException;
+    protected abstract void saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException;
 }

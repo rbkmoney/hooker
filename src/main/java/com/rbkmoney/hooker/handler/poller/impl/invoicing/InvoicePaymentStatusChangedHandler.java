@@ -47,7 +47,7 @@ public class InvoicePaymentStatusChangedHandler extends NeedReadInvoiceEventHand
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, MachineEvent event, InvoicingMessage message) {
+    protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
         InvoicePaymentStatus paymentOriginStatus = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStatusChanged().getStatus();
         Payment payment = message.getPayment();
         payment.setStatus(paymentOriginStatus.getSetField().getFieldName());

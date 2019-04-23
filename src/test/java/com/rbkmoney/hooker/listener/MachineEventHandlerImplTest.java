@@ -52,7 +52,7 @@ public class MachineEventHandlerImplTest {
         machineEventHandler.handle(message, ack);
 
         Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(0)).handle(any(), any());
+        Mockito.verify(handler, Mockito.times(0)).handle(any(), any(), any(), any(), any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 
@@ -80,7 +80,7 @@ public class MachineEventHandlerImplTest {
         machineEventHandler.handle(message, ack);
 
         Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(1)).handle(any(), any());
+        Mockito.verify(handler, Mockito.times(1)).handle(any(), any(), any(), any(), any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 
