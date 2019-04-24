@@ -5,6 +5,33 @@ spring:
     name: @name@
     description: @description@
   flyway.schemas: hook
+
+  kafka:
+    bootstrap-servers: kenny-kafka1.bst1.rbkmoney.net:9092
+    ssl:
+      trust-store-location: "src/main/resources/cert/truststore.p12"
+      trust-store-password: "kenny12"
+      key-store-location: "src/main/resources/cert/kenny-k.struzhkin.p12"
+      key-store-password: "kenny"
+      key-password: "kenny"
+      key-store-type: PKCS12
+      trust-store-type: PKCS12
+      protocol: SSL
+    consumer:
+      group-id: "NewwayListener"
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: com.rbkmoney.hooker.serde.MachineEventDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+    listener:
+      type: batch
+      ack-mode: manual
+      concurrency: 5
+      poll-timeout: 1000 #ms
+      no-poll-threshold: 5.0 # * poll-timeout value = when consumer is dead
+      log-container-config: true
+      monitor-interval: 10s
+
 info:
   version: @version@
   responsible: Inal Arsanukaev
@@ -48,18 +75,9 @@ management:
       statsd:
         enabled: false
         flavor: etsy
+kafka:
+  invoice:
+    topic: mg-invoice-100-2
 
 retry-policy:
   maxAttempts: -1
-
-kafka:
-  bootstrap.servers: kenny-kafka1.bst1.rbkmoney.net:9092
-  invoice.topic: mg-invoice-100-2
-  concurrency: 5
-  ssl:
-    enable: false
-    keystore-location: "src/main/resources/cert/kenny-k.struzhkin.p12"
-    keystore-password: "kenny"
-    key-password: "kenny"
-    server-password: "kenny12"
-    server-keystore-location: "src/main/resources/cert/truststore.p12"
