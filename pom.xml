@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hooker</artifactId>
-    <version>2.0.22-SNAPSHOT</version>
+    <version>2.0.24-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>hooker</name>
@@ -93,21 +93,6 @@
                     <artifactId>hibernate-validator</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.rbkmoney.woody</groupId>
-            <artifactId>woody-thrift</artifactId>
-            <version>1.1.15</version>
-        </dependency>
-        <dependency>
-            <groupId>com.rbkmoney.geck</groupId>
-            <artifactId>common</artifactId>
-            <version>${geck.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.rbkmoney.geck</groupId>
-            <artifactId>filter</artifactId>
-            <version>${geck.version}</version>
         </dependency>
         <dependency>
             <groupId>com.rbkmoney.woody</groupId>
