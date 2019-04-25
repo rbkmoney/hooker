@@ -28,7 +28,6 @@ import java.util.Properties;
 @ContextConfiguration(initializers = KafkaAbstractTest.Initializer.class)
 public abstract class KafkaAbstractTest {
 
-    public static final String EVENT_SINK_INVOICE_TOPIC = "event_sink_invoice_topic";
     public static final String SOURCE_ID = "source_id";
     public static final String SOURCE_NS = "source_ns";
 
@@ -55,7 +54,24 @@ public abstract class KafkaAbstractTest {
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             TestPropertyValues values = TestPropertyValues
-                    .of("kafka.bootstrap.servers=" + kafka.getBootstrapServers());
+                    .of("spring.kafka.bootstrap-servers=" + kafka.getBootstrapServers(),
+                        "spring.kafka.properties.security.protocol=PLAINTEXT",
+                        "spring.kafka.consumer.group-id=TestListener",
+                        "spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer",
+                        "spring.kafka.consumer.value-deserializer=com.rbkmoney.hooker.serde.MachineEventDeserializer",
+                        "spring.kafka.consumer.enable-auto-commit=false",
+                        "spring.kafka.consumer.auto-offset-reset=earliest",
+                        "spring.kafka.consumer.client-id=test",
+                        "spring.kafka.listener.type=batch",
+                        "spring.kafka.listener.ack-mode=manual",
+                        "spring.kafka.listener.concurrency=1",
+                        "spring.kafka.listener.poll-timeout=1000",
+                        "spring.kafka.listener.no-poll-threshold=5.0",
+                        "spring.kafka.listener.log-container-config=true",
+                        "spring.kafka.listener.monitor-interval=10s",
+                        "spring.kafka.client-id=test",
+                        "kafka.invoice.topic=test-topic"
+                    );
             values.applyTo(configurableApplicationContext);
         }
     }

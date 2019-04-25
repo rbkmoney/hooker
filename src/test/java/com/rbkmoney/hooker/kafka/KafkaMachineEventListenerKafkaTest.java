@@ -17,7 +17,6 @@ import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +25,6 @@ import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 
 @Slf4j
-@TestPropertySource(properties = "kafka.ssl.enable=false")
 @ContextConfiguration(classes = {KafkaAutoConfiguration.class, KafkaMachineEventListener.class, MachineEventHandlerImpl.class, RetryConfig.class})
 public class KafkaMachineEventListenerKafkaTest extends KafkaAbstractTest {
 
