@@ -1,35 +1,41 @@
 package com.rbkmoney.hooker.kafka;
 
 import com.rbkmoney.damsel.payment_processing.EventPayload;
-import com.rbkmoney.hooker.configuration.KafkaConfig;
+import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.configuration.RetryConfig;
 import com.rbkmoney.hooker.converter.SourceEventParser;
 import com.rbkmoney.hooker.listener.KafkaMachineEventListener;
 import com.rbkmoney.hooker.listener.MachineEventHandlerImpl;
 import com.rbkmoney.hooker.service.HandlerManager;
+import com.rbkmoney.kafka.common.serializer.ThriftSerializer;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 
 @Slf4j
-@TestPropertySource(properties = "kafka.ssl.enable=false")
-@ContextConfiguration(classes = {KafkaConfig.class, KafkaAutoConfiguration.class, KafkaMachineEventListener.class, MachineEventHandlerImpl.class, RetryConfig.class})
-public class KafkaMachineEventListenerKafkaTest extends KafkaAbstractTest {
+@ContextConfiguration(classes = {KafkaAutoConfiguration.class, KafkaMachineEventListener.class, MachineEventHandlerImpl.class, RetryConfig.class})
+public class KafkaMachineEventListenerKafkaTest extends AbstractIntegrationTest {
+
+    @org.springframework.beans.factory.annotation.Value("${kafka.invoice.topic}")
+    public String topic;
 
     @MockBean
     HandlerManager handlerManager;
@@ -79,4 +85,12 @@ public class KafkaMachineEventListenerKafkaTest extends KafkaAbstractTest {
         return message;
     }
 
+    public static Producer<String, SinkEvent> createProducer() {
+        Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, "client_id");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, new ThriftSerializer<SinkEvent>().getClass());
+        return new KafkaProducer<>(props);
+    }
 }
