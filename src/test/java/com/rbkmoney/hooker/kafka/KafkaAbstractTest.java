@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.kafka;
 
-import com.rbkmoney.hooker.serde.MachineEventSerializer;
+import com.rbkmoney.hooker.serde.SinkEventSerializer;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -44,7 +44,7 @@ public abstract class KafkaAbstractTest {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "client_id");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, MachineEventSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, SinkEventSerializer.class.getName());
         return new KafkaProducer<>(props);
     }
 
@@ -58,7 +58,7 @@ public abstract class KafkaAbstractTest {
                         "spring.kafka.properties.security.protocol=PLAINTEXT",
                         "spring.kafka.consumer.group-id=TestListener",
                         "spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer",
-                        "spring.kafka.consumer.value-deserializer=com.rbkmoney.hooker.serde.MachineEventDeserializer",
+                        "spring.kafka.consumer.value-deserializer=com.rbkmoney.hooker.serde.SinkEventDeserializer",
                         "spring.kafka.consumer.enable-auto-commit=false",
                         "spring.kafka.consumer.auto-offset-reset=earliest",
                         "spring.kafka.consumer.client-id=test",

@@ -19,7 +19,7 @@ spring:
     consumer:
       group-id: "TestListener"
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: com.rbkmoney.hooker.serde.MachineEventDeserializer
+      value-deserializer: com.rbkmoney.hooker.serde.SinkEventDeserializer
       enable-auto-commit: false
       auto-offset-reset: earliest
       client-id: test
