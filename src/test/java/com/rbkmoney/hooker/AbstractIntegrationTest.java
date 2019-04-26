@@ -48,7 +48,23 @@ public abstract class AbstractIntegrationTest {
                     "flyway.url=" + postgres.getJdbcUrl(),
                     "flyway.user=" + postgres.getUsername(),
                     "flyway.password=" + postgres.getPassword(),
-                    "kafka.bootstrap.servers=" + kafka.getBootstrapServers()
+                    "spring.kafka.bootstrap-servers=" + kafka.getBootstrapServers(),
+                    "spring.kafka.properties.security.protocol=PLAINTEXT",
+                    "spring.kafka.consumer.group-id=TestListener",
+                    "spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer",
+                    "spring.kafka.consumer.value-deserializer=com.rbkmoney.hooker.serde.SinkEventDeserializer",
+                    "spring.kafka.consumer.enable-auto-commit=false",
+                    "spring.kafka.consumer.auto-offset-reset=earliest",
+                    "spring.kafka.consumer.client-id=test",
+                    "spring.kafka.listener.type=batch",
+                    "spring.kafka.listener.ack-mode=manual",
+                    "spring.kafka.listener.concurrency=1",
+                    "spring.kafka.listener.poll-timeout=1000",
+                    "spring.kafka.listener.no-poll-threshold=5.0",
+                    "spring.kafka.listener.log-container-config=true",
+                    "spring.kafka.listener.monitor-interval=10s",
+                    "spring.kafka.client-id=test",
+                    "kafka.invoice.topic=test-topic"
             ).applyTo(configurableApplicationContext);
             Flyway flyway = Flyway.configure()
                     .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
