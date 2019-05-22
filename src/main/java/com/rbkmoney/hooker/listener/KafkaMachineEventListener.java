@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.listener;
 
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,9 +15,9 @@ public class KafkaMachineEventListener {
     private final MachineEventHandler machineEventHandler;
 
     @KafkaListener(topics = "${kafka.invoice.topic}", containerFactory = "kafkaListenerContainerFactory")
-    public void listen(MachineEvent message, Acknowledgment ack) {
+    public void listen(SinkEvent message, Acknowledgment ack) {
         log.debug("Got machineEvent: {}", message);
-        machineEventHandler.handle(message, ack);
+        machineEventHandler.handle(message.getEvent(), ack);
         log.debug("Handled machineEvent {}", message);
     }
 
