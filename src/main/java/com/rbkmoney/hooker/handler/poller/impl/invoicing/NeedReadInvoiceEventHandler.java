@@ -5,7 +5,6 @@ import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -29,7 +28,7 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         message.setSequenceId(sequenceId);
         message.setChangeId(changeId);
         modifyMessage(ic, message);
-        if (!messageDao.isDuplicate(message)) {
+        if (!messageDao.updateIfExists(message)) {
             messageDao.create(message);
         }
     }

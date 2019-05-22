@@ -85,9 +85,9 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void testIsDuplicate(){
         InvoicingMessage invoicingMessage = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false);
-        assertTrue(messageDao.isDuplicate(invoicingMessage));
+        assertTrue(messageDao.updateIfExists(invoicingMessage));
         invoicingMessage.getPayment().setStatus("processed");
-        assertFalse(messageDao.isDuplicate(invoicingMessage));
+        assertFalse(messageDao.updateIfExists(invoicingMessage));
     }
 
 }
