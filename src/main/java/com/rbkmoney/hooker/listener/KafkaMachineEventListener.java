@@ -14,7 +14,7 @@ public class KafkaMachineEventListener {
 
     private final MachineEventHandler machineEventHandler;
 
-    @KafkaListener(topics = "${kafka.invoice.topic}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.topics.invoicing}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(SinkEvent message, Acknowledgment ack) {
         log.debug("Got machineEvent: {}", message);
         machineEventHandler.handle(message.getEvent(), ack);

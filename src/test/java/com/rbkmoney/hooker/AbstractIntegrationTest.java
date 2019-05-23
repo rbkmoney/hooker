@@ -22,7 +22,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ContextConfiguration(classes = HookerApplication.class, initializers = AbstractIntegrationTest.Initializer.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Slf4j
 public abstract class AbstractIntegrationTest {
     public static final String SOURCE_ID = "source_id";
@@ -47,25 +47,16 @@ public abstract class AbstractIntegrationTest {
                     "spring.datasource.password=" + postgres.getPassword(),
                     "flyway.url=" + postgres.getJdbcUrl(),
                     "flyway.user=" + postgres.getUsername(),
-                    "flyway.password=" + postgres.getPassword(),
-                    "spring.kafka.bootstrap-servers=" + kafka.getBootstrapServers(),
-                    "spring.kafka.properties.security.protocol=PLAINTEXT",
-                    "spring.kafka.consumer.group-id=TestListener",
-                    "spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer",
-                    "spring.kafka.consumer.value-deserializer=com.rbkmoney.hooker.serde.SinkEventDeserializer",
-                    "spring.kafka.consumer.enable-auto-commit=false",
-                    "spring.kafka.consumer.auto-offset-reset=earliest",
-                    "spring.kafka.consumer.client-id=test",
-                    "spring.kafka.listener.type=batch",
-                    "spring.kafka.listener.ack-mode=manual",
-                    "spring.kafka.listener.concurrency=1",
-                    "spring.kafka.listener.poll-timeout=1000",
-                    "spring.kafka.listener.no-poll-threshold=5.0",
-                    "spring.kafka.listener.log-container-config=true",
-                    "spring.kafka.listener.monitor-interval=10s",
-                    "spring.kafka.client-id=test",
-                    "kafka.invoice.topic=test-topic"
-            ).applyTo(configurableApplicationContext);
+                    "flyway.password=" + postgres.getPassword()
+            ).and("kafka.bootstrap-servers=" + kafka.getBootstrapServers(),
+                    "kafka.ssl.enabled=false",
+                    "kafka.consumer.group-id=TestListener",
+                    "kafka.consumer.enable-auto-commit=false",
+                    "kafka.consumer.auto-offset-reset=earliest",
+                    "kafka.consumer.client-id=test",
+                    "kafka.client-id=test",
+                    "kafka.topics.invoicing=test-topic")
+                    .applyTo(configurableApplicationContext);
             Flyway flyway = Flyway.configure()
                     .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
                     .schemas("hook")

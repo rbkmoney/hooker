@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,10 +32,11 @@ import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 
 @Slf4j
+@TestPropertySource(properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration")
 @ContextConfiguration(classes = {KafkaAutoConfiguration.class, KafkaMachineEventListener.class, MachineEventHandlerImpl.class, RetryConfig.class})
 public class KafkaMachineEventListenerKafkaTest extends AbstractIntegrationTest {
 
-    @org.springframework.beans.factory.annotation.Value("${kafka.invoice.topic}")
+    @org.springframework.beans.factory.annotation.Value("${kafka.topics.invoicing}")
     public String topic;
 
     @MockBean
