@@ -463,10 +463,10 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(TYPE, message.getType())
                 .addValue(EVENT_TYPE, message.getEventType().toString())
                 .addValue(INVOICE_STATUS, message.getInvoice().getStatus())
-                .addValue(PAYMENT_ID, message.isPayment() ? message.getPayment().getId() : null)
-                .addValue(PAYMENT_STATUS, message.isPayment() ? message.getPayment().getStatus() : null)
-                .addValue(REFUND_ID, message.isRefund() ? message.getRefund().getId() : null)
-                .addValue(REFUND_STATUS, message.isRefund() ? message.getRefund().getStatus() : null)
+                .addValue(PAYMENT_ID, message.getPayment() != null ? message.getPayment().getId() : null)
+                .addValue(PAYMENT_STATUS, message.getPayment() != null ? message.getPayment().getStatus() : null)
+                .addValue(REFUND_ID, message.getRefund() != null ? message.getRefund().getId() : null)
+                .addValue(REFUND_STATUS, message.getRefund() != null ? message.getRefund().getStatus() : null)
                 .addValue(SEQUENCE_ID, message.getSequenceId())
                 .addValue(CHANGE_ID, message.getChangeId());
         try {
