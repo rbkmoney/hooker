@@ -96,6 +96,9 @@ public class Payment {
                 }
                 paymentToolDetails.getDigitalWalletDetails().setDigitalWalletDetailsType(digitalWalletDetailsType);
                 copyPayer.setPaymentToolDetails(paymentToolDetails);
+            } else if (otherPayerPaymentToolDetails instanceof PaymentToolDetailsCryptoWallet) {
+                PaymentToolDetailsCryptoWallet paymentToolDetails = (PaymentToolDetailsCryptoWallet) otherPayerPaymentToolDetails;
+                copyPayer.setPaymentToolDetails(new PaymentToolDetailsCryptoWallet().cryptoCurrency(paymentToolDetails.getCryptoCurrency()));
             }
             copyPayer.getPaymentToolDetails().detailsType(otherPayerPaymentToolDetails.getDetailsType());
         }

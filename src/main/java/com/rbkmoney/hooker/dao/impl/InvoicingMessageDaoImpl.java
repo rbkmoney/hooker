@@ -83,6 +83,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String PAYMENT_TERMINAL_PROVIDER = "payment_terminal_provider";
     public static final String PAYMENT_DIGITAL_WALLET_PROVIDER = "payment_digital_wallet_provider";
     public static final String PAYMENT_DIGITAL_WALLET_ID = "payment_digital_wallet_id";
+    public static final String PAYMENT_CRYPTO_CURRENCY = "payment_crypto_currency";
     public static final String REFUND_ID = "refund_id";
     public static final String REFUND_CREATED_AT = "refund_created_at";
     public static final String REFUND_STATUS = "refund_status";
@@ -120,6 +121,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(PAYMENT_TERMINAL_PROVIDER, null)
                 .addValue(PAYMENT_DIGITAL_WALLET_PROVIDER, null)
                 .addValue(PAYMENT_DIGITAL_WALLET_ID, null)
+                .addValue(PAYMENT_CRYPTO_CURRENCY, null)
                 .addValue(REFUND_ID, null)
                 .addValue(REFUND_CREATED_AT, null)
                 .addValue(REFUND_STATUS, null)
@@ -201,7 +203,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
                     payer.setPaymentToolDetails(getPaymentToolDetails(rs.getString(PAYMENT_TOOL_DETAILS_TYPE), rs.getString(PAYMENT_CARD_BIN),
                             rs.getString(PAYMENT_CARD_LAST_DIGITS), rs.getString(PAYMENT_CARD_NUMBER_MASK), rs.getString(PAYMENT_CARD_TOKEN_PROVIDER), rs.getString(PAYMENT_SYSTEM), rs.getString(PAYMENT_TERMINAL_PROVIDER),
-                            rs.getString(PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(PAYMENT_DIGITAL_WALLET_ID)));
+                            rs.getString(PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(PAYMENT_DIGITAL_WALLET_ID), rs.getString(PAYMENT_CRYPTO_CURRENCY)));
                     payment.setPayer(payer);
                     break;
                 case RECURRENTPAYER:
@@ -302,7 +304,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "payment_id, payment_created_at, payment_status, payment_failure, payment_failure_reason, payment_amount, " +
                 "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
                 "payment_customer_id, payment_payer_type, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id, payment_tool_details_type, payment_card_bin, payment_card_last_digits, payment_card_number_mask, payment_card_token_provider, payment_system, payment_terminal_provider, " +
-                "payment_digital_wallet_provider, payment_digital_wallet_id, " +
+                "payment_digital_wallet_provider, payment_digital_wallet_id, payment_crypto_currency, " +
                 "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
                 "VALUES " +
                 "(:event_id, :event_time, :type, :party_id, CAST(:event_type as hook.eventtype), " +
@@ -311,7 +313,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 ":payment_id, :payment_created_at, :payment_status, :payment_failure, :payment_failure_reason, :payment_amount, " +
                 ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), :payment_recurrent_parent_invoice_id, :payment_recurrent_parent_payment_id, CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
-                ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, " +
+                ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, :payment_crypto_currency, " +
                 ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -367,7 +369,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
                     PaymentToolUtils.setPaymentToolDetailsParam(params, payer.getPaymentToolDetails(),
                             PAYMENT_TOOL_DETAILS_TYPE, PAYMENT_CARD_BIN, PAYMENT_CARD_LAST_DIGITS, PAYMENT_CARD_NUMBER_MASK, PAYMENT_CARD_TOKEN_PROVIDER, PAYMENT_SYSTEM, PAYMENT_TERMINAL_PROVIDER,
-                            PAYMENT_DIGITAL_WALLET_PROVIDER, PAYMENT_DIGITAL_WALLET_ID);
+                            PAYMENT_DIGITAL_WALLET_PROVIDER, PAYMENT_DIGITAL_WALLET_ID, PAYMENT_CRYPTO_CURRENCY);
                     break;
                 case RECURRENTPAYER:
                     RecurrentPayer recurrentPayer = (RecurrentPayer) payment.getPayer();

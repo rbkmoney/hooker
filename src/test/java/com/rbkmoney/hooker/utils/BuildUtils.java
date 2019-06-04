@@ -54,7 +54,7 @@ public class BuildUtils {
             PaymentError paymentError = new PaymentError();
             paymentError.setCode("code");
             paymentError.setMessage("mess");
-            PaymentErrorSubError subError = new PaymentErrorSubError();
+            SubError subError = new SubError();
             subError.setCode("sub_code");
             paymentError.setSubError(subError);
             payment.setError(paymentError);
@@ -122,20 +122,21 @@ public class BuildUtils {
                 .metadata(CustomerUtils.getJsonObject("{\"field1\":\"value1\",\"field2\":[123,123,123]}")));
 
         if (customerMessage.isBinding()) {
-            customerMessage.setCustomerBinding(new CustomerBinding()
+            CustomerBinding customerBinding = new CustomerBinding();
+            customerBinding.status(CustomerBinding.StatusEnum.PENDING);
+            customerMessage.setCustomerBinding(customerBinding
                     .id("12456")
-                    .status(CustomerBinding.StatusEnum.PENDING)
-            .paymentResource(new PaymentResource()
-            .paymentToolToken("shjfbergiwengriweno")
-            .paymentSession("wrgnjwierngweirngi")
-            .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
-            .paymentToolDetails(new PaymentToolDetailsBankCard()
-                    .bin("440088")
-                    .lastDigits("1234")
-                    .cardNumberMask("440088******1234")
-                    .paymentSystem("visa")
-                    .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.APPLEPAY)
-                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
+                    .paymentResource(new PaymentResource()
+                            .paymentToolToken("shjfbergiwengriweno")
+                            .paymentSession("wrgnjwierngweirngi")
+                            .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
+                            .paymentToolDetails(new PaymentToolDetailsBankCard()
+                                    .bin("440088")
+                                    .lastDigits("1234")
+                                    .cardNumberMask("440088******1234")
+                                    .paymentSystem("visa")
+                                    .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.APPLEPAY)
+                                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
             )));
         }
         return customerMessage;

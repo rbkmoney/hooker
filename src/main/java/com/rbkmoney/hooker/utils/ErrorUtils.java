@@ -4,7 +4,7 @@ import com.rbkmoney.damsel.domain.Failure;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.domain.SubFailure;
 import com.rbkmoney.swag_webhook_events.PaymentError;
-import com.rbkmoney.swag_webhook_events.PaymentErrorSubError;
+import com.rbkmoney.swag_webhook_events.SubError;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,8 +36,8 @@ public class ErrorUtils {
         return null;
     }
 
-    private static PaymentErrorSubError getSubError(SubFailure sub) {
-        PaymentErrorSubError paymentErrorSubError = new PaymentErrorSubError();
+    private static SubError getSubError(SubFailure sub) {
+        SubError paymentErrorSubError = new SubError();
         paymentErrorSubError.setCode(sub.getCode());
         if (sub.isSetSub()) {
             paymentErrorSubError.setSubError(getSubError(sub.getSub()));
@@ -47,7 +47,7 @@ public class ErrorUtils {
 
     public static String toStringFailure(PaymentError paymentError) {
         StringBuilder sb = new StringBuilder(paymentError.getCode());
-        PaymentErrorSubError subError = paymentError.getSubError();
+        SubError subError = paymentError.getSubError();
         while (subError != null) {
             sb.append(":").append(subError.getCode());
             subError = subError.getSubError();
@@ -61,12 +61,12 @@ public class ErrorUtils {
         return new PaymentError().code(codes[0]).message(failureReason).subError(getSubErrorTree(codes));
     }
 
-    private static PaymentErrorSubError getSubErrorTree(String[] codes) {
+    private static SubError getSubErrorTree(String[] codes) {
         if (codes.length == 1)
             return null;
 
-        List<PaymentErrorSubError> subErrors = Arrays.stream(codes)
-                .map(code -> new PaymentErrorSubError().code(code))
+        List<SubError> subErrors = Arrays.stream(codes)
+                .map(code -> new SubError().code(code))
                 .collect(Collectors.toList());
 
         for (int i = 1; i < subErrors.size() - 1; i++) {
