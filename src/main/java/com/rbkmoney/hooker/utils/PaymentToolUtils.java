@@ -141,7 +141,7 @@ public class PaymentToolUtils {
                 break;
             case PAYMENTTOOLDETAILSCRYPTOWALLET:
                 PaymentToolDetailsCryptoWallet paymentToolDetailsCryptoWallet = (PaymentToolDetailsCryptoWallet) paymentToolDetails;
-                params.addValue(cryptoWalletCurrencyParamName, paymentToolDetailsCryptoWallet.getCryptoCurrency().name());
+                params.addValue(cryptoWalletCurrencyParamName, paymentToolDetailsCryptoWallet.getCryptoCurrency().getValue());
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
