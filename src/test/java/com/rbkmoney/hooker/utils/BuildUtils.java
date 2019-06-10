@@ -63,7 +63,7 @@ public class BuildUtils {
             Content paymentContent = new Content();
             paymentContent.setType("kek");
             paymentContent.setData("{\"kek\": \"lol\"}".getBytes());
-        //    payment.setMetadata(paymentContent);
+            payment.setMetadata(paymentContent);
             payment.setPaymentToolToken("payment tool token");
             payment.setPaymentSession("payment session");
             payment.setContactInfo(new PaymentContactInfo("aaaa@mail.ru", "89037279209"));
