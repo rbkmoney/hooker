@@ -64,6 +64,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String PAYMENT_FAILURE_REASON = "payment_failure_reason";
     public static final String PAYMENT_AMOUNT = "payment_amount";
     public static final String PAYMENT_CURRENCY = "payment_currency";
+    public static final String PAYMENT_CONTENT_TYPE = "payment_content_type";
+    public static final String PAYMENT_CONTENT_DATA = "payment_content_data";
     public static final String PAYMENT_TOOL_TOKEN = "payment_tool_token";
     public static final String PAYMENT_SESSION = "payment_session";
     public static final String PAYMENT_EMAIL = "payment_email";
@@ -102,6 +104,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(PAYMENT_FAILURE_REASON, null)
                 .addValue(PAYMENT_AMOUNT, null)
                 .addValue(PAYMENT_CURRENCY, null)
+                .addValue(PAYMENT_CONTENT_TYPE, null)
+                .addValue(PAYMENT_CONTENT_DATA, null)
                 .addValue(PAYMENT_TOOL_TOKEN, null)
                 .addValue(PAYMENT_SESSION, null)
                 .addValue(PAYMENT_EMAIL, null)
@@ -163,10 +167,10 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         invoice.setDueDate(rs.getString(INVOICE_DUE_DATE));
         invoice.setAmount(rs.getLong(INVOICE_AMOUNT));
         invoice.setCurrency(rs.getString(INVOICE_CURRENCY));
-        InvoiceContent metadata = new InvoiceContent();
-        metadata.setType(rs.getString(INVOICE_CONTENT_TYPE));
-        metadata.setData(rs.getBytes(INVOICE_CONTENT_DATA));
-        invoice.setMetadata(metadata);
+        Content invoiceMetadata = new Content();
+        invoiceMetadata.setType(rs.getString(INVOICE_CONTENT_TYPE));
+        invoiceMetadata.setData(rs.getBytes(INVOICE_CONTENT_DATA));
+        invoice.setMetadata(invoiceMetadata);
         invoice.setProduct(rs.getString(INVOICE_PRODUCT));
         invoice.setDescription(rs.getString(INVOICE_DESCRIPTION));
         if (message.isPayment() || message.isRefund()) {
@@ -180,6 +184,10 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             }
             payment.setAmount(rs.getLong(PAYMENT_AMOUNT));
             payment.setCurrency(rs.getString(PAYMENT_CURRENCY));
+            Content paymentMetadata = new Content();
+            paymentMetadata.setType(rs.getString(PAYMENT_CONTENT_TYPE));
+            paymentMetadata.setData(rs.getBytes(PAYMENT_CONTENT_DATA));
+            payment.setMetadata(paymentMetadata);
             payment.setPaymentToolToken(rs.getString(PAYMENT_TOOL_TOKEN));
             payment.setPaymentSession(rs.getString(PAYMENT_SESSION));
             payment.setContactInfo(new PaymentContactInfo(rs.getString(PAYMENT_EMAIL), rs.getString(PAYMENT_PHONE)));
@@ -302,7 +310,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
                 "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
                 "payment_id, payment_created_at, payment_status, payment_failure, payment_failure_reason, payment_amount, " +
-                "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
+                "payment_currency, payment_content_type, payment_content_data, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
                 "payment_customer_id, payment_payer_type, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id, payment_tool_details_type, payment_card_bin, payment_card_last_digits, payment_card_number_mask, payment_card_token_provider, payment_system, payment_terminal_provider, " +
                 "payment_digital_wallet_provider, payment_digital_wallet_id, payment_crypto_currency, " +
                 "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
@@ -311,7 +319,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
                 ":invoice_currency, :invoice_content_type, :invoice_content_data, :invoice_product, :invoice_description, " +
                 ":payment_id, :payment_created_at, :payment_status, :payment_failure, :payment_failure_reason, :payment_amount, " +
-                ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
+                ":payment_currency, :payment_content_type, :payment_content_data, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), :payment_recurrent_parent_invoice_id, :payment_recurrent_parent_payment_id, CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, :payment_crypto_currency, " +
                 ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
@@ -345,6 +353,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                     .addValue(PAYMENT_FAILURE_REASON, payment.getError() != null ? payment.getError().getMessage() : null)
                     .addValue(PAYMENT_AMOUNT, payment.getAmount())
                     .addValue(PAYMENT_CURRENCY, payment.getCurrency())
+                    .addValue(PAYMENT_CONTENT_TYPE, payment.getMetadata().getType())
+                    .addValue(PAYMENT_CONTENT_DATA, payment.getMetadata().getData())
                     .addValue(PAYMENT_TOOL_TOKEN, payment.getPaymentToolToken())
                     .addValue(PAYMENT_SESSION, payment.getPaymentSession())
                     .addValue(PAYMENT_EMAIL, payment.getContactInfo().getEmail())

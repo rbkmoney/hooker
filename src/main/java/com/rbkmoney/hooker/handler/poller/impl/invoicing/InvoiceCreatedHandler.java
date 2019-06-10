@@ -53,7 +53,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         invoice.setDueDate(invoiceOrigin.getDue());
         invoice.setAmount(invoiceOrigin.getCost().getAmount());
         invoice.setCurrency(invoiceOrigin.getCost().getCurrency().getSymbolicCode());
-        InvoiceContent metadata = new InvoiceContent();
+        Content metadata = new Content();
         metadata.setType(invoiceOrigin.getContext().getType());
         metadata.setData(invoiceOrigin.getContext().getData());
         invoice.setMetadata(metadata);

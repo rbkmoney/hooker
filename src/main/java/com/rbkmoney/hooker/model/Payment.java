@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.rbkmoney.swag_webhook_events.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,8 @@ public class Payment {
     private PaymentError error;
     private long amount;
     private String currency;
+    @JsonSerialize(using = MetadataSerializer.class)
+    private Content metadata;
     private String paymentToolToken;
     private String paymentSession;
     private PaymentContactInfo contactInfo;
@@ -39,6 +42,7 @@ public class Payment {
         }
         this.amount = other.amount;
         this.currency = other.currency;
+        this.metadata = other.metadata;
         this.paymentToolToken = other.paymentToolToken;
         this.paymentSession = other.paymentSession;
         this.contactInfo = new PaymentContactInfo(other.contactInfo);

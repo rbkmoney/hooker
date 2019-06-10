@@ -28,7 +28,7 @@ public class Invoice {
     private long amount;
     private String currency;
     @JsonSerialize(using = MetadataSerializer.class)
-    private InvoiceContent metadata;
+    private Content metadata;
     private String product;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String description;
@@ -45,7 +45,7 @@ public class Invoice {
         this.amount = other.amount;
         this.currency = other.currency;
         if (other.metadata != null) {
-            this.metadata = new InvoiceContent(other.metadata);
+            this.metadata = new Content(other.metadata);
         }
         this.product = other.product;
         this.description = other.description;

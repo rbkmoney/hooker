@@ -38,7 +38,7 @@ public class BuildUtils {
         invoice.setDueDate("12.12.2008");
         invoice.setAmount(12235);
         invoice.setCurrency("RUB");
-        InvoiceContent metadata = new InvoiceContent();
+        Content metadata = new Content();
         metadata.setType("fff");
         metadata.setData("{\"cms\":\"drupal\",\"cms_version\":\"7.50\",\"module\":\"uc_rbkmoney\",\"order_id\":\"118\"}".getBytes());
         invoice.setMetadata(metadata);
@@ -60,6 +60,10 @@ public class BuildUtils {
             payment.setError(paymentError);
             payment.setAmount(1);
             payment.setCurrency("RUB");
+            Content paymentContent = new Content();
+            paymentContent.setType("kek");
+            paymentContent.setData("{\"kek\": \"lol\"}".getBytes());
+        //    payment.setMetadata(paymentContent);
             payment.setPaymentToolToken("payment tool token");
             payment.setPaymentSession("payment session");
             payment.setContactInfo(new PaymentContactInfo("aaaa@mail.ru", "89037279209"));
