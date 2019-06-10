@@ -10,10 +10,8 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Payment;
-import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import org.springframework.stereotype.Component;
@@ -55,6 +53,12 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         payment.setStatus(paymentOrigin.getStatus().getSetField().getFieldName());
         payment.setAmount(paymentOrigin.getCost().getAmount());
         payment.setCurrency(paymentOrigin.getCost().getCurrency().getSymbolicCode());
+        Content metadata = new Content();
+        if (paymentOrigin.isSetContext()) {
+            metadata.setType(paymentOrigin.getContext().getType());
+            metadata.setData(paymentOrigin.getContext().getData());
+        }
+        payment.setMetadata(metadata);
         if (paymentOrigin.getPayer().isSetPaymentResource()) {
             com.rbkmoney.damsel.domain.PaymentResourcePayer payerOrigin = paymentOrigin.getPayer().getPaymentResource();
             DisposablePaymentResource resourceOrigin = payerOrigin.getResource();
