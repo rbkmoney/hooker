@@ -14,11 +14,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class InvoiceContent {
+public class Content {
     public String type;
     public byte[] data;
 
-    public InvoiceContent(InvoiceContent other) {
+    public Content(Content other) {
         this.type = other.type;
         this.data = other.data;
     }

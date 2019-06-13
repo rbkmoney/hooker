@@ -18,7 +18,9 @@ public class MessageJsonTest {
     @Test
     public void test() throws JsonProcessingException {
         InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled");
-        System.out.println(InvoicingMessageJson.buildMessageJson(message));
+        String json = InvoicingMessageJson.buildMessageJson(message);
+        System.out.println(json);
+        Assert.assertTrue(json.contains("\"kek\":\"lol\""));
         InvoicingMessage copy = message.copy();
         message.getInvoice().setAmount(99988);
         Assert.assertNotEquals(message.getInvoice().getAmount(), copy.getInvoice().getAmount());

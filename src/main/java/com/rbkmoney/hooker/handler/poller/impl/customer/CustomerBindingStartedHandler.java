@@ -59,8 +59,8 @@ public class CustomerBindingStartedHandler extends NeedReadCustomerEventHandler 
         paymentResource.setPaymentToolDetails(getPaymentToolDetails(bindingOrigin.getPaymentResource().getPaymentTool()));
         CustomerBinding binding = new CustomerBinding()
                 .id(bindingOrigin.getId())
-                .status(CustomerBinding.StatusEnum.fromValue(bindingOrigin.getStatus().getSetField().getFieldName()))
                 .paymentResource(paymentResource);
+        binding.status(CustomerBinding.StatusEnum.fromValue(bindingOrigin.getStatus().getSetField().getFieldName()));
         message.setCustomerBinding(binding);
     }
 }

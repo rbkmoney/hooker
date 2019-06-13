@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import com.rbkmoney.damsel.domain.BankCard;
 import com.rbkmoney.damsel.domain.DigitalWalletProvider;
 import com.rbkmoney.damsel.domain.PaymentTool;
-import com.rbkmoney.geck.common.util.TypeUtil;
 import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWalletWrapper;
 import com.rbkmoney.swag_webhook_events.*;
 import org.apache.commons.collections4.MapUtils;
@@ -37,6 +36,7 @@ public class PaymentToolUtils {
         String terminalProvider = null;
         String digitalWalletType = null;
         String digitalWalletId = null;
+        String cryptoWalletCurrency = null;
         if (paymentTool.isSetBankCard()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD.getValue();
             bin = paymentTool.getBankCard().getBin();
@@ -53,13 +53,16 @@ public class PaymentToolUtils {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSDIGITALWALLET.getValue();
             digitalWalletType = paymentTool.getDigitalWallet().getProvider().name();
             digitalWalletId = paymentTool.getDigitalWallet().getId();
+        } else if (paymentTool.isSetCryptoCurrency()) {
+            detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET.getValue();
+            cryptoWalletCurrency = paymentTool.getCryptoCurrency().name();
         } else {
             throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
-        return getPaymentToolDetails(detailsType, bin, lastDigits, cardNumberMask, tokenProvider, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId);
+        return getPaymentToolDetails(detailsType, bin, lastDigits, cardNumberMask, tokenProvider, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId, cryptoWalletCurrency);
     }
 
-    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String lastDigits, String cardNumberMask, String tokenProvider, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId) {
+    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String lastDigits, String cardNumberMask, String tokenProvider, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId, String cryptoWalletCurrency) {
         PaymentToolDetails.DetailsTypeEnum detailsType = PaymentToolDetails.DetailsTypeEnum.fromValue(sDetailsType);
         PaymentToolDetails paymentToolDetails;
         switch (detailsType) {
@@ -91,6 +94,9 @@ public class PaymentToolUtils {
                 paymentToolDetailsDigitalWalletWrapper.getDigitalWalletDetails().setDigitalWalletDetailsType(digitalWalletDetailsType);
                 paymentToolDetails = paymentToolDetailsDigitalWalletWrapper;
                 break;
+            case PAYMENTTOOLDETAILSCRYPTOWALLET:
+                paymentToolDetails = new PaymentToolDetailsCryptoWallet().cryptoCurrency(CryptoCurrency.fromValue(cryptoWalletCurrency));
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+ Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
         }
@@ -100,7 +106,7 @@ public class PaymentToolUtils {
 
     public static void setPaymentToolDetailsParam(MapSqlParameterSource params, PaymentToolDetails paymentToolDetails,
                                             String detailsTypeParamName, String binParamName, String lastDigitsParamName, String cardNumberMaskParamName, String tokenProviderParamName, String paymentSystemParamName, String terminalProviderParamName,
-                                                  String digitalWalletProviderParamName, String digitalWalletIdParamName) {
+                                                  String digitalWalletProviderParamName, String digitalWalletIdParamName, String cryptoWalletCurrencyParamName) {
         PaymentToolDetails.DetailsTypeEnum detailsType = paymentToolDetails.getDetailsType();
         params.addValue(detailsTypeParamName, detailsType.getValue());
         switch (detailsType) {
@@ -133,6 +139,10 @@ public class PaymentToolUtils {
                         throw new UnsupportedOperationException("Unknown digitalWalletDetailsType " + digitalWalletDetailsType + "; must be one of these: " + Arrays.toString(DigitalWalletDetails.DigitalWalletDetailsTypeEnum.values()));
                 }
                 break;
+            case PAYMENTTOOLDETAILSCRYPTOWALLET:
+                PaymentToolDetailsCryptoWallet paymentToolDetailsCryptoWallet = (PaymentToolDetailsCryptoWallet) paymentToolDetails;
+                params.addValue(cryptoWalletCurrencyParamName, paymentToolDetailsCryptoWallet.getCryptoCurrency().getValue());
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
         }
@@ -158,6 +168,9 @@ public class PaymentToolUtils {
             rootNode.put("type", "digital_wallet");
             rootNode.put("provider", paymentTool.getDigitalWallet().getProvider().name());
             rootNode.put("id", paymentTool.getDigitalWallet().getId());
+        } else if (paymentTool.isSetCryptoCurrency()) {
+            rootNode.put("type", "crypto_currency");
+            rootNode.put("crypto_currency", paymentTool.getCryptoCurrency().name());
         } else {
             throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
