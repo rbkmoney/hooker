@@ -18,7 +18,8 @@ public class PostSender {
     public static final String SIGNATURE_HEADER = "Content-Signature";
     public static final long RESPONSE_MAX_LENGTH = 4096L;
 
-    public PostSender(@Value("${merchant.callback.timeout}") int timeout) {
+    public PostSender(@Value("${message.sender.number}") int connectionPoolSize,
+                      @Value("${merchant.callback.timeout}") int timeout) {
         OkHttpClient.Builder httpBuilder = new OkHttpClient.Builder();
 
         if (log.isDebugEnabled()) {
@@ -27,7 +28,10 @@ public class PostSender {
             httpBuilder.addInterceptor(httpLoggingInterceptor);
         }
 
+        ConnectionPool connectionPool = new ConnectionPool(2 * connectionPoolSize, 5, TimeUnit.MINUTES);
         this.httpClient = httpBuilder
+                .connectionPool(connectionPool)
+                .retryOnConnectionFailure(false)
                 .connectTimeout(timeout, TimeUnit.SECONDS)
                 .writeTimeout(timeout, TimeUnit.SECONDS)
                 .readTimeout(timeout, TimeUnit.SECONDS)
