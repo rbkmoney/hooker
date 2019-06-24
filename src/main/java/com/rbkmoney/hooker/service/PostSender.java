@@ -28,7 +28,7 @@ public class PostSender {
             httpBuilder.addInterceptor(httpLoggingInterceptor);
         }
 
-        ConnectionPool connectionPool = new ConnectionPool(connectionPoolSize, 5, TimeUnit.MINUTES);
+        ConnectionPool connectionPool = new ConnectionPool(2 * connectionPoolSize, 5, TimeUnit.MINUTES);
         this.httpClient = httpBuilder
                 .connectionPool(connectionPool)
                 .retryOnConnectionFailure(false)
