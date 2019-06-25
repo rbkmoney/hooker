@@ -16,7 +16,6 @@ public class PostSender {
 
     private int timeout;
     private HttpClient httpClient;
-    private HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String SIGNATURE_HEADER = "Content-Signature";
     public static final int RESPONSE_MAX_LENGTH = 4096;
@@ -31,7 +30,8 @@ public class PostSender {
 
     public int doPost(String url, long messageId, String paramsAsString, String signature) throws Exception {
         log.info("Sending message with id {}, {} to hook: {} ", messageId, paramsAsString, url);
-        final HttpRequest request = httpRequestBuilder
+
+        final HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(url))
                 .timeout(Duration.ofSeconds(timeout))
                 .header(CONTENT_TYPE_HEADER, "application/json; charset=utf-8")
