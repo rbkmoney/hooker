@@ -1,55 +1,47 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.hooker.logging.HttpLoggingInterceptor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 @Service
 @Slf4j
 public class PostSender {
 
-    private final OkHttpClient httpClient;
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private int timeout;
+    private HttpClient httpClient;
+    private HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder();
+    public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String SIGNATURE_HEADER = "Content-Signature";
-    public static final long RESPONSE_MAX_LENGTH = 4096L;
+    public static final int RESPONSE_MAX_LENGTH = 4096;
 
-    public PostSender(@Value("${message.sender.number}") int connectionPoolSize,
-                      @Value("${merchant.callback.timeout}") int timeout) {
-        OkHttpClient.Builder httpBuilder = new OkHttpClient.Builder();
-
-        if (log.isDebugEnabled()) {
-            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(message -> log.debug(message));
-            httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            httpBuilder.addInterceptor(httpLoggingInterceptor);
-        }
-
-        ConnectionPool connectionPool = new ConnectionPool(2 * connectionPoolSize, 5, TimeUnit.MINUTES);
-        this.httpClient = httpBuilder
-                .connectionPool(connectionPool)
-                .retryOnConnectionFailure(false)
-                .connectTimeout(timeout, TimeUnit.SECONDS)
-                .writeTimeout(timeout, TimeUnit.SECONDS)
-                .readTimeout(timeout, TimeUnit.SECONDS)
+    public PostSender(@Value("${merchant.callback.timeout}") int timeout) {
+        this.timeout = timeout;
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(timeout))
                 .build();
     }
 
-    public int doPost(String url, long messageId, String paramsAsString, String signature) throws IOException {
+    public int doPost(String url, long messageId, String paramsAsString, String signature) throws Exception {
         log.info("Sending message with id {}, {} to hook: {} ", messageId, paramsAsString, url);
-        RequestBody body = RequestBody.create(JSON, paramsAsString);
-        final Request request = new Request.Builder()
-                .url(url)
-                .addHeader(SIGNATURE_HEADER, "alg=RS256; digest=" + signature)
-                .post(body)
+        final HttpRequest request = httpRequestBuilder
+                .uri(new URI(url))
+                .timeout(Duration.ofSeconds(timeout))
+                .header(CONTENT_TYPE_HEADER, "application/json; charset=utf-8")
+                .header(SIGNATURE_HEADER, "alg=RS256; digest=" + signature)
+                .POST(HttpRequest.BodyPublishers.ofString(paramsAsString))
                 .build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.code(), response.body() != null ? response.peekBody(RESPONSE_MAX_LENGTH).string() : "<empty>");
-            return response.code();
-        }
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        String body = response.body();
+        String resultBody = body != null ? body.substring(0, Math.min(body.length(), RESPONSE_MAX_LENGTH)) : "<empty>";
+        log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.statusCode(), resultBody);
+        return response.statusCode();
     }
 }
