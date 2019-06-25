@@ -24,6 +24,7 @@ public class PostSender {
     public PostSender(@Value("${merchant.callback.timeout}") int timeout) {
         this.timeout = timeout;
         this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(timeout))
                 .build();
     }

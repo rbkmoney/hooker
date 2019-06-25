@@ -5,8 +5,6 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.junit.Assert.*;
 
 public class PostSenderTest {
@@ -32,9 +30,5 @@ public class PostSenderTest {
         statusCode = postSender.doPost(httpUrl.toString(), 1, "kek", "kek");
         assertEquals(301, statusCode);
 
-        // connection timeout
-        server.enqueue(new MockResponse().setResponseCode(501).setBody("kek").setBodyDelay(3, TimeUnit.SECONDS));
-        statusCode = postSender.doPost(httpUrl.toString(), 1, "kek", "kek");
-        assertEquals(501, statusCode);
     }
 }
