@@ -11,7 +11,7 @@ public class PostSenderTest {
 
     @Test
     public void doPost() throws Exception {
-        PostSender postSender = new PostSender(1);
+        PostSender postSender = new PostSender(1,1);
         MockWebServer server = new MockWebServer();
         HttpUrl httpUrl = server.url("/");
 

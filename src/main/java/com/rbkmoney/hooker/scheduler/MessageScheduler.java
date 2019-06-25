@@ -12,6 +12,7 @@ import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.PreDestroy;
@@ -25,6 +26,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
+    @Value("${message.sender.number}")
+    private int connectionPoolSize;
+    @Value("${merchant.callback.timeout}")
+    private int httpTimeout;
+
     private TaskDao taskDao;
     private QueueDao<Q> queueDao;
     private MessageDao<M> messageDao;
@@ -32,8 +38,6 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     private RetryPoliciesService retryPoliciesService;
     @Autowired
     private Signer signer;
-    @Autowired
-    private PostSender postSender;
 
     private final Set<Long> processedQueues = Collections.synchronizedSet(new HashSet<>());
     private ExecutorService executorService;
@@ -83,7 +87,8 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
                     log.error("InvoicingMessage with id {} couldn't be null", task.getMessageId());
                 }
             }
-            MessageSender messageSender = getMessageSender(new MessageSender.QueueStatus(healthyQueues.get(queueId)), messagesForQueue, taskDao, signer, postSender);
+            MessageSender messageSender = getMessageSender(new MessageSender.QueueStatus(healthyQueues.get(queueId)),
+                    messagesForQueue, taskDao, signer, new PostSender(connectionPoolSize, httpTimeout));
             messageSenderList.add(messageSender);
         }
 
