@@ -3,9 +3,9 @@ package com.rbkmoney.hooker.listener;
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
-import com.rbkmoney.hooker.converter.SourceEventParser;
 import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.support.Acknowledgment;
@@ -18,12 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class MachineEventHandlerImpl implements MachineEventHandler {
 
     private final HandlerManager handlerManager;
-    private final SourceEventParser eventParser;
+    private final MachineEventParser<EventPayload> parser;
 
     @Override
     @Transactional
     public void handle(MachineEvent machineEvent, Acknowledgment ack) {
-        EventPayload payload = eventParser.parseEvent(machineEvent);
+        EventPayload payload = parser.parse(machineEvent);
         log.info("EventPayload payload: {}", payload);
         if (payload.isSetInvoiceChanges()) {
             for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
