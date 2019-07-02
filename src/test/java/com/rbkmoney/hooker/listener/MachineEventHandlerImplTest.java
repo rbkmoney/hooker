@@ -3,11 +3,11 @@ package com.rbkmoney.hooker.listener;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
-import com.rbkmoney.hooker.converter.SourceEventParser;
 import com.rbkmoney.hooker.exception.ParseException;
 import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -26,7 +26,7 @@ public class MachineEventHandlerImplTest {
     @Mock
     private Handler handler;
     @Mock
-    private SourceEventParser eventParser;
+    private MachineEventParser<EventPayload> eventParser;
     @Mock
     private Acknowledgment ack;
 
@@ -47,7 +47,7 @@ public class MachineEventHandlerImplTest {
         EventPayload payload = new EventPayload();
         payload.setInvoiceChanges(new ArrayList<>());
         event.setPayload(payload);
-        Mockito.when(eventParser.parseEvent(message)).thenReturn(payload);
+        Mockito.when(eventParser.parse(message)).thenReturn(payload);
 
         machineEventHandler.handle(message, ack);
 
@@ -59,7 +59,7 @@ public class MachineEventHandlerImplTest {
     @Test(expected = ParseException.class)
     public void listenEmptyException() {
         MachineEvent message = new MachineEvent();
-        Mockito.when(eventParser.parseEvent(message)).thenThrow(new ParseException());
+        Mockito.when(eventParser.parse(message)).thenThrow(new ParseException());
         machineEventHandler.handle(message, ack);
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
@@ -74,7 +74,7 @@ public class MachineEventHandlerImplTest {
         invoiceChanges.add(new InvoiceChange());
         payload.setInvoiceChanges(invoiceChanges);
         event.setPayload(payload);
-        Mockito.when(eventParser.parseEvent(message)).thenReturn(payload);
+        Mockito.when(eventParser.parse(message)).thenReturn(payload);
         Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
 
         machineEventHandler.handle(message, ack);

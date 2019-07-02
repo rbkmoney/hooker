@@ -235,12 +235,7 @@
             <version>2.1.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.rbkmoney</groupId>
-            <artifactId>easyway</artifactId>
-            <version>0.1.0</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>machinegun-proto</artifactId>
