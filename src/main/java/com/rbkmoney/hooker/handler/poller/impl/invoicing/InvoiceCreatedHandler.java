@@ -78,9 +78,7 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
                 invoice.getCart().add(icp);
             }
         }
-        if (!messageDao.updateIfExists(message)) {
-            messageDao.create(message);
-        }
+        messageDao.create(message);
     }
 
     @Override

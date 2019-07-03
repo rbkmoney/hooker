@@ -81,13 +81,4 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     public void getMaxEventId() {
         assertEquals(messageDao.getMaxEventId(workersCount, HashUtils.getIntHash("1234") % workersCount).longValue(), 5555);
     }
-
-    @Test
-    public void testIsDuplicate(){
-        InvoicingMessage invoicingMessage = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false);
-        assertTrue(messageDao.updateIfExists(invoicingMessage));
-        invoicingMessage.getPayment().setStatus("processed");
-        assertFalse(messageDao.updateIfExists(invoicingMessage));
-    }
-
 }

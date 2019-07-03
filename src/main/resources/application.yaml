@@ -72,6 +72,3 @@ management:
       statsd:
         enabled: false
         flavor: etsy
-
-retry-policy:
-  maxAttempts: -1

@@ -28,9 +28,7 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         message.setSequenceId(sequenceId);
         message.setChangeId(changeId);
         modifyMessage(ic, message);
-        if (!messageDao.updateIfExists(message)) {
-            messageDao.create(message);
-        }
+        messageDao.create(message);
     }
 
     protected abstract InvoicingMessage getMessage(String invoiceId, InvoiceChange ic);

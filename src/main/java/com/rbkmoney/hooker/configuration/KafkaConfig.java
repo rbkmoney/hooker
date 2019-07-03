@@ -57,9 +57,6 @@ public class KafkaConfig {
 
     private final KafkaSslProperties kafkaSslProperties;
 
-    @Value("${retry-policy.maxAttempts}")
-    int maxAttempts;
-
     @Bean
     public Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
