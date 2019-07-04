@@ -327,6 +327,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), :payment_recurrent_parent_invoice_id, :payment_recurrent_parent_payment_id, CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, :payment_crypto_currency, " +
                 ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
+                "ON CONFLICT ON CONSTRAINT message_uniq_constraint DO NOTHING " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())
@@ -410,24 +411,22 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
-            message.setId(keyHolder.getKey().longValue());
-            saveCart(message.getId(), message.getInvoice().getCart());
-            log.info("InvoicingMessage {} saved to db.", message);
-            queueDao.createWithPolicy(message.getId());
-            taskDao.create(message.getId());
+            Number key = keyHolder.getKey();
+            if (key != null) {
+                message.setId(key.longValue());
+                saveCart(message.getId(), message.getInvoice().getCart());
+                log.info("InvoicingMessage {} saved to db.", message);
+                queueDao.createWithPolicy(message.getId());
+                taskDao.create(message.getId());
+            }
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't create message with invoice_id "+ message.getInvoice().getId(), e);
         }
     }
 
     @Override
-    public Long getMaxEventId(int div, int mod) {
-        final String sql = "select event_id from hook.message where ('x0'||substr(md5(invoice_id), 1, 7))::bit(32)::int % :div = :mod order by event_id desc limit 1";
-        try {
-            return getNamedParameterJdbcTemplate().queryForObject(sql, new MapSqlParameterSource("div", div).addValue("mod", mod), Long.class);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
+    public Long getMaxEventId() {
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     @Override

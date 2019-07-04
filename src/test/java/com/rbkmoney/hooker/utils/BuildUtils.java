@@ -19,6 +19,10 @@ public class BuildUtils {
     }
 
     public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
+        return buildMessage(type, invoiceId, partyId, eventType, status, cart, isPayer, 0L, 0);
+    }
+
+    public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer, Long sequenceId, Integer changeId) {
         InvoicingMessage message = new InvoicingMessage();
         message.setEventId(5555L);
         message.setEventTime("time");
@@ -101,6 +105,8 @@ public class BuildUtils {
             refund.setStatus("status");
             refund.setReason("kek");
         }
+        message.setSequenceId(sequenceId);
+        message.setChangeId(changeId);
         return message;
     }
 

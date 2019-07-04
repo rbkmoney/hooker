@@ -9,35 +9,21 @@ import com.rbkmoney.geck.serializer.kit.json.JsonHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.handler.Handler;
-import com.rbkmoney.hooker.utils.HashUtils;
+import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class EventStockHandler implements EventHandler<StockEvent> {
+@RequiredArgsConstructor
+public class CustomerEventStockHandler implements EventHandler<StockEvent> {
 
     private static final int INITIAL_VALUE = 3;
     private final AtomicInteger count = new AtomicInteger(INITIAL_VALUE);
 
-    private final List<Handler> pollingEventHandlers;
-    private final int divider;
-    private final int mod;
-
-    public EventStockHandler(List<Handler> pollingEventHandlers, int divider, int mod) {
-        this.pollingEventHandlers = pollingEventHandlers;
-        this.divider = divider;
-        this.mod = mod;
-    }
-
-    public int getDivider() {
-        return divider;
-    }
-
-    public int getMod() {
-        return mod;
-    }
+    private final List<AbstractCustomerEventHandler> pollingEventHandlers;
 
     @Override
     public EventAction handle(StockEvent stockEvent, String subsKey) {
@@ -45,15 +31,10 @@ public class EventStockHandler implements EventHandler<StockEvent> {
         EventPayload payload = processingEvent.getPayload();
         List changes;
         String sourceId;
-        if (payload.isSetInvoiceChanges()) {
-            changes = payload.getInvoiceChanges();
-            sourceId = processingEvent.getSource().getInvoiceId();
-        } else if (payload.isSetCustomerChanges()) {
+        if (payload.isSetCustomerChanges()) {
             changes = payload.getCustomerChanges();
             sourceId = processingEvent.getSource().getCustomerId();
-        } else return EventAction.CONTINUE;
-
-        if (!HashUtils.checkHashMod(sourceId, divider, mod)) {
+        } else {
             return EventAction.CONTINUE;
         }
 

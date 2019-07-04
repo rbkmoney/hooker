@@ -4,7 +4,6 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.utils.HashUtils;
 import com.rbkmoney.swag_webhook_events.Customer;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,9 +29,6 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
     @Autowired
     CustomerDao messageDao;
 
-    @Value("${bm.pooling.workersCount}")
-    private int workersCount;
-
     private static boolean messagesCreated = false;
 
     @Before
@@ -51,6 +47,6 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getMaxEventId() {
-        assertEquals(messageDao.getMaxEventId(workersCount, HashUtils.getIntHash("124") % workersCount).longValue(), 1L);
+        assertEquals(messageDao.getMaxEventId().longValue(), 1L);
     }
 }

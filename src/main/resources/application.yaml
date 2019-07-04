@@ -40,7 +40,6 @@ bm.pooling:
   maxPoolSize: 1
   delay: 5000
   maxQuerySize: 500
-  workersCount: 5
 
 # connection timeout
 merchant.callback.timeout: 10

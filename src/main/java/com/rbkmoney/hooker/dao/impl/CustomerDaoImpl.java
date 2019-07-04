@@ -216,10 +216,10 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
     }
 
     @Override
-    public Long getMaxEventId(int div, int mod) {
-        final String sql = "select event_id from hook.customer_message where ('x0'||substr(md5(customer_id), 1, 7))::bit(32)::int % :div = :mod order by event_id desc limit 1";
+    public Long getMaxEventId() {
+        final String sql = "select max(event_id) from hook.customer_message ";
         try {
-            return getNamedParameterJdbcTemplate().queryForObject(sql, new MapSqlParameterSource("div", div).addValue("mod", mod), Long.class);
+            return getNamedParameterJdbcTemplate().queryForObject(sql, new MapSqlParameterSource(), Long.class);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

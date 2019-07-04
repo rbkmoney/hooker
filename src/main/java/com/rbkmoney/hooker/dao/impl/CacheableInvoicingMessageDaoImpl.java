@@ -73,7 +73,7 @@ public class CacheableInvoicingMessageDaoImpl extends InvoicingMessageDaoImpl {
     }
 
     private void putToCache(InvoicingMessage message){
-        if (message != null) {
+        if (message != null && message.getId() != null) {
             cacheMng.putMessage(message);
             cacheMng.putMessage(message.getInvoice().getId() + (message.isPayment() ? "_" + message.getPayment().getId() : "") + (message.isRefund() ? "_" + message.getPayment().getId() + "_" + message.getRefund().getId() : ""), message);
         }

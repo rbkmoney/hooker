@@ -9,5 +9,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Message {
-    private long id;
+    private Long id;
 }

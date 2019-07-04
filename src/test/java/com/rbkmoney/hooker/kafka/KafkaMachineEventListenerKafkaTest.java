@@ -31,7 +31,6 @@ import java.util.Properties;
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 
-@Ignore
 @Slf4j
 @TestPropertySource(properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration")
 @ContextConfiguration(classes = {KafkaAutoConfiguration.class, KafkaMachineEventListener.class, MachineEventHandlerImpl.class})
