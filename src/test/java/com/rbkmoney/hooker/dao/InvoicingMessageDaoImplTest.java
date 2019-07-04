@@ -63,6 +63,7 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void get() throws Exception {
         InvoicingMessage message = messageDao.getInvoice("1235");
+        assertTrue(message.getEventId() >= 380000000);
         assertEquals(message.getInvoice().getAmount(), 12235);
         assertEquals(message.getInvoice().getCart().size(), 2);
 

@@ -38,7 +38,6 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventId(eventId);
         message.setEventTime(eventCreatedAt);
         message.setSequenceId(sequenceId);
         message.setChangeId(changeId);

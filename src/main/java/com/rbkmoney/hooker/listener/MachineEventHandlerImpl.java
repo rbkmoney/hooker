@@ -38,19 +38,6 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
                     throw ex;
                 }
             }
-        } else if (payload.isSetCustomerChanges()) {
-            for (int i = 0; i < payload.getCustomerChanges().size(); ++i) {
-                CustomerChange customerChange = payload.getCustomerChanges().get(i);
-                try {
-                    int j = i;
-                    handlerManager.getHandler(customerChange)
-                            .ifPresentOrElse(handler -> handler.handle(customerChange, null, machineEvent.getCreatedAt(), machineEvent.getSourceId(), machineEvent.getEventId(), j),
-                                    () -> log.debug("Handler for customerChange {} wasn't found (machineEvent {})", customerChange, machineEvent));
-                } catch (Exception ex) {
-                    log.error("Failed to handle customer change, customerChange='{}'", customerChange, ex);
-                    throw ex;
-                }
-            }
         }
         ack.acknowledge();
         log.debug("Ack for machineEvent {} sent", machineEvent);

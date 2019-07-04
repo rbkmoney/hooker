@@ -23,7 +23,6 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         }
         message.setEventType(getEventType());
         message.setType(getMessageType());
-        message.setEventId(eventId);
         message.setEventTime(eventCreatedAt);
         message.setSequenceId(sequenceId);
         message.setChangeId(changeId);

@@ -40,7 +40,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     InvoicingTaskDao taskDao;
 
     public static final String ID = "id";
-    public static final String EVENT_ID = "event_id";
+    public static final String NEW_EVENT_ID = "new_event_id";
     public static final String EVENT_TIME = "event_time";
     public static final String SEQUENCE_ID = "sequence_id";
     public static final String CHANGE_ID = "change_id";
@@ -154,7 +154,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     private static RowMapper<InvoicingMessage> messageRowMapper = (rs, i) -> {
         InvoicingMessage message = new InvoicingMessage();
         message.setId(rs.getLong(ID));
-        message.setEventId(rs.getLong(EVENT_ID));
+        message.setEventId(rs.getLong(NEW_EVENT_ID));
         message.setEventTime(rs.getString(EVENT_TIME));
         message.setSequenceId(rs.getLong(SEQUENCE_ID));
         message.setChangeId(rs.getInt(CHANGE_ID));
@@ -310,7 +310,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     @Transactional
     public void create(InvoicingMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.message" +
-                "(event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
+                "(event_time, sequence_id, change_id, type, party_id, event_type, " +
                 "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
                 "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
                 "payment_id, payment_created_at, payment_status, payment_failure, payment_failure_reason, payment_amount, " +
@@ -319,7 +319,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "payment_digital_wallet_provider, payment_digital_wallet_id, payment_crypto_currency, " +
                 "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
                 "VALUES " +
-                "(:event_id, :event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
+                "(:event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
                 ":invoice_currency, :invoice_content_type, :invoice_content_data, :invoice_product, :invoice_description, " +
                 ":payment_id, :payment_created_at, :payment_status, :payment_failure, :payment_failure_reason, :payment_amount, " +
@@ -330,7 +330,6 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "ON CONFLICT ON CONSTRAINT message_uniq_constraint DO NOTHING " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(EVENT_ID, message.getEventId())
                 .addValue(EVENT_TIME, message.getEventTime())
                 .addValue(SEQUENCE_ID, message.getSequenceId())
                 .addValue(CHANGE_ID, message.getChangeId())

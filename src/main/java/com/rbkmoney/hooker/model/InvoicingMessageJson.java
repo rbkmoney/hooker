@@ -21,7 +21,13 @@ import java.util.Map;
 @Getter
 @Setter
 public class InvoicingMessageJson {
+
+    private static ObjectMapper objectMapper = new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+
     private static Map<String, String> invoiceStatusesMapping = new HashMap<>();
+
     static {
         invoiceStatusesMapping.put("unpaid", "InvoiceCreated");
         invoiceStatusesMapping.put("paid", "InvoicePaid");
@@ -46,7 +52,7 @@ public class InvoicingMessageJson {
         refundStatusesMapping.put("failed", "RefundFailed");
     }
 
-    private long eventID;
+    private Long eventID;
     private String occuredAt;
     private String topic;
     private String eventType;
@@ -72,10 +78,7 @@ public class InvoicingMessageJson {
         invoicingMessageJson.topic = Event.TopicEnum.INVOICESTOPIC.getValue();
         invoicingMessageJson.invoice = message.getInvoice();
 
-        return new ObjectMapper()
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true)
-                .writeValueAsString(invoicingMessageJson);
+        return objectMapper.writeValueAsString(invoicingMessageJson);
     }
 
     private static class InvoiceMessageJson extends InvoicingMessageJson {

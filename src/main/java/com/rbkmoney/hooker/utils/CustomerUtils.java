@@ -19,7 +19,7 @@ public class CustomerUtils {
     private ObjectStack<String> names = new ObjectStack<>();
     private ObjectStack<JsonNodeWrapper> nodes = new ObjectStack<>();
     private JsonNode rootNode;
-    private ObjectMapper mapper = new ObjectMapper();
+    private static ObjectMapper mapper = new ObjectMapper();
 
     public JsonNode getResult(Value value) {
         try {
@@ -189,7 +189,7 @@ public class CustomerUtils {
     public static JsonNode getJsonObject(String json) {
         if (json != null) {
             try {
-                return new ObjectMapper().readTree(json);
+                return mapper.readTree(json);
             } catch (IOException e) {
                 log.warn("Unexpected error when converting json {}", json, e);
             }

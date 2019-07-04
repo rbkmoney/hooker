@@ -22,6 +22,11 @@ import java.util.Map;
 @Getter
 @Setter
 public class CustomerMessageJson {
+
+    private static ObjectMapper objectMapper = new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+
     private static Map<EventType, Event.EventTypeEnum> eventTypeMapping = new HashMap<>();
 
     static {
@@ -46,10 +51,7 @@ public class CustomerMessageJson {
         messageJson.topic = Event.TopicEnum.CUSTOMERSTOPIC.getValue();
         messageJson.customer = message.getCustomer();
         messageJson.eventType = eventTypeMapping.get(message.getEventType()).getValue();
-        return new ObjectMapper()
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true)
-                .writeValueAsString(messageJson);
+        return objectMapper.writeValueAsString(messageJson);
     }
 
     @Getter

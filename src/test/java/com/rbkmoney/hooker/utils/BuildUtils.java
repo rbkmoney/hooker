@@ -24,7 +24,6 @@ public class BuildUtils {
 
     public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer, Long sequenceId, Integer changeId) {
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventId(5555L);
         message.setEventTime("time");
         message.setType(type);
         message.setPartyId(partyId);
