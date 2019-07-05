@@ -327,7 +327,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), :payment_recurrent_parent_invoice_id, :payment_recurrent_parent_payment_id, CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, :payment_crypto_currency, " +
                 ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
-                "ON CONFLICT ON CONSTRAINT message_uniq_constraint DO NOTHING " +
+                "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_TIME, message.getEventTime())

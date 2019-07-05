@@ -1,5 +1,4 @@
 CREATE UNIQUE INDEX IF NOT EXISTS message_uniq_idx ON hook.message(invoice_id, sequence_id, change_id);
-ALTER TABLE hook.message ADD CONSTRAINT message_uniq_constraint UNIQUE USING INDEX message_uniq_idx;
 
 CREATE SEQUENCE hook.event_id_seq
     INCREMENT 1
