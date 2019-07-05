@@ -19,7 +19,7 @@ public class CustomerUtils {
     private ObjectStack<String> names = new ObjectStack<>();
     private ObjectStack<JsonNodeWrapper> nodes = new ObjectStack<>();
     private JsonNode rootNode;
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     public JsonNode getResult(Value value) {
         try {

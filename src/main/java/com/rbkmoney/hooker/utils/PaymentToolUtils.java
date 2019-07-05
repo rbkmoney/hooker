@@ -22,7 +22,7 @@ import java.util.Optional;
  */
 public class PaymentToolUtils {
 
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     private static final Map<String, String> digitalWalletMapping = ImmutableMap.of(
             PaymentToolDetailsDigitalWallet.DigitalWalletDetailsTypeEnum.DIGITALWALLETDETAILSQIWI.getValue(), DigitalWalletProvider.qiwi.name()

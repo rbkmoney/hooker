@@ -22,7 +22,7 @@ import java.util.Map;
 @Setter
 public class InvoicingMessageJson {
 
-    private static ObjectMapper objectMapper = new ObjectMapper()
+    private static final ObjectMapper objectMapper = new ObjectMapper()
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 
