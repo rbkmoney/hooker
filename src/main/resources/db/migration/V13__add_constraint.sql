@@ -8,4 +8,5 @@ CREATE SEQUENCE hook.event_id_seq
     CACHE 1;
 
 ALTER TABLE hook.message ALTER COLUMN event_id DROP NOT NULL;
-ALTER TABLE hook.message ADD COLUMN new_event_id bigint DEFAULT nextval('hook.event_id_seq'::regclass);
+ALTER TABLE hook.message ADD COLUMN new_event_id bigint;
+ALTER TABLE hook.message ALTER COLUMN new_event_id SET DEFAULT nextval('hook.event_id_seq'::regclass);
