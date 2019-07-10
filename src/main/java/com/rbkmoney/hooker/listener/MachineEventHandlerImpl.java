@@ -35,6 +35,11 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
                                     () -> log.debug("Handler for invoiceChange {} wasn't found (machineEvent {})", invoiceChange, machineEvent));
                 } catch (Exception ex) {
                     log.error("Failed to handle invoice change, invoiceChange='{}'", invoiceChange, ex);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     throw ex;
                 }
             }
