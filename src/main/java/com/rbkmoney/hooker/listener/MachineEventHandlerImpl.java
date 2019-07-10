@@ -38,7 +38,7 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.error("Interrupted while sleeping when handle invoice change, invoiceChange='{}'", invoiceChange);
                     }
                     throw ex;
                 }
