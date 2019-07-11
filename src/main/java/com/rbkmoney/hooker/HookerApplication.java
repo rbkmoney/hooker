@@ -3,13 +3,11 @@ package com.rbkmoney.hooker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @ServletComponentScan
 @SpringBootApplication(scanBasePackages = {"com.rbkmoney.hooker"})
 @EnableScheduling
-@EnableCaching
 public class HookerApplication {
 
     public static void main(String[] args) throws Exception {

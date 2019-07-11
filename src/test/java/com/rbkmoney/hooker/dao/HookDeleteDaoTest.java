@@ -42,6 +42,6 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
         hookDao.delete(hookId2);
         assertNotEquals(queueDao.getWithPolicies(taskDao.getScheduled(new ArrayList<>()).keySet()).size(), 0);
         hookDao.delete(hookId);
-        assertEquals(queueDao.getWithPolicies(taskDao.getScheduled(new ArrayList<>()).keySet()).size(), 0);
+        assertEquals(taskDao.getScheduled(new ArrayList<>()).keySet().size(), 0);
     }
 }

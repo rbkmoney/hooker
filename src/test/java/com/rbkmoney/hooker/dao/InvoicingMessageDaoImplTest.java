@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
@@ -67,7 +68,9 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
         assertEquals(message.getInvoice().getAmount(), 12235);
         assertEquals(message.getInvoice().getCart().size(), 2);
 
-        assertEquals(1, messageDao.getBy(Arrays.asList(message.getId())).size());
+        List<InvoicingMessage> messages = messageDao.getBy(Arrays.asList(message.getId()));
+        assertEquals(1, messages.size());
+        assertFalse(messages.get(0).getInvoice().getCart().isEmpty());
 
         InvoicingMessage payment = messageDao.getPayment("1236", "123");
         assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);

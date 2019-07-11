@@ -74,19 +74,6 @@ public class DataflowTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testCache(){
-        final String invoceId = "asgsdhghdhtfugny78989";
-        final String partyId = new Random().nextInt() + "";
-        InvoicingMessage message1 = buildMessage(AbstractInvoiceEventHandler.INVOICE, invoceId, partyId, EventType.INVOICE_CREATED, "status");
-        messageDao.create(message1);
-        InvoicingMessage message2 = messageDao.getInvoice(invoceId);
-        InvoicingMessage message3 = messageDao.getInvoice(invoceId);
-        assertTrue(message1 != message2);
-        assertTrue(message2 != message3);
-        assertTrue(message1 != message3);
-    }
-
-    @Test
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true, 0L, 0);

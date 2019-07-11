@@ -21,7 +21,7 @@ public class DaoConfiguration {
 
     @Bean
     public InvoicingMessageDao messageDao(DataSource dataSource) {
-        return new CacheableInvoicingMessageDaoImpl(dataSource);
+        return new InvoicingMessageDaoImpl(dataSource);
     }
 
     @Bean
@@ -46,7 +46,7 @@ public class DaoConfiguration {
 
     @Bean
     public InvoicingQueueDao invoicingQueueDao(DataSource dataSource) {
-        return new CacheableInvoicingQueueDao(dataSource);
+        return new InvoicingQueueDao(dataSource);
     }
 
     @Bean

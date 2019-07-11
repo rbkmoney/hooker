@@ -59,10 +59,6 @@ message:
   scheduler.delay: 1000
   sender.number: 10
 
-spring.cache:
-  cache-names: messagesByInvoice,messagesById,queues
-  caffeine.spec: maximumSize=1000,expireAfterWrite=60s
-
 management:
   security:
     flag: false

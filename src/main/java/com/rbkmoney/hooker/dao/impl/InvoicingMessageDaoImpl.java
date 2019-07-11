@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.dao.CacheMng;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.Invoice;
@@ -29,9 +28,6 @@ import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
 @Slf4j
 public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implements InvoicingMessageDao {
-
-    @Autowired
-    CacheMng cacheMng;
 
     @Autowired
     InvoicingQueueDao queueDao;
@@ -264,9 +260,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(TYPE, type);
         try {
             result = getNamedParameterJdbcTemplate().queryForObject(sql, params, messageRowMapper);
-            final String sqlCarts = "SELECT * FROM hook.cart_position WHERE message_id =:message_id";
-            MapSqlParameterSource paramsCarts = new MapSqlParameterSource("message_id", result.getId());
-            List<InvoiceCartPosition> cart = getNamedParameterJdbcTemplate().query(sqlCarts, paramsCarts, cartPositionRowMapper);
+            List<InvoiceCartPosition> cart = getInvoiceCartPositions(result.getId());
             if (!cart.isEmpty()) {
                 result.getInvoice().setCart(cart);
             }
@@ -276,6 +270,12 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
             throw new DaoException("InvoicingMessageDaoImpl.getAny error with invoiceId " + invoiceId, e);
         }
         return result;
+    }
+
+    private List<InvoiceCartPosition> getInvoiceCartPositions(Long messageId) {
+        final String sqlCarts = "SELECT * FROM hook.cart_position WHERE message_id =:message_id";
+        MapSqlParameterSource paramsCarts = new MapSqlParameterSource("message_id", messageId);
+        return getNamedParameterJdbcTemplate().query(sqlCarts, paramsCarts, cartPositionRowMapper);
     }
 
     private void saveCart(Long messageId, Collection<InvoiceCartPosition> cart) {
@@ -433,9 +433,15 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         final String sql = "SELECT * FROM hook.message WHERE id in (:ids)";
         try {
             List<InvoicingMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
+            messagesFromDb.forEach(m -> {
+                List<InvoiceCartPosition> positions = getInvoiceCartPositions(m.getId());
+                if (!positions.isEmpty()) {
+                    m.getInvoice().setCart(positions);
+                }
+            });
             log.debug("messagesFromDb {}", messagesFromDb);
             return messagesFromDb;
-        }  catch (NestedRuntimeException e) {
+        } catch (NestedRuntimeException e) {
             throw new DaoException("InvoicingMessageDaoImpl.getByIds error", e);
         }
     }
