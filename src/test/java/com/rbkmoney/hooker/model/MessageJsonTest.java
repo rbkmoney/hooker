@@ -21,9 +21,6 @@ public class MessageJsonTest {
         String json = InvoicingMessageJson.buildMessageJson(message);
         System.out.println(json);
         Assert.assertTrue(json.contains("\"kek\":\"lol\""));
-        InvoicingMessage copy = message.copy();
-        message.getInvoice().setAmount(99988);
-        Assert.assertNotEquals(message.getInvoice().getAmount(), copy.getInvoice().getAmount());
     }
 
     @Test
