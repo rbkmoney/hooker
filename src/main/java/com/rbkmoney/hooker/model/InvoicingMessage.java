@@ -48,10 +48,4 @@ public class InvoicingMessage extends Message {
                 (isPayment() ? ", paymentStatus=" + payment.getStatus() : "") +
                 '}';
     }
-
-    @Override
-    public int hashCode() {
-        return (int) (getId() ^ (getId() >>> 32));
-    }
-
 }
