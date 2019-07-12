@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
+import com.rbkmoney.hooker.dao.NotFoundException;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
@@ -248,8 +249,8 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
         setDataSource(dataSource);
     }
 
-    private InvoicingMessage getAny(String invoiceId, String paymentId, String refundId, String type) throws DaoException {
-        InvoicingMessage result = null;
+    private InvoicingMessage getAny(String invoiceId, String paymentId, String refundId, String type) throws NotFoundException, DaoException {
+        InvoicingMessage result;
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id" +
                 " AND (payment_id IS NULL OR payment_id=:payment_id)" +
                 " AND (refund_id IS NULL OR refund_id=:refund_id)" +
@@ -265,9 +266,11 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 result.getInvoice().setCart(cart);
             }
         } catch (EmptyResultDataAccessException e) {
-            log.warn("InvoicingMessage with invoiceId {} not exist!", invoiceId);
+            throw new NotFoundException(String.format("InvoicingMessage not found with invoiceId=%s, paymentId=%s, refundId=%s, type=%s!",
+                    invoiceId, paymentId, refundId, type));
         } catch (NestedRuntimeException e) {
-            throw new DaoException("InvoicingMessageDaoImpl.getAny error with invoiceId " + invoiceId, e);
+            throw new DaoException(String.format("InvoicingMessage error with invoiceId=%s, paymentId=%s, refundId=%s, type=%s",
+                    invoiceId, paymentId, refundId, type), e);
         }
         return result;
     }
@@ -448,17 +451,17 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
 
 
     @Override
-    public InvoicingMessage getInvoice(String invoiceId) throws DaoException {
+    public InvoicingMessage getInvoice(String invoiceId) throws NotFoundException, DaoException {
         return getAny(invoiceId, null, null, INVOICE);
     }
 
     @Override
-    public InvoicingMessage getPayment(String invoiceId, String paymentId) throws DaoException {
+    public InvoicingMessage getPayment(String invoiceId, String paymentId) throws NotFoundException, DaoException {
         return getAny(invoiceId, paymentId, null, PAYMENT);
     }
 
     @Override
-    public InvoicingMessage getRefund(String invoiceId, String paymentId, String refundId) throws DaoException {
+    public InvoicingMessage getRefund(String invoiceId, String paymentId, String refundId) throws NotFoundException, DaoException {
         return getAny(invoiceId, paymentId, refundId, REFUND);
     }
 }

@@ -8,6 +8,7 @@ import com.rbkmoney.swag_webhook_events.CustomerPayer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.matchers.Not;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,5 +83,14 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
         messageDao.create(message);
         assertNull(message.getId());
 
+    }
+
+    @Test
+    public void testNotFound(){
+        try {
+            messageDao.getRefund("kek", "lol", "kk");
+        } catch (NotFoundException e) {
+            log.warn(e.getMessage());
+        }
     }
 }

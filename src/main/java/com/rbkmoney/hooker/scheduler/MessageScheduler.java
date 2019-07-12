@@ -71,9 +71,13 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         processedQueues.addAll(healthyQueues.keySet());
 
         final Set<Long> messageIdsToSend = getMessageIdsFilteredByQueues(scheduledTasks, healthyQueues.keySet());
-        final Map<Long, M> messagesMap = loadMessages(messageIdsToSend);
 
         log.info("Schedulled tasks count = {}, after filter = {}", scheduledTasks.size(), messageIdsToSend.size());
+        if (messageIdsToSend.isEmpty()) {
+            return;
+        }
+
+        final Map<Long, M> messagesMap = loadMessages(messageIdsToSend);
 
         List<MessageSender<?>> messageSenderList = new ArrayList<>(healthyQueues.keySet().size());
         for (long queueId : healthyQueues.keySet()) {
