@@ -59,7 +59,7 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
         final String sql =
                 " SELECT st.message_id, st.queue_id FROM hook.scheduled_task st WHERE message_type=CAST(:message_type as hook.message_topic)" +
                         (excludeQueueIds.size() > 0 ? " AND st.queue_id not in (:queue_ids)" : "") +
-                        " ORDER BY message_id ASC LIMIT 10000";
+                        " ORDER BY message_id ASC LIMIT 10000 FOR UPDATE";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(
                     sql, new MapSqlParameterSource()

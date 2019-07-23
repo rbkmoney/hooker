@@ -54,6 +54,9 @@ spring.datasource:
     maximum-pool-size: 10
     idle-timeout: 30000
 
+db:
+  jdbc:
+    tr_timeout: 300000
 
 message:
   scheduler.delay: 1000

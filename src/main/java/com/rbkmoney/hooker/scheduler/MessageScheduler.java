@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PreDestroy;
 import java.util.*;
@@ -38,6 +39,8 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     private RetryPoliciesService retryPoliciesService;
     @Autowired
     private Signer signer;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     private final Set<Long> processedQueues = Collections.synchronizedSet(new HashSet<>());
     private ExecutorService executorService;
@@ -51,7 +54,11 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     }
 
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
-    public void loop() throws InterruptedException {
+    public void loop() {
+        transactionTemplate.execute(transactionStatus -> processLoop());
+    }
+
+    private int processLoop() {
         final List<Long> currentlyProcessedQueues = new ArrayList<>(processedQueues);
 
         log.debug("currentlyProcessedQueues {}", processedQueues);
@@ -61,7 +68,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         log.debug("scheduledTasks {}", scheduledTasks);
 
         if (scheduledTasks.entrySet().isEmpty()) {
-            return;
+            return 0;
         }
         final Map<Long, Queue> healthyQueues = loadQueues(scheduledTasks.keySet())
                 .stream().collect(Collectors.toMap(Queue::getId, v -> v));
@@ -74,7 +81,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
         log.info("Schedulled tasks count = {}, after filter = {}", scheduledTasks.size(), messageIdsToSend.size());
         if (messageIdsToSend.isEmpty()) {
-            return;
+            return 0;
         }
 
         final Map<Long, M> messagesMap = loadMessages(messageIdsToSend);
@@ -96,20 +103,25 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
             messageSenderList.add(messageSender);
         }
 
-        List<Future<MessageSender.QueueStatus>> futureList = executorService.invokeAll(messageSenderList);
-        for (Future<MessageSender.QueueStatus> status : futureList) {
-            if (!status.isCancelled()) {
-                try {
-                    if (status.get().isSuccess()) {
-                        done(status.get().getQueue());
-                    } else {
-                        fail(status.get().getQueue());
+        try {
+            List<Future<MessageSender.QueueStatus>> futureList = executorService.invokeAll(messageSenderList);
+            for (Future<MessageSender.QueueStatus> status : futureList) {
+                if (!status.isCancelled()) {
+                    try {
+                        if (status.get().isSuccess()) {
+                            done(status.get().getQueue());
+                        } else {
+                            fail(status.get().getQueue());
+                        }
+                    } catch (ExecutionException e) {
+                        log.error("Unexpected error when get queue");
                     }
-                } catch (ExecutionException e) {
-                    log.error("Unexpected error when get queue");
                 }
             }
+        } catch (InterruptedException e) {
+            log.error("Thread was interrupted", e);
         }
+        return 0;
     }
 
     protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue, TaskDao taskDao, Signer signer, PostSender postSender);
