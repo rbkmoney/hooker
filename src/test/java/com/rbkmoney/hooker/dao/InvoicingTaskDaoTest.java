@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -76,12 +77,17 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
         Set<Long> scheduledOne = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
             scheduledOne.addAll(taskDao.getScheduled(new ArrayList<>()).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
-            System.out.println(scheduledOne);
+            System.out.println("scheduledOne: " + scheduledOne);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return 1;
         })).start();
 
         try {
-            Thread.sleep(500);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -89,7 +95,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
         Set<Long> scheduledTwo = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
             scheduledTwo.addAll(taskDao.getScheduled(new ArrayList<>()).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
-            System.out.println(scheduledTwo);
+            System.out.println("scheduledTwo :" + scheduledTwo);
             return 1;
         })).start();
 
@@ -98,8 +104,9 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        assertEquals(21, scheduledOne.size());
-        assertTrue(scheduledTwo.isEmpty());
+
+        scheduledOne.retainAll(scheduledTwo);
+        assertTrue(scheduledOne.isEmpty());
     }
 
     @Test
