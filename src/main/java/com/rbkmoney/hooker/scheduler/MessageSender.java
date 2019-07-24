@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.scheduler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.service.PostSender;
@@ -10,25 +9,21 @@ import com.rbkmoney.hooker.service.err.PostRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-/**
- * Created by jeckep on 18.04.17.
- */
 @Slf4j
 public abstract class MessageSender<M extends Message> implements Callable<MessageSender.QueueStatus> {
 
     private MessageSender.QueueStatus queueStatus;
     private List<M> messages;
-    private TaskDao taskDao;
     private Signer signer;
     private PostSender postSender;
 
-    public MessageSender(MessageSender.QueueStatus queueStatus, List<M> messages, TaskDao taskDao, Signer signer, PostSender postSender) {
+    public MessageSender(MessageSender.QueueStatus queueStatus, List<M> messages, Signer signer, PostSender postSender) {
         this.queueStatus = queueStatus;
         this.messages = messages;
-        this.taskDao = taskDao;
         this.signer = signer;
         this.postSender = postSender;
     }
@@ -47,7 +42,7 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
                     log.info(wrongCodeMessage);
                     throw new PostRequestException(wrongCodeMessage);
                 }
-                taskDao.remove(queueStatus.getQueue().getId(), message.getId()); //required after message is sent
+                queueStatus.messagesDone.add(message.getId());
             }
             queueStatus.setSuccess(true);
         } catch (Exception e) {
@@ -64,6 +59,7 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
     public static class QueueStatus {
         private Queue queue;
         private boolean isSuccess;
+        private List<Long> messagesDone = new ArrayList<>();
 
         public QueueStatus(Queue queue) {
             this.queue = queue;
@@ -83,6 +79,10 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
 
         public void setSuccess(boolean success) {
             isSuccess = success;
+        }
+
+        public List<Long> getMessagesDone() {
+            return messagesDone;
         }
     }
 }

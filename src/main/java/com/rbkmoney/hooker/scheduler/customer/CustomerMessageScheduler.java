@@ -32,7 +32,7 @@ public class CustomerMessageScheduler extends MessageScheduler<CustomerMessage, 
     }
 
     @Override
-    protected MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<CustomerMessage> messagesForQueue, TaskDao taskDao, Signer signer, PostSender postSender) {
-        return new CustomerMessageSender(queueStatus, messagesForQueue, taskDao, signer, postSender);
+    protected MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<CustomerMessage> messagesForQueue, Signer signer, PostSender postSender) {
+        return new CustomerMessageSender(queueStatus, messagesForQueue, signer, postSender);
     }
 }

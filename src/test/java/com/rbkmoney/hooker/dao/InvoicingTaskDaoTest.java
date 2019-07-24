@@ -14,13 +14,13 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Created by jeckep on 17.04.17.
@@ -40,6 +40,9 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
     @Autowired
     InvoicingMessageDao messageDao;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     Long messageId;
     Long hookId;
@@ -62,7 +65,41 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
         assertEquals(1, scheduled.size());
         taskDao.remove(scheduled.keySet().iterator().next(), messageId);
         assertEquals(0, taskDao.getScheduled(new ArrayList<>()).size());
+    }
 
+    @Test
+    public void testSelectForUpdate() {
+        for (int i = 0; i < 20; ++i) {
+            messageDao.create(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE, ""+i, "partyId", EventType.INVOICE_CREATED, "status", cart(), true));
+        }
+
+        Set<Long> scheduledOne = new HashSet<>();
+        new Thread(() -> transactionTemplate.execute(tr -> {
+            scheduledOne.addAll(taskDao.getScheduled(new ArrayList<>()).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
+            System.out.println(scheduledOne);
+            return 1;
+        })).start();
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        Set<Long> scheduledTwo = new HashSet<>();
+        new Thread(() -> transactionTemplate.execute(tr -> {
+            scheduledTwo.addAll(taskDao.getScheduled(new ArrayList<>()).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
+            System.out.println(scheduledTwo);
+            return 1;
+        })).start();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(21, scheduledOne.size());
+        assertTrue(scheduledTwo.isEmpty());
     }
 
     @Test

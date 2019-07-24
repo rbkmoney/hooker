@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class CustomerMessageSender extends MessageSender<CustomerMessage> {
 
-    public CustomerMessageSender(MessageSender.QueueStatus queueStatus, List<CustomerMessage> messages, TaskDao taskDao, Signer signer, PostSender postSender) {
-        super(queueStatus, messages, taskDao, signer, postSender);
+    public CustomerMessageSender(MessageSender.QueueStatus queueStatus, List<CustomerMessage> messages, Signer signer, PostSender postSender) {
+        super(queueStatus, messages, signer, postSender);
     }
 
     @Override

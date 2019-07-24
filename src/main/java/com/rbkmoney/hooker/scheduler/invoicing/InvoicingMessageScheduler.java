@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.scheduler.invoicing;
 
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.model.InvoicingMessage;
@@ -16,10 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * Created by jeckep on 17.04.17.
- */
-
 @Service
 public class InvoicingMessageScheduler extends MessageScheduler<InvoicingMessage, InvoicingQueue> {
 
@@ -32,7 +27,7 @@ public class InvoicingMessageScheduler extends MessageScheduler<InvoicingMessage
     }
 
     @Override
-    protected MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<InvoicingMessage> messagesForQueue, TaskDao taskDao, Signer signer, PostSender postSender) {
-        return new InvoicingMessageSender(queueStatus, messagesForQueue, taskDao, signer, postSender);
+    protected MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<InvoicingMessage> messagesForQueue, Signer signer, PostSender postSender) {
+        return new InvoicingMessageSender(queueStatus, messagesForQueue, signer, postSender);
     }
 }
