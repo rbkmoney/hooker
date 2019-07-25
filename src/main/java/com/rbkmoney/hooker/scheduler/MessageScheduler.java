@@ -133,8 +133,8 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
                 }
             }
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
             log.error("Thread was interrupted", e);
+            Thread.currentThread().interrupt();
         }
         return;
     }
