@@ -7,9 +7,9 @@ import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.swag_webhook_events.CustomerPayer;
-import com.rbkmoney.swag_webhook_events.Event;
-import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
+import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
+import com.rbkmoney.swag_webhook_events.model.Event;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -24,7 +24,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -95,6 +98,9 @@ public class DataflowTest extends AbstractIntegrationTest {
         messageDao.create(message);
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.REFUND, "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false, 0L, 2);
+        messageDao.create(message);
+        sourceMessages.add(message);
+        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED, "status", cart(), false, 0L, 1);
         messageDao.create(message);
         sourceMessages.add(message);
 
@@ -266,7 +272,7 @@ public class DataflowTest extends AbstractIntegrationTest {
                 this.payer = payer;
             }
 
-            public class PaymentResourcePayer extends com.rbkmoney.swag_webhook_events.PaymentResourcePayer {
+            public class PaymentResourcePayer extends com.rbkmoney.swag_webhook_events.model.PaymentResourcePayer {
                 private PaymentToolDetailsBankCard paymentToolDetails;
 
                 @Override

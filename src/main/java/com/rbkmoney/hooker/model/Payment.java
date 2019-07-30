@@ -1,12 +1,11 @@
 package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.swag_webhook_events.model.Payer;
+import com.rbkmoney.swag_webhook_events.model.PaymentError;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Arrays;
 
 /**
  * Created by inalarsanukaev on 15.05.17.
@@ -20,6 +19,7 @@ public class Payment {
     private String status;
     private PaymentError error;
     private long amount;
+    private Long fee;
     private String currency;
     @JsonSerialize(using = MetadataSerializer.class)
     private Content metadata;

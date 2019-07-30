@@ -6,7 +6,7 @@ import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
-import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;

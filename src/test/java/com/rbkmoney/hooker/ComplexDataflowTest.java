@@ -7,7 +7,7 @@ import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHan
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.swag_webhook_events.Event;
+import com.rbkmoney.swag_webhook_events.model.Event;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;

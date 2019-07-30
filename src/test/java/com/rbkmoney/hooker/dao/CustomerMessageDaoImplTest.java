@@ -4,14 +4,13 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.swag_webhook_events.Customer;
+import com.rbkmoney.swag_webhook_events.model.Customer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 

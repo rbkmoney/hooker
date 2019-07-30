@@ -10,9 +10,9 @@ import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.BuildUtils;
-import com.rbkmoney.swag_webhook_events.Customer;
-import com.rbkmoney.swag_webhook_events.Event;
-import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
+import com.rbkmoney.swag_webhook_events.model.Customer;
+import com.rbkmoney.swag_webhook_events.model.Event;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -277,7 +277,7 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
             this.binding = binding;
         }
 
-        public class CustomerBinding extends com.rbkmoney.swag_webhook_events.CustomerBinding {
+        public class CustomerBinding extends com.rbkmoney.swag_webhook_events.model.CustomerBinding {
             private PaymentResource paymentResource;
 
             @Override
@@ -289,7 +289,7 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
                 this.paymentResource = paymentResource;
             }
 
-            public class PaymentResource extends com.rbkmoney.swag_webhook_events.PaymentResource {
+            public class PaymentResource extends com.rbkmoney.swag_webhook_events.model.PaymentResource {
                 private PaymentToolDetailsBankCard paymentToolDetails;
 
                 @Override

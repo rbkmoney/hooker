@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.model;
 
-import com.rbkmoney.swag_webhook_events.DigitalWalletDetails;
-import com.rbkmoney.swag_webhook_events.PaymentToolDetails;
+import com.rbkmoney.swag_webhook_events.model.DigitalWalletDetails;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
 import lombok.Getter;
 import lombok.Setter;
 

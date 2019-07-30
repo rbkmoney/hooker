@@ -1,11 +1,11 @@
 package com.rbkmoney.hooker.utils;
 
-import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.model.Refund;
-import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.swag_webhook_events.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +62,7 @@ public class BuildUtils {
             paymentError.setSubError(subError);
             payment.setError(paymentError);
             payment.setAmount(1);
+            payment.setFee(1L);
             payment.setCurrency("RUB");
             Content paymentContent = new Content();
             paymentContent.setType("kek");

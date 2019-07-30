@@ -9,8 +9,7 @@ import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.swag_webhook_events.CustomerBindingError;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingError;
 import org.springframework.stereotype.Component;
 
 /**

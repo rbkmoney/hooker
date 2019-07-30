@@ -3,7 +3,7 @@ package com.rbkmoney.hooker.utils;
 import com.rbkmoney.damsel.webhooker.*;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.swag_webhook_events.Event;
+import com.rbkmoney.swag_webhook_events.model.Event;
 import org.apache.thrift.meta_data.StructMetaData;
 
 import java.util.Arrays;

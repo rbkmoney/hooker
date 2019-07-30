@@ -4,8 +4,8 @@ import com.rbkmoney.damsel.domain.Failure;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.domain.OperationTimeout;
 import com.rbkmoney.damsel.domain.SubFailure;
-import com.rbkmoney.swag_webhook_events.PaymentError;
-import com.rbkmoney.swag_webhook_events.SubError;
+import com.rbkmoney.swag_webhook_events.model.PaymentError;
+import com.rbkmoney.swag_webhook_events.model.SubError;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

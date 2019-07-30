@@ -4,7 +4,7 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.swag_webhook_events.CustomerPayer;
+import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

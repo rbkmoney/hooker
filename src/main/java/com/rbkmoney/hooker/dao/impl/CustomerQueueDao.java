@@ -5,7 +5,7 @@ import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.model.CustomerQueue;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
-import com.rbkmoney.swag_webhook_events.Event;
+import com.rbkmoney.swag_webhook_events.model.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.NestedRuntimeException;

@@ -10,7 +10,7 @@ import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
-import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
@@ -62,6 +62,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
     public static final String PAYMENT_FAILURE = "payment_failure";
     public static final String PAYMENT_FAILURE_REASON = "payment_failure_reason";
     public static final String PAYMENT_AMOUNT = "payment_amount";
+    public static final String PAYMENT_FEE = "payment_fee";
     public static final String PAYMENT_CURRENCY = "payment_currency";
     public static final String PAYMENT_CONTENT_TYPE = "payment_content_type";
     public static final String PAYMENT_CONTENT_DATA = "payment_content_data";
@@ -102,6 +103,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 .addValue(PAYMENT_FAILURE, null)
                 .addValue(PAYMENT_FAILURE_REASON, null)
                 .addValue(PAYMENT_AMOUNT, null)
+                .addValue(PAYMENT_FEE, null)
                 .addValue(PAYMENT_CURRENCY, null)
                 .addValue(PAYMENT_CONTENT_TYPE, null)
                 .addValue(PAYMENT_CONTENT_DATA, null)
@@ -184,6 +186,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 payment.setError(ErrorUtils.toPaymentError(rs.getString(PAYMENT_FAILURE), rs.getString(PAYMENT_FAILURE_REASON)));
             }
             payment.setAmount(rs.getLong(PAYMENT_AMOUNT));
+            payment.setFee(rs.getLong(PAYMENT_FEE));
             payment.setCurrency(rs.getString(PAYMENT_CURRENCY));
             Content paymentMetadata = new Content();
             paymentMetadata.setType(rs.getString(PAYMENT_CONTENT_TYPE));
@@ -320,7 +323,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 "payment_currency, payment_content_type, payment_content_data, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
                 "payment_customer_id, payment_payer_type, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id, payment_tool_details_type, payment_card_bin, payment_card_last_digits, payment_card_number_mask, payment_card_token_provider, payment_system, payment_terminal_provider, " +
                 "payment_digital_wallet_provider, payment_digital_wallet_id, payment_crypto_currency, " +
-                "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
+                "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason, payment_fee) " +
                 "VALUES " +
                 "(:event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
@@ -329,7 +332,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                 ":payment_currency, :payment_content_type, :payment_content_data, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
                 ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), :payment_recurrent_parent_invoice_id, :payment_recurrent_parent_payment_id, CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, :payment_crypto_currency, " +
-                ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
+                ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason, :payment_fee) " +
                 "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -361,6 +364,7 @@ public class InvoicingMessageDaoImpl extends NamedParameterJdbcDaoSupport implem
                     .addValue(PAYMENT_FAILURE, payment.getError() != null ? ErrorUtils.toStringFailure(payment.getError()) : null)
                     .addValue(PAYMENT_FAILURE_REASON, payment.getError() != null ? payment.getError().getMessage() : null)
                     .addValue(PAYMENT_AMOUNT, payment.getAmount())
+                    .addValue(PAYMENT_FEE, payment.getFee())
                     .addValue(PAYMENT_CURRENCY, payment.getCurrency())
                     .addValue(PAYMENT_CONTENT_TYPE, payment.getMetadata().getType())
                     .addValue(PAYMENT_CONTENT_DATA, payment.getMetadata().getData())

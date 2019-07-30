@@ -9,11 +9,11 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
-import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.PaymentContactInfo;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.swag_webhook_events.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -66,7 +66,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
             payment.setContactInfo(new PaymentContactInfo(payerOrigin.getContactInfo().getEmail(), payerOrigin.getContactInfo().getPhoneNumber()));
             payment.setIp(resourceOrigin.getClientInfo().getIpAddress());
             payment.setFingerprint(resourceOrigin.getClientInfo().getFingerprint());
-            com.rbkmoney.swag_webhook_events.PaymentResourcePayer payer = new com.rbkmoney.swag_webhook_events.PaymentResourcePayer()
+            com.rbkmoney.swag_webhook_events.model.PaymentResourcePayer payer = new com.rbkmoney.swag_webhook_events.model.PaymentResourcePayer()
                     .paymentSession(resourceOrigin.getPaymentSessionId())
                     .paymentToolToken(payment.getPaymentToolToken())
                     .contactInfo(new ContactInfo()
@@ -88,7 +88,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
         } else if (paymentOrigin.getPayer().isSetRecurrent()) {
             RecurrentPayer recurrentParentOrigin = paymentOrigin.getPayer().getRecurrent();
             payment.setContactInfo(new PaymentContactInfo(recurrentParentOrigin.getContactInfo().getEmail(), recurrentParentOrigin.getContactInfo().getPhoneNumber()));
-            payment.setPayer(new com.rbkmoney.swag_webhook_events.RecurrentPayer()
+            payment.setPayer(new com.rbkmoney.swag_webhook_events.model.RecurrentPayer()
                     .recurrentParentPayment(new PaymentRecurrentParent()
                             .invoiceID(recurrentParentOrigin.getRecurrentParent().getInvoiceId())
                             .paymentID(recurrentParentOrigin.getRecurrentParent().getPaymentId()))
