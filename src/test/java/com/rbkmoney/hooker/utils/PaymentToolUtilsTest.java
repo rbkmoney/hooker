@@ -1,12 +1,15 @@
 package com.rbkmoney.hooker.utils;
 
-import com.rbkmoney.damsel.domain.CryptoCurrency;
-import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsCryptoWallet;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+
+import java.io.IOException;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -42,4 +45,25 @@ public class PaymentToolUtilsTest {
         assertEquals("PaymentToolDetailsCryptoWallet", params.getValue("detailsTypeParamName"));
         assertEquals("bitcoin", params.getValue("cryptoWalletCurrencyParamName"));
     }
+
+    @Test
+    public void testFeeAmount() throws IOException {
+        List<FinalCashFlowPosting> finalCashFlowPosting = buildFinalCashFlowPostingList();
+        Long feeAmount = PaymentToolUtils.getFeeAmount(finalCashFlowPosting);
+        Assert.assertEquals(feeAmount.longValue(), 20L);
+    }
+
+    private List<FinalCashFlowPosting> buildFinalCashFlowPostingList() throws IOException {
+        FinalCashFlowPosting firstFinalCashFlowPosting = new FinalCashFlowPosting();
+        Cash cash = new Cash();
+        cash.setAmount(10);
+        firstFinalCashFlowPosting.setVolume(cash);
+        firstFinalCashFlowPosting.setSource(new FinalCashFlowAccount().setAccountType(CashFlowAccount.merchant(MerchantCashFlowAccount.settlement)));
+        firstFinalCashFlowPosting.setDestination(new FinalCashFlowAccount().setAccountType(CashFlowAccount.system(SystemCashFlowAccount.settlement)));
+
+        FinalCashFlowPosting secondFinalCashFlowPosting = firstFinalCashFlowPosting.deepCopy();
+
+        return List.of(firstFinalCashFlowPosting, secondFinalCashFlowPosting);
+    }
+
 }
