@@ -9,22 +9,18 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
 
     private EventType eventType = EventType.INVOICE_STATUS_CHANGED;
-    private Filter filter;
 
-    @Autowired
-    InvoicingMessageDao messageDao;
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
 
-    public InvoiceStatusChangedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
-    }
+    private final InvoicingMessageDao messageDao;
 
     @Override
     public Filter getFilter() {

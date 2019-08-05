@@ -11,7 +11,6 @@ import java.util.Map;
  * Created by jeckep on 13.04.17.
  */
 public interface TaskDao {
-    void create(long messageId) throws DaoException;
     void remove(long queueId, long messageId);
     void removeAll(long queueId) throws DaoException;
     Map<Long, List<Task>> getScheduled(Collection<Long> excludeQueueIds) throws DaoException;

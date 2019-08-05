@@ -5,32 +5,28 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
-import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.swag_webhook_events.ContactInfo;
 import com.rbkmoney.swag_webhook_events.Customer;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by inalarsanukaev on 12.10.17.
  */
 @Component
+@RequiredArgsConstructor
 public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
-
-    @Autowired
-    CustomerDao customerDao;
-
-    private Filter filter;
 
     private EventType eventType = EventType.CUSTOMER_CREATED;
 
-    public CustomerCreatedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
-    }
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+
+    private final CustomerDaoImpl customerDao;
 
     @Override
     public Filter getFilter() {
@@ -38,7 +34,7 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
     }
 
     @Override
-    protected void saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
+    protected CustomerMessage saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
         com.rbkmoney.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
         customerMessage.setEventId(eventId);
@@ -58,5 +54,6 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
                 .metadata(new CustomerUtils().getResult(customerCreatedOrigin.getMetadata()));
         customerMessage.setCustomer(customer);
         customerDao.create(customerMessage);
+        return customerMessage;
     }
 }

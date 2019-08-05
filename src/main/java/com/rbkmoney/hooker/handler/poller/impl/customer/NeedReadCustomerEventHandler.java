@@ -1,23 +1,22 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
-import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Created by inalarsanukaev on 12.10.17.
  */
+@RequiredArgsConstructor
 public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEventHandler {
 
-    @Autowired
-    CustomerDao customerDao;
+    protected final CustomerDaoImpl customerDao;
 
     @Override
-    protected void saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
+    protected CustomerMessage saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
         //getAny any saved message for related invoice
         CustomerMessage message = getCustomerMessage(sourceId);
         if (message == null) {
@@ -32,6 +31,7 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
         modifyMessage(cc, message);
 
         customerDao.create(message);
+        return message;
     }
 
     protected CustomerMessage getCustomerMessage(String customerId) {

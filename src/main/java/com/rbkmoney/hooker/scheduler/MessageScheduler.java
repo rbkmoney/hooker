@@ -15,8 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PreDestroy;
@@ -55,11 +53,9 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
     public void loop() {
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                processLoop();
-            }
+        transactionTemplate.execute(k -> {
+            processLoop();
+            return null;
         });
     }
 
@@ -136,7 +132,6 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
             log.error("Thread was interrupted", e);
             Thread.currentThread().interrupt();
         }
-        return;
     }
 
     protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue, Signer signer, PostSender postSender);

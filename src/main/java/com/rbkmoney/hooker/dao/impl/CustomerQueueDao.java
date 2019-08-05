@@ -6,12 +6,16 @@ import com.rbkmoney.hooker.model.CustomerQueue;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.swag_webhook_events.Event;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.util.Collection;
@@ -20,12 +24,12 @@ import java.util.List;
 /**
  * Created by inalarsanukaev on 14.11.17.
  */
-public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements QueueDao<CustomerQueue> {
-    Logger log = LoggerFactory.getLogger(this.getClass());
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class CustomerQueueDao implements QueueDao<CustomerQueue> {
 
-    public CustomerQueueDao(DataSource dataSource) {
-        setDataSource(dataSource);
-    }
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public static RowMapper<CustomerQueue> queueWithPolicyRowMapper = (rs, i) -> {
         CustomerQueue queue = new CustomerQueue();
@@ -46,8 +50,6 @@ public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements Qu
         return queue;
     };
 
-
-    @Override
     public void createWithPolicy(long messageId) throws DaoException {
         final String sql = "with queue as ( " +
                 " insert into hook.customer_queue(hook_id, customer_id)" +
@@ -58,7 +60,7 @@ public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements Qu
                 " on conflict(hook_id, customer_id) do nothing returning *) " +
                 "insert into hook.simple_retry_policy(queue_id, message_type) select id, CAST(:message_type as hook.message_topic) from queue";
         try {
-            int count = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId)
+            int count = jdbcTemplate.update(sql, new MapSqlParameterSource("id", messageId)
                     .addValue("message_type", getMessagesTopic()));
             log.info("Created {} queues for messageId {}", count, messageId);
         } catch (NestedRuntimeException e) {
@@ -80,7 +82,7 @@ public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements Qu
                 .addValue("message_type", getMessagesTopic());
 
         try {
-            return getNamedParameterJdbcTemplate().query(sql, params, queueWithPolicyRowMapper);
+            return jdbcTemplate.query(sql, params, queueWithPolicyRowMapper);
         } catch (NestedRuntimeException e) {
             throw new DaoException(e);
         }
@@ -90,7 +92,7 @@ public class CustomerQueueDao extends NamedParameterJdbcDaoSupport implements Qu
     public void disable(long id) throws DaoException {
         final String sql = " UPDATE hook.customer_queue SET enabled = FALSE where id=:id;";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
+            jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (NestedRuntimeException e) {
             log.error("Fail to disable queue: {}", id, e);
             throw new DaoException(e);

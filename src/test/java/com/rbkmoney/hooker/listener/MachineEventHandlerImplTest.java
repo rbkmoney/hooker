@@ -5,6 +5,8 @@ import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.exception.ParseException;
 import com.rbkmoney.hooker.handler.Handler;
+import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
@@ -16,6 +18,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.kafka.support.Acknowledgment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -24,7 +27,7 @@ public class MachineEventHandlerImplTest {
     @Mock
     private HandlerManager handlerManager;
     @Mock
-    private Handler handler;
+    private AbstractInvoiceEventHandler handler;
     @Mock
     private MachineEventParser<EventPayload> eventParser;
     @Mock
@@ -32,10 +35,12 @@ public class MachineEventHandlerImplTest {
 
     private MachineEventHandlerImpl machineEventHandler;
 
+    private BatchService batchService;
+
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        machineEventHandler = new MachineEventHandlerImpl(handlerManager, eventParser);
+        machineEventHandler = new MachineEventHandlerImpl(handlerManager, eventParser, batchService);
     }
 
     @Test
@@ -49,7 +54,7 @@ public class MachineEventHandlerImplTest {
         event.setPayload(payload);
         Mockito.when(eventParser.parse(message)).thenReturn(payload);
 
-        machineEventHandler.handle(message, ack);
+        machineEventHandler.handle(Collections.singletonList(message));
 
         Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
         Mockito.verify(handler, Mockito.times(0)).handle(any(), any(), any(), any(), any(), any());
@@ -60,7 +65,7 @@ public class MachineEventHandlerImplTest {
     public void listenEmptyException() {
         MachineEvent message = new MachineEvent();
         Mockito.when(eventParser.parse(message)).thenThrow(new ParseException());
-        machineEventHandler.handle(message, ack);
+        machineEventHandler.handle(Collections.singletonList(message));
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
     }
@@ -77,7 +82,7 @@ public class MachineEventHandlerImplTest {
         Mockito.when(eventParser.parse(message)).thenReturn(payload);
         Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
 
-        machineEventHandler.handle(message, ack);
+        machineEventHandler.handle(Collections.singletonList(message));
 
         Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
         Mockito.verify(handler, Mockito.times(1)).handle(any(), any(), any(), any(), any(), any());

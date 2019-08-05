@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
@@ -30,16 +32,17 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(InvoicingMessageDaoImplTest.class);
 
     @Autowired
-    InvoicingMessageDao messageDao;
+    InvoicingMessageDaoImpl messageDao;
 
     private static boolean messagesCreated = false;
 
     @Before
     public void setUp() throws Exception {
-        if(!messagesCreated){
-            messageDao.create(buildMessage(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
-            messageDao.create(buildMessage(AbstractInvoiceEventHandler.INVOICE,"1235", "56678", EventType.INVOICE_CREATED, "status", cart(), true));
-            messageDao.create(buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1236", "56678", EventType.INVOICE_CREATED, "status", cart(), false));
+        if (!messagesCreated) {
+            messageDao.saveBatch(Arrays.asList(
+                    buildMessage(AbstractInvoiceEventHandler.INVOICE, "1234", "56678", EventType.INVOICE_CREATED, "status"),
+                    buildMessage(AbstractInvoiceEventHandler.INVOICE, "1235", "56678", EventType.INVOICE_CREATED, "status", cart(), true),
+                    buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1236", "56678", EventType.INVOICE_CREATED, "status", cart(), false)));
             messagesCreated = true;
         }
     }
@@ -79,7 +82,7 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void testDuplication(){
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1234", "56678", EventType.INVOICE_CREATED, "status");
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         assertNull(message.getId());
 
     }

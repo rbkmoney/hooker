@@ -111,8 +111,8 @@ public class BuildUtils {
 
     public static ArrayList<InvoiceCartPosition> cart() {
         ArrayList<InvoiceCartPosition> cart = new ArrayList<>();
-        cart.add(new InvoiceCartPosition("Зверушка",123L, 5, 5 * 123L, new TaxMode("18%")));
-        cart.add(new InvoiceCartPosition("Квакушка", 456L,6, 6 * 456L, null));
+        cart.add(new InvoiceCartPosition(1L, "Зверушка",123L, 5, 5 * 123L, new TaxMode("18%")));
+        cart.add(new InvoiceCartPosition(1L, "Квакушка", 456L,6, 6 * 456L, null));
         return cart;
     }
 

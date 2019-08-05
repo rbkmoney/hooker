@@ -34,23 +34,4 @@ public class Invoice {
     private String description;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<InvoiceCartPosition> cart;
-
-    public Invoice(Invoice other) {
-        this.id = other.id;
-        this.shopID = other.shopID;
-        this.createdAt = other.createdAt;
-        this.status = other.status;
-        this.reason = other.reason;
-        this.dueDate = other.dueDate;
-        this.amount = other.amount;
-        this.currency = other.currency;
-        if (other.metadata != null) {
-            this.metadata = new Content(other.metadata);
-        }
-        this.product = other.product;
-        this.description = other.description;
-        if (other.cart != null && !other.cart.isEmpty()) {
-            this.cart = other.cart.stream().map(InvoiceCartPosition::new).collect(Collectors.toList());
-        }
-    }
 }

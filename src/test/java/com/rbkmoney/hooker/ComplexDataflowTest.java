@@ -3,6 +3,7 @@ package com.rbkmoney.hooker;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
+import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
@@ -20,10 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +41,7 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    InvoicingMessageDao messageDao;
+    InvoicingMessageDaoImpl messageDao;
 
     BlockingQueue<DataflowTest.MockMessage> inv1Queue = new LinkedBlockingDeque<>(10);
     BlockingQueue<DataflowTest.MockMessage> inv2Queue = new LinkedBlockingDeque<>(10);
@@ -63,16 +61,16 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
             baseServerUrl = webserver(dispatcher());
             log.info("Mock server url: " + baseServerUrl);
             Set<WebhookAdditionalFilter> wSet = new HashSet<>();
-            WebhookAdditionalFilter w = new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED);
+            WebhookAdditionalFilter w = WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_STATUS_CHANGED).build();
             w.setInvoiceStatus("unpaid");
             wSet.add(w);
-            w = new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
+            w = WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED).build();
             w.setInvoicePaymentStatus("captured");
             wSet.add(w);
             hooks.add(hookDao.create(hookPaymentStatus("partyId1", "http://" + baseServerUrl + HOOK_1, wSet)));
 
             wSet.clear();
-            w = new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
+            w = WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED).build();
             w.setInvoicePaymentStatus("failed");
             wSet.add(w);
             hooks.add(hookDao.create(hookPaymentStatus("partyId1", "http://" + baseServerUrl + HOOK_2, wSet)));
@@ -83,16 +81,16 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid", null, true, 0L, 0);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured", null, true, 0L, 1);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed", null, true, 0L, 0);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed", null, true, 0L, 1);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
 
         List<DataflowTest.MockMessage> hooks = new ArrayList<>();

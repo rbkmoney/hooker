@@ -23,10 +23,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.ErrorHandler;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
+import org.springframework.kafka.listener.*;
 import org.springframework.retry.support.RetryTemplate;
 
 import java.io.File;
@@ -98,15 +95,16 @@ public class KafkaConfig {
     ) {
         ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
+        factory.setBatchListener(true);
         factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-        factory.setErrorHandler(kafkaErrorHandler());
+        factory.setBatchErrorHandler(kafkaErrorHandler());
         factory.setConcurrency(concurrency);
         return factory;
     }
 
-    private ErrorHandler kafkaErrorHandler() {
-        return new SeekToCurrentErrorHandler(-1);
+    private BatchErrorHandler kafkaErrorHandler() {
+        return new SeekToCurrentBatchErrorHandler();
     }
 
     @Bean

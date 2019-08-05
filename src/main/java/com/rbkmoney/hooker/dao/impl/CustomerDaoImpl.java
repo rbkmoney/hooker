@@ -7,17 +7,17 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,13 +28,13 @@ import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
  * Created by inalarsanukaev on 13.10.17.
  */
 @Slf4j
-public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements CustomerDao {
+@Component
+@RequiredArgsConstructor
+public class CustomerDaoImpl implements CustomerDao {
 
-    @Autowired
-    CustomerQueueDao queueDao;
-
-    @Autowired
-    CustomerTaskDao taskDao;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final CustomerQueueDao queueDao;
+    private final CustomerTaskDao taskDao;
 
     public static final String ID = "id";
     public static final String EVENT_ID = "event_id";
@@ -68,10 +68,6 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
     public static final String BINDING_STATUS = "binding_status";
     public static final String BINDING_ERROR_CODE = "binding_error_code";
     public static final String BINDING_ERROR_MESSAGE = "binding_error_message";
-
-    public CustomerDaoImpl(DataSource dataSource) {
-        setDataSource(dataSource);
-    }
 
     //TODO refactoring
     private static void setNullPaymentParamValues(MapSqlParameterSource params) {
@@ -142,7 +138,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         final String sql = "SELECT * FROM hook.customer_message WHERE customer_id =:customer_id AND type=CAST(:type as hook.customer_message_type) ORDER BY id DESC LIMIT 1";
         MapSqlParameterSource params = new MapSqlParameterSource(CUSTOMER_ID, customerId).addValue(TYPE, type);
         try {
-            result = getNamedParameterJdbcTemplate().queryForObject(sql, params, messageRowMapper);
+            result = jdbcTemplate.queryForObject(sql, params, messageRowMapper);
         } catch (EmptyResultDataAccessException e) {
             log.warn("CustomerMessage with customerId {}, type {} not exist!", customerId, type);
         } catch (NestedRuntimeException e) {
@@ -151,7 +147,6 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         return result;
     }
 
-    @Override
     @Transactional
     public void create(CustomerMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.customer_message " +
@@ -205,7 +200,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         }
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-            getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
+            jdbcTemplate.update(sql, params, keyHolder);
             message.setId(keyHolder.getKey().longValue());
             log.info("CustomerMessage {} saved to db.", message);
             queueDao.createWithPolicy(message.getId());
@@ -215,11 +210,10 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         }
     }
 
-    @Override
     public Long getMaxEventId() {
         final String sql = "select max(event_id) from hook.customer_message ";
         try {
-            return getNamedParameterJdbcTemplate().queryForObject(sql, new MapSqlParameterSource(), Long.class);
+            return jdbcTemplate.queryForObject(sql, new MapSqlParameterSource(), Long.class);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -232,7 +226,7 @@ public class CustomerDaoImpl extends NamedParameterJdbcDaoSupport implements Cus
         }
         final String sql = "SELECT * FROM hook.customer_message WHERE id in (:ids)";
         try {
-            List<CustomerMessage> messagesFromDb = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
+            List<CustomerMessage> messagesFromDb = jdbcTemplate.query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
             log.debug("messagesFromDb {}", messagesFromDb);
             return messagesFromDb;
         }  catch (NestedRuntimeException e) {

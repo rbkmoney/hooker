@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
+import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
@@ -49,7 +50,7 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    CustomerDao customerDao;
+    CustomerDaoImpl customerDao;
 
     BlockingQueue<MockMessage> cust1Queue = new LinkedBlockingDeque<>(10);
     BlockingQueue<MockMessage> cust2Queue = new LinkedBlockingDeque<>(10);
@@ -143,7 +144,7 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         for (EventType type : types) {
-            webhookAdditionalFilters.add(new WebhookAdditionalFilter(type));
+            webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(type).build());
         }
         hook.setFilters(webhookAdditionalFilters);
 

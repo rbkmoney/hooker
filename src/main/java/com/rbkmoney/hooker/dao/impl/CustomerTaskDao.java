@@ -6,17 +6,15 @@ import com.rbkmoney.swag_webhook_events.Event;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
-
-/**
- * Created by jeckep on 17.04.17.
- */
 @Slf4j
+@Component
 public class CustomerTaskDao extends AbstractTaskDao {
 
-    public CustomerTaskDao(DataSource dataSource) {
-        super(dataSource);
+    public CustomerTaskDao(NamedParameterJdbcTemplate jdbcTemplate) {
+        super(jdbcTemplate);
     }
 
     @Override
@@ -24,7 +22,6 @@ public class CustomerTaskDao extends AbstractTaskDao {
         return Event.TopicEnum.CUSTOMERSTOPIC.getValue();
     }
 
-    @Override
     public void create(long messageId) throws DaoException {
         final String sql =
                 " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
@@ -38,7 +35,7 @@ public class CustomerTaskDao extends AbstractTaskDao {
                         " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
                         " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("message_id", messageId)
+            int updateCount = jdbcTemplate.update(sql, new MapSqlParameterSource("message_id", messageId)
                     .addValue("message_type", getMessageTopic()));
             log.info("Created tasks count={} for messageId={}", updateCount, messageId);
         } catch (NestedRuntimeException e) {
@@ -46,6 +43,4 @@ public class CustomerTaskDao extends AbstractTaskDao {
             throw new DaoException(e);
         }
     }
-
-
 }

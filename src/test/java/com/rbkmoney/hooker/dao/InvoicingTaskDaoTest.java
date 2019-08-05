@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
@@ -40,7 +41,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    InvoicingMessageDao messageDao;
+    InvoicingMessageDaoImpl messageDao;
 
     @Autowired
     private TransactionTemplate transactionTemplate;
@@ -51,7 +52,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.create(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true));
+        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
         messageId = messageDao.getInvoice("2345").getId();
     }
 
@@ -71,7 +72,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSelectForUpdate() {
         for (int i = 0; i < 20; ++i) {
-            messageDao.create(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE, ""+i, "partyId", EventType.INVOICE_CREATED, "status", cart(), true));
+            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE, ""+i, "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
         }
 
         Set<Long> scheduledOne = new HashSet<>();

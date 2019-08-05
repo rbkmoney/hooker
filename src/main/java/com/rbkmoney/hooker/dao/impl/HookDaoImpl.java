@@ -7,14 +7,15 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
 import com.rbkmoney.hooker.service.crypt.Signer;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -24,16 +25,12 @@ import java.util.stream.Collectors;
  * Created by inal on 28.11.2016.
  */
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class HookDaoImpl implements HookDao {
 
-    @Autowired
-    Signer signer;
-
+    private final Signer signer;
     private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    public HookDaoImpl(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public List<Hook> getPartyHooks(String partyId) throws DaoException {

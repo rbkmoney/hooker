@@ -6,13 +6,14 @@ import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingQueue;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.swag_webhook_events.Event;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.util.Collection;
 import java.util.List;
 
@@ -20,11 +21,11 @@ import java.util.List;
  * Created by inalarsanukaev on 14.11.17.
  */
 @Slf4j
-public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements QueueDao<InvoicingQueue> {
+@Component
+@RequiredArgsConstructor
+public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
 
-    public InvoicingQueueDao(DataSource dataSource) {
-        setDataSource(dataSource);
-    }
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public static RowMapper<InvoicingQueue> queueWithPolicyRowMapper = (rs, i) -> {
         InvoicingQueue queue = new InvoicingQueue();
@@ -45,8 +46,7 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
         return queue;
     };
 
-    @Override
-    public void createWithPolicy(long messageId) throws DaoException {
+    public void saveBatchWithPolicies(List<Long> messageIds) throws DaoException {
         final String sql = "with queue as ( " +
                 " insert into hook.invoicing_queue(hook_id, invoice_id)" +
                 " select w.id , m.invoice_id" +
@@ -55,12 +55,15 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
                 " where m.id = :id " +
                 " on conflict(hook_id, invoice_id) do nothing returning *) " +
                 "insert into hook.simple_retry_policy(queue_id, message_type) select id, CAST(:message_type as hook.message_topic) from queue";
+        MapSqlParameterSource[] sqlParameterSources = messageIds
+                .stream()
+                .map(id -> new MapSqlParameterSource()
+                        .addValue("id", id)
+                        .addValue("message_type", Event.TopicEnum.INVOICESTOPIC.getValue()))
+                .toArray(MapSqlParameterSource[]::new);
         try {
-            int count = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId)
-                    .addValue("message_type", getMessagesTopic()));
-            log.info("Created {} queues for messageId {}", count, messageId);
+            jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to createWithPolicy queue {}", messageId, e);
             throw new DaoException(e);
         }
     }
@@ -77,7 +80,7 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
         final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids)
                 .addValue("message_type", getMessagesTopic());
         try {
-            return getNamedParameterJdbcTemplate().query(sql, params, queueWithPolicyRowMapper);
+            return jdbcTemplate.query(sql, params, queueWithPolicyRowMapper);
         } catch (NestedRuntimeException e) {
             throw new DaoException(e);
         }
@@ -87,7 +90,7 @@ public class InvoicingQueueDao extends NamedParameterJdbcDaoSupport implements Q
     public void disable(long id) throws DaoException {
         final String sql = " UPDATE hook.invoicing_queue SET enabled = FALSE where id=:id;";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", id));
+            jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (NestedRuntimeException e) {
             log.error("Fail to disable queue: {}", id, e);
             throw new DaoException(e);

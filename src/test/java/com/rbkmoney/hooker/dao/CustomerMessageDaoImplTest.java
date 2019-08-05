@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
@@ -27,7 +28,7 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(CustomerMessageDaoImplTest.class);
 
     @Autowired
-    CustomerDao messageDao;
+    CustomerDaoImpl messageDao;
 
     private static boolean messagesCreated = false;
 

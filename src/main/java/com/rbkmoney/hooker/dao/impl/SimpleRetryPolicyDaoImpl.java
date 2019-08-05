@@ -3,10 +3,13 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
@@ -14,11 +17,11 @@ import javax.sql.DataSource;
  * Created by jeckep on 17.04.17.
  */
 @Slf4j
-public class SimpleRetryPolicyDaoImpl extends NamedParameterJdbcDaoSupport implements SimpleRetryPolicyDao {
+@Component
+@RequiredArgsConstructor
+public class SimpleRetryPolicyDaoImpl implements SimpleRetryPolicyDao {
 
-    public SimpleRetryPolicyDaoImpl(DataSource dataSource) {
-        setDataSource(dataSource);
-    }
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public void update(SimpleRetryPolicyRecord record) throws DaoException {
@@ -26,7 +29,7 @@ public class SimpleRetryPolicyDaoImpl extends NamedParameterJdbcDaoSupport imple
                 " set last_fail_time = :last_fail_time, fail_count = :fail_count" +
                 " where queue_id = :queue_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", record.getQueueId())
+            jdbcTemplate.update(sql, new MapSqlParameterSource("queue_id", record.getQueueId())
                     .addValue("message_type", record.getMessageType())
                     .addValue("last_fail_time", record.getLastFailTime())
                     .addValue("fail_count", record.getFailCount()));

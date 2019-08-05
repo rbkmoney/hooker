@@ -7,22 +7,23 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.utils.ErrorUtils;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class InvoicePaymentRefundStatusChangedHandler extends NeedReadInvoiceEventHandler {
 
-    private Filter filter;
     private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED;
 
-    public InvoicePaymentRefundStatusChangedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
-    }
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+
+    private final InvoicingMessageDao messageDao;
 
     @Override
     public Filter getFilter() {

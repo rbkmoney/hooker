@@ -40,7 +40,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled", null));
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_CREATED));
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_CREATED).build());
         EventFilter eventFilterByCode = EventFilterUtils.getEventFilter(webhookAdditionalFilters);
         eventFilterByCode.getInvoice().setShopId("1");
         WebhookParams webhookParams = new WebhookParams("123", eventFilterByCode, "https://google.com");
@@ -49,20 +49,20 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         ids.add(hook.getId());
         webhookAdditionalFilters.clear();
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED, "78", "unpaid", null, null));
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STARTED, "78"));
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_STARTED).shopId("78").build());
         webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://yandex.ru");
         hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
         webhookAdditionalFilters.clear();
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_STATUS_CHANGED));
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_STATUS_CHANGED).build());
         webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
         hook = hookDao.create(HookConverter.convert(webhookParams));
         String pubKey2 = hook.getPubKey();
         ids.add(hook.getId());
         Assert.assertEquals(pubKey1, pubKey2);
         webhookAdditionalFilters.clear();
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.CUSTOMER_CREATED));
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.CUSTOMER_BINDING_SUCCEEDED));
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_BINDING_SUCCEEDED).build());
         webhookParams = new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
         hook = hookDao.create(HookConverter.convert(webhookParams));
     }
@@ -111,7 +111,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled", "failed"));
-        webhookAdditionalFilters.add(new WebhookAdditionalFilter(EventType.INVOICE_CREATED));
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_CREATED).build());
         hook.setFilters(webhookAdditionalFilters);
 
         return hook;

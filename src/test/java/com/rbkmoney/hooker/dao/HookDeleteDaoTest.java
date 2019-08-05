@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static org.junit.Assert.assertEquals;
@@ -31,13 +33,13 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    InvoicingMessageDao messageDao;
+    InvoicingMessageDaoImpl messageDao;
 
     @Test
     public void setUp() {
         Long hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
         Long hookId2 = hookDao.create(HookDaoImplTest.buildHook("partyId2", "fake2.url")).getId();
-        messageDao.create(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true));
+        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
         assertEquals(queueDao.getWithPolicies(taskDao.getScheduled(new ArrayList<>()).keySet()).size(), 1);
         hookDao.delete(hookId2);
         assertNotEquals(queueDao.getWithPolicies(taskDao.getScheduled(new ArrayList<>()).keySet()).size(), 0);

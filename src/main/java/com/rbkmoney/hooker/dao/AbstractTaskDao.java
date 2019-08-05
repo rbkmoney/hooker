@@ -1,11 +1,14 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.model.Task;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 import java.util.Collection;
@@ -17,11 +20,10 @@ import java.util.stream.Collectors;
  * Created by jeckep on 17.04.17.
  */
 @Slf4j
-public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport implements TaskDao {
+@RequiredArgsConstructor
+public abstract class AbstractTaskDao implements TaskDao {
 
-    public AbstractTaskDao(DataSource dataSource) {
-        setDataSource(dataSource);
-    }
+    protected final NamedParameterJdbcTemplate jdbcTemplate;
 
     public static RowMapper<Task> taskRowMapper = (rs, i) ->
             new Task(rs.getLong("message_id"), rs.getLong("queue_id"));
@@ -32,7 +34,7 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
     public void remove(long queueId, long messageId) throws DaoException {
         final String sql = "DELETE FROM hook.scheduled_task where queue_id=:queue_id and message_id=:message_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", queueId)
+            jdbcTemplate.update(sql, new MapSqlParameterSource("queue_id", queueId)
                     .addValue("message_id", messageId)
                     .addValue("message_type", getMessageTopic()));
             log.debug("Task with queueId {} messageId  {} removed from hook.scheduled_task", queueId, messageId);
@@ -46,7 +48,7 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
     public void removeAll(long queueId) throws DaoException {
         final String sql = "DELETE FROM hook.scheduled_task where queue_id=:queue_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", queueId).addValue("message_type", getMessageTopic()));
+            jdbcTemplate.update(sql, new MapSqlParameterSource("queue_id", queueId).addValue("message_type", getMessageTopic()));
         } catch (NestedRuntimeException e) {
             log.warn("Fail to delete tasks for hook:" + queueId, e);
             throw new DaoException(e);
@@ -61,7 +63,7 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
                         (excludeQueueIds.size() > 0 ? " AND st.queue_id not in (:queue_ids)" : "") +
                         " ORDER BY message_id ASC LIMIT 10000 FOR UPDATE SKIP LOCKED";
         try {
-            List<Task> tasks = getNamedParameterJdbcTemplate().query(
+            List<Task> tasks = jdbcTemplate.query(
                     sql, new MapSqlParameterSource()
                             .addValue("queue_ids", excludeQueueIds)
                             .addValue("message_type", getMessageTopic())

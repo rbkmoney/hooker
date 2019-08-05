@@ -3,20 +3,25 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.dao.AbstractTaskDao;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.swag_webhook_events.Event;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 /**
  * Created by jeckep on 17.04.17.
  */
 @Slf4j
+@Component
 public class InvoicingTaskDao extends AbstractTaskDao {
 
-    public InvoicingTaskDao(DataSource dataSource) {
-        super(dataSource);
+    public InvoicingTaskDao(NamedParameterJdbcTemplate jdbcTemplate) {
+        super(jdbcTemplate);
     }
 
     @Override
@@ -25,8 +30,7 @@ public class InvoicingTaskDao extends AbstractTaskDao {
     }
 
     //TODO limit invoices from hook
-    @Override
-    public void create(long messageId) throws DaoException {
+    public void saveBatch(List<Long> messageIds) throws DaoException {
         final String sql =
                 " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
                         " select m.id, q.id, w.topic" +
@@ -41,13 +45,18 @@ public class InvoicingTaskDao extends AbstractTaskDao {
                         " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
                         " and (m.refund_status = wte.invoice_payment_refund_status or wte.invoice_payment_refund_status is null)" +
                         " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
+
+        MapSqlParameterSource[] sqlParameterSources = messageIds
+                .stream()
+                .map(id -> new MapSqlParameterSource()
+                        .addValue("message_id", id)
+                        .addValue("message_type", Event.TopicEnum.INVOICESTOPIC.getValue()))
+                .toArray(MapSqlParameterSource[]::new);
+
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("message_id", messageId)
-                    .addValue("message_type", getMessageTopic()));
-            log.info("Created tasks count={} for messageId={}", updateCount, messageId);
+            jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to create tasks for messages.", e);
-            throw new DaoException(e);
+            throw new DaoException("Failed to create tasks for messages", e);
         }
     }
 }

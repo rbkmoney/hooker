@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
+import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.swag_webhook_events.CustomerPayer;
@@ -44,7 +45,7 @@ public class DataflowTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    InvoicingMessageDao messageDao;
+    InvoicingMessageDaoImpl messageDao;
 
     BlockingQueue<MockMessage> inv1Queue = new LinkedBlockingDeque<>(10);
     BlockingQueue<MockMessage> inv3Queue = new LinkedBlockingDeque<>(10);
@@ -77,25 +78,25 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true, 0L, 0);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status", cart(), true, 0L, 1);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status");
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "4", "qwe", EventType.INVOICE_CREATED, "status");
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false, 0L, 0);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false, 0L, 1);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.REFUND, "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false, 0L, 2);
-        messageDao.create(message);
+        messageDao.saveBatch(Collections.singletonList(message));
         sourceMessages.add(message);
 
         List<MockMessage> inv1 = new ArrayList<>();
@@ -143,7 +144,7 @@ public class DataflowTest extends AbstractIntegrationTest {
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         for (EventType type : types) {
-            webhookAdditionalFilters.add(new WebhookAdditionalFilter(type));
+            webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(type).build());
         }
         hook.setFilters(webhookAdditionalFilters);
 

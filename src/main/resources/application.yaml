@@ -41,6 +41,10 @@ bm.pooling:
   delay: 5000
   maxQuerySize: 500
 
+cache:
+  invoice:
+    size: 10000
+
 # connection timeout
 merchant.callback.timeout: 10
 
