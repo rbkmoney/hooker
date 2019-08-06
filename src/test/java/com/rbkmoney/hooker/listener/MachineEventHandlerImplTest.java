@@ -55,6 +55,7 @@ public class MachineEventHandlerImplTest {
         Mockito.when(eventParser.parse(message)).thenReturn(payload);
 
         machineEventHandler.handle(Collections.singletonList(message));
+        ack.acknowledge();
 
         Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
         Mockito.verify(handler, Mockito.times(0)).handle(any(), any(), any(), any(), any(), any());
@@ -83,6 +84,7 @@ public class MachineEventHandlerImplTest {
         Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
 
         machineEventHandler.handle(Collections.singletonList(message));
+        ack.acknowledge();
 
         Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
         Mockito.verify(handler, Mockito.times(1)).handle(any(), any(), any(), any(), any(), any());

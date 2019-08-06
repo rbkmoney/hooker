@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.configuration;
 
 import com.rbkmoney.damsel.payment_processing.EventPayload;
+import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.hooker.configuration.properties.KafkaSslProperties;
 import com.rbkmoney.hooker.serde.SinkEventDeserializer;
@@ -104,7 +105,7 @@ public class KafkaConfig {
     }
 
     private BatchErrorHandler kafkaErrorHandler() {
-        return new SeekToCurrentBatchErrorHandler();
+        return new SeekToCurrentWithSleepBatchErrorHandler();
     }
 
     @Bean

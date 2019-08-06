@@ -50,7 +50,7 @@ public class InvoicingCartDaoImpl implements InvoicingCartDao {
 
             jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
-            throw new DaoException(e);
+            throw new DaoException("Couldn't save carts", e);
         }
     }
 }

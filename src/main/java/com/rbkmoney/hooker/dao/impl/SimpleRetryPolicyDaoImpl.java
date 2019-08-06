@@ -7,16 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
-
-/**
- * Created by jeckep on 17.04.17.
- */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SimpleRetryPolicyDaoImpl implements SimpleRetryPolicyDao {
@@ -33,10 +26,8 @@ public class SimpleRetryPolicyDaoImpl implements SimpleRetryPolicyDao {
                     .addValue("message_type", record.getMessageType())
                     .addValue("last_fail_time", record.getLastFailTime())
                     .addValue("fail_count", record.getFailCount()));
-            log.info("Record in table 'simple_retry_policy' with id {} updated.", record.getQueueId());
         } catch (NestedRuntimeException e) {
-            log.warn("Fail to update simple_retry_policy for record {} ", record.getQueueId(), e);
-            throw new DaoException(e);
+            throw new DaoException("Fail to update simple_retry_policy for record=" +  record.getQueueId(), e);
         }
     }
 }

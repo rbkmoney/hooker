@@ -230,4 +230,3 @@ public class HookDaoImpl implements HookDao {
 
 
 }
-//select * from hook.webhook w where exists (select * from hook.webhook_to_events wh where wh.hook_id = w.id AND wh.event_type = 'CUSTOMER_CREATED');

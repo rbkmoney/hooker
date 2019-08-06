@@ -8,6 +8,7 @@ import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.ErrorUtils;
+import com.rbkmoney.hooker.utils.FilterUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.*;
 import lombok.RequiredArgsConstructor;
@@ -81,11 +82,17 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
     }
 
     public List<InvoicingMessage> saveBatch(List<InvoicingMessage> messages) throws DaoException {
+        int[] batchResult = saveBatchMessages(messages);
+        List<InvoicingMessage> filteredMessages = FilterUtils.filter(batchResult, messages);
+        saveBatchCart(filteredMessages);
+        return filteredMessages;
+    }
+
+    private int[] saveBatchMessages(List<InvoicingMessage> messages) {
         try {
             messages.forEach(m -> invoicingCache.put(key(m), m));
-
             final String sql = "INSERT INTO hook.message" +
-                    "(id, event_time, sequence_id, change_id, type, party_id, event_type, " +
+                    "(id, new_event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
                     "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
                     "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
                     "payment_id, payment_created_at, payment_status, payment_failure, payment_failure_reason, payment_amount, " +
@@ -94,7 +101,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                     "payment_digital_wallet_provider, payment_digital_wallet_id, payment_crypto_currency, " +
                     "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
                     "VALUES " +
-                    "(:id, :event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
+                    "(:id, :new_event_id, :event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                     ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
                     ":invoice_currency, :invoice_content_type, :invoice_content_data, :invoice_product, :invoice_description, " +
                     ":payment_id, :payment_created_at, :payment_status, :payment_failure, :payment_failure_reason, :payment_amount, " +
@@ -107,6 +114,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
             MapSqlParameterSource[] sqlParameterSources = messages.stream().map(message -> {
                 MapSqlParameterSource params = new MapSqlParameterSource()
                         .addValue(ID, message.getId())
+                        .addValue(NEW_EVENT_ID, message.getEventId())
                         .addValue(EVENT_TIME, message.getEventTime())
                         .addValue(SEQUENCE_ID, message.getSequenceId())
                         .addValue(CHANGE_ID, message.getChangeId())
@@ -187,50 +195,30 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                 return params;
             }).toArray(MapSqlParameterSource[]::new);
 
-            int[] batchResult = jdbcTemplate.batchUpdate(sql, sqlParameterSources);
-            List<InvoicingMessage> filteredMessages = filterMessages(batchResult, messages);
-
-            List<InvoiceCartPosition> carts = new ArrayList<>();
-            filteredMessages.forEach(m -> {
-                m.getInvoice().getCart().forEach(c -> c.setMessageId(m.getId()));
-                carts.addAll(m.getInvoice().getCart());
-            });
-            invoicingCartDao.saveBatch(carts);
-            return filteredMessages;
+            return jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
-            throw new DaoException(e);
+            List<String> shortInfo = messages.stream().map(m -> m.getId() + " : " + m.getInvoice().getId()).collect(Collectors.toList());
+            throw new DaoException("Couldn't save batch messages: " + shortInfo, e);
         }
     }
 
-    private List<InvoicingMessage> filterMessages(int[] batchResult, List<InvoicingMessage> messages) {
-        List<InvoicingMessage> result = new ArrayList<>();
-        for (int i = 0; i < batchResult.length; i++) {
-            if (batchResult[i] != 0) {
-                result.add(messages.get(i));
+    private void saveBatchCart(List<InvoicingMessage> messages) {
+        List<InvoiceCartPosition> carts = new ArrayList<>();
+        messages.forEach(m -> {
+            List<InvoiceCartPosition> cart = m.getInvoice().getCart();
+            if (cart != null && !cart.isEmpty()) {
+                cart.forEach(c -> c.setMessageId(m.getId()));
+                carts.addAll(cart);
             }
-        }
-        return result;
-    }
-
-    @Override
-    public InvoicingMessage getInvoice(String invoiceId) throws NotFoundException, DaoException {
-        return getAny(invoiceId, null, null, INVOICE);
-    }
-
-    @Override
-    public InvoicingMessage getPayment(String invoiceId, String paymentId) throws NotFoundException, DaoException {
-        return getAny(invoiceId, paymentId, null, PAYMENT);
-    }
-
-    @Override
-    public InvoicingMessage getRefund(String invoiceId, String paymentId, String refundId) throws NotFoundException, DaoException {
-        return getAny(invoiceId, paymentId, refundId, REFUND);
+        });
+        invoicingCartDao.saveBatch(carts);
     }
 
     private InvoicingMessage getAny(String invoiceId, String paymentId, String refundId, String type) throws NotFoundException, DaoException {
         String key = key(invoiceId, paymentId, refundId);
         InvoicingMessage result = invoicingCache.getIfPresent(key);
         if (result != null) {
+            log.info("From cache {}", result.getId());
             return result.copy();
         }
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id" +
@@ -254,6 +242,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
             throw new DaoException(String.format("InvoicingMessage error with invoiceId=%s, paymentId=%s, refundId=%s, type=%s",
                     invoiceId, paymentId, refundId, type), e);
         }
+        log.info("From database {}", result.getId());
         return result;
     }
 
@@ -281,7 +270,22 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
             });
             return messagesFromDb;
         } catch (NestedRuntimeException e) {
-            throw new DaoException("InvoicingMessageDaoImpl.getByIds error", e);
+            throw new DaoException("Couldn't get invoice message by ids: " + messageIds, e);
         }
+    }
+
+    @Override
+    public InvoicingMessage getInvoice(String invoiceId) throws NotFoundException, DaoException {
+        return getAny(invoiceId, null, null, INVOICE);
+    }
+
+    @Override
+    public InvoicingMessage getPayment(String invoiceId, String paymentId) throws NotFoundException, DaoException {
+        return getAny(invoiceId, paymentId, null, PAYMENT);
+    }
+
+    @Override
+    public InvoicingMessage getRefund(String invoiceId, String paymentId, String refundId) throws NotFoundException, DaoException {
+        return getAny(invoiceId, paymentId, refundId, REFUND);
     }
 }

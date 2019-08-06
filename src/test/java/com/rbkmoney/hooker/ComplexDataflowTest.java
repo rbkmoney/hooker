@@ -1,13 +1,12 @@
 package com.rbkmoney.hooker;
 
 import com.rbkmoney.hooker.dao.HookDao;
-import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.swag_webhook_events.Event;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.Dispatcher;
@@ -41,7 +40,7 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     HookDao hookDao;
 
     @Autowired
-    InvoicingMessageDaoImpl messageDao;
+    BatchService batchService;
 
     BlockingQueue<DataflowTest.MockMessage> inv1Queue = new LinkedBlockingDeque<>(10);
     BlockingQueue<DataflowTest.MockMessage> inv2Queue = new LinkedBlockingDeque<>(10);
@@ -81,16 +80,16 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid", null, true, 0L, 0);
-        messageDao.saveBatch(Collections.singletonList(message));
+        batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured", null, true, 0L, 1);
-        messageDao.saveBatch(Collections.singletonList(message));
+        batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed", null, true, 0L, 0);
-        messageDao.saveBatch(Collections.singletonList(message));
+        batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed", null, true, 0L, 1);
-        messageDao.saveBatch(Collections.singletonList(message));
+        batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
 
         List<DataflowTest.MockMessage> hooks = new ArrayList<>();

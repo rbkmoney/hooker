@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class IdsGeneratorDaoImpl implements IdsGeneratorDao {
+public class MessageIdsGeneratorDaoImpl implements IdsGeneratorDao {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 

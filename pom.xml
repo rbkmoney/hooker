@@ -189,8 +189,18 @@
         </dependency>
         <dependency>
             <groupId>com.rbkmoney</groupId>
+            <artifactId>kafka-common-lib</artifactId>
+            <version>0.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
             <artifactId>spring-boot-starter-metrics-statsd</artifactId>
             <version>1.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>machinegun-proto</artifactId>
+            <version>1.12-ebae56f</version>
         </dependency>
         <!--Test libs-->
         <dependency>
@@ -235,11 +245,11 @@
             <version>2.1.0</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
-            <groupId>com.rbkmoney</groupId>
-            <artifactId>machinegun-proto</artifactId>
-            <version>1.12-ebae56f</version>
+            <groupId>io.github.benas</groupId>
+            <artifactId>random-beans</artifactId>
+            <version>3.7.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

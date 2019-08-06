@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.rbkmoney.kafka.common.util.LogUtil.toSummaryStringWithValues;
+
 @Slf4j
 @RequiredArgsConstructor
 public class KafkaMachineEventListener {
@@ -19,13 +21,9 @@ public class KafkaMachineEventListener {
 
     @KafkaListener(topics = "${kafka.topics.invoice.id}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(List<ConsumerRecord<String, SinkEvent>> messages, Acknowledgment ack) {
-        try {
-            log.debug("Got machineEventBatch with size: {}", messages.size());
-            machineEventHandler.handle(messages.stream().map(m -> m.value().getEvent()).collect(Collectors.toList()));
-            log.debug("Handled machineEvent", messages);
-        } catch (Exception e) {
-            throw new RuntimeException("Error when handling batch = {}");
-        }
+        log.info("Got machineEvent batch with size: {}", messages.size());
+        machineEventHandler.handle(messages.stream().map(m -> m.value().getEvent()).collect(Collectors.toList()));
+        ack.acknowledge();
+        log.info("Batch has been committed");
     }
-
 }

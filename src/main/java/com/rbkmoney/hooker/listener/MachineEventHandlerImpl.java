@@ -27,28 +27,23 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
     @Override
     @Transactional
     public void handle(List<MachineEvent> machineEvents) {
-        machineEvents.forEach(machineEvent -> {
-            EventPayload payload = parser.parse(machineEvent);
-           // log.info("EventPayload payload: {}", payload);
+        machineEvents.forEach(me -> {
+            EventPayload payload = parser.parse(me);
             if (payload.isSetInvoiceChanges()) {
                 for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
                     InvoiceChange invoiceChange = payload.getInvoiceChanges().get(i);
-                    try {
-                        int j = i;
-                        List<InvoicingMessage> messages = new ArrayList<>();
-                        handlerManager.getHandler(invoiceChange)
-                                .ifPresentOrElse(handler -> messages.add(handler.handle(invoiceChange, null, machineEvent.getCreatedAt(), machineEvent.getSourceId(), machineEvent.getEventId(), j)),
-                                        () -> log.debug("Handler for invoiceChange {} wasn't found (machineEvent {})", invoiceChange, machineEvent));
+                    int j = i;
+                    List<InvoicingMessage> messages = new ArrayList<>();
+                    handlerManager.getHandler(invoiceChange)
+                            .ifPresent(handler -> {
+                                log.info("Start to handle event {}", invoiceChange);
+                                InvoicingMessage message = handler.handle(invoiceChange, null, me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
+                                if (message != null) {
+                                    messages.add(message);
+                                }
+                            });
+                    if (!messages.isEmpty()) {
                         batchService.process(messages);
-                    } catch (Exception ex) {
-                        log.error("Failed to handle invoice change, invoiceChange='{}'", invoiceChange, ex);
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            log.error("Interrupted while sleeping when handle invoice change, invoiceChange='{}'", invoiceChange);
-                            Thread.currentThread().interrupt();
-                        }
-                        throw ex;
                     }
                 }
             }

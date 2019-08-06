@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.AbstractTaskDao;
 import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.utils.FilterUtils;
 import com.rbkmoney.swag_webhook_events.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,7 +32,7 @@ public class InvoicingTaskDao extends AbstractTaskDao {
     }
 
     //TODO limit invoices from hook
-    public void saveBatch(List<Long> messageIds) throws DaoException {
+    public int[] saveBatch(List<Long> messageIds) throws DaoException {
         final String sql =
                 " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
                         " select m.id, q.id, w.topic" +
@@ -54,9 +56,9 @@ public class InvoicingTaskDao extends AbstractTaskDao {
                 .toArray(MapSqlParameterSource[]::new);
 
         try {
-            jdbcTemplate.batchUpdate(sql, sqlParameterSources);
+            return jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Failed to create tasks for messages", e);
+            throw new DaoException("Failed to create tasks for messageIds=" + messageIds, e);
         }
     }
 }

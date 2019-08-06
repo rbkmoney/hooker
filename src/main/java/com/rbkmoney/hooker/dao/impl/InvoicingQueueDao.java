@@ -5,6 +5,7 @@ import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingQueue;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
+import com.rbkmoney.hooker.utils.FilterUtils;
 import com.rbkmoney.swag_webhook_events.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,6 @@ import java.util.List;
 /**
  * Created by inalarsanukaev on 14.11.17.
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
@@ -46,7 +46,7 @@ public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
         return queue;
     };
 
-    public void saveBatchWithPolicies(List<Long> messageIds) throws DaoException {
+    public int[] saveBatchWithPolicies(List<Long> messageIds) throws DaoException {
         final String sql = "with queue as ( " +
                 " insert into hook.invoicing_queue(hook_id, invoice_id)" +
                 " select w.id , m.invoice_id" +
@@ -62,9 +62,9 @@ public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
                         .addValue("message_type", Event.TopicEnum.INVOICESTOPIC.getValue()))
                 .toArray(MapSqlParameterSource[]::new);
         try {
-            jdbcTemplate.batchUpdate(sql, sqlParameterSources);
+            return jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
-            throw new DaoException(e);
+            throw new DaoException("Couldn't save queue batch with messageIds=" + messageIds, e);
         }
     }
 
@@ -82,7 +82,7 @@ public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
         try {
             return jdbcTemplate.query(sql, params, queueWithPolicyRowMapper);
         } catch (NestedRuntimeException e) {
-            throw new DaoException(e);
+            throw new DaoException("Couldn't get queue by queueIds=" + ids, e);
         }
     }
 
@@ -92,8 +92,7 @@ public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (NestedRuntimeException e) {
-            log.error("Fail to disable queue: {}", id, e);
-            throw new DaoException(e);
+            throw new DaoException("Couldn't disable queue with id=" + id, e);
         }
     }
 

@@ -14,6 +14,8 @@ import java.util.List;
  * Created by jeckep on 25.04.17.
  */
 public class BuildUtils {
+    private static int messageId = 1;
+
     public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status) {
         return buildMessage(type, invoiceId, partyId, eventType, status, null, true);
     }
@@ -24,6 +26,8 @@ public class BuildUtils {
 
     public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer, Long sequenceId, Integer changeId) {
         InvoicingMessage message = new InvoicingMessage();
+        message.setId((long) messageId++);
+        message.setEventId((long) messageId++);
         message.setEventTime("time");
         message.setType(type);
         message.setPartyId(partyId);
