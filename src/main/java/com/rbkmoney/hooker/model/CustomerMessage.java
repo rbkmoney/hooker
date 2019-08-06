@@ -1,8 +1,8 @@
 package com.rbkmoney.hooker.model;
 
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
-import com.rbkmoney.swag_webhook_events.Customer;
-import com.rbkmoney.swag_webhook_events.CustomerBinding;
+import com.rbkmoney.swag_webhook_events.model.Customer;
+import com.rbkmoney.swag_webhook_events.model.CustomerBinding;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

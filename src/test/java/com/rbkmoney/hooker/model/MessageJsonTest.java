@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.utils.BuildUtils;
-import com.rbkmoney.swag_webhook_events.Customer;
-import com.rbkmoney.swag_webhook_events.DigitalWalletDetails;
-import com.rbkmoney.swag_webhook_events.DigitalWalletDetailsQIWI;
-import com.rbkmoney.swag_webhook_events.PaymentToolDetails;
+import com.rbkmoney.swag_webhook_events.model.Customer;
+import com.rbkmoney.swag_webhook_events.model.DigitalWalletDetails;
+import com.rbkmoney.swag_webhook_events.model.DigitalWalletDetailsQIWI;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
 import org.junit.Assert;
 import org.junit.Test;
 

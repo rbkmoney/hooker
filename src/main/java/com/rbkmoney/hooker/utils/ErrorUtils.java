@@ -3,8 +3,8 @@ package com.rbkmoney.hooker.utils;
 import com.rbkmoney.damsel.domain.Failure;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.domain.SubFailure;
-import com.rbkmoney.swag_webhook_events.PaymentError;
-import com.rbkmoney.swag_webhook_events.SubError;
+import com.rbkmoney.swag_webhook_events.model.PaymentError;
+import com.rbkmoney.swag_webhook_events.model.SubError;
 
 import java.util.Arrays;
 import java.util.List;

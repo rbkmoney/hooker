@@ -7,7 +7,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.EventFilterUtils;
 import com.rbkmoney.hooker.utils.HookConverter;
-import com.rbkmoney.swag_webhook_events.Event;
+import com.rbkmoney.swag_webhook_events.model.Event;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

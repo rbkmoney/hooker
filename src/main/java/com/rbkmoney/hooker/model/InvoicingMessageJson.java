@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.rbkmoney.swag_webhook_events.Event;
+import com.rbkmoney.swag_webhook_events.model.Event;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

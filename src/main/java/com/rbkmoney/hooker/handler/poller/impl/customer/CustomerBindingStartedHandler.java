@@ -8,10 +8,9 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
-import com.rbkmoney.swag_webhook_events.ClientInfo;
-import com.rbkmoney.swag_webhook_events.CustomerBinding;
-import com.rbkmoney.swag_webhook_events.PaymentResource;
+import com.rbkmoney.swag_webhook_events.model.ClientInfo;
+import com.rbkmoney.swag_webhook_events.model.CustomerBinding;
+import com.rbkmoney.swag_webhook_events.model.PaymentResource;
 import org.springframework.stereotype.Component;
 
 import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;

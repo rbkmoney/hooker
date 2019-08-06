@@ -3,19 +3,15 @@ package com.rbkmoney.hooker.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.rbkmoney.damsel.domain.BankCard;
-import com.rbkmoney.damsel.domain.DigitalWalletProvider;
-import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWalletWrapper;
-import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.swag_webhook_events.model.CryptoCurrency;
+import com.rbkmoney.swag_webhook_events.model.*;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by inalarsanukaev on 13.10.17.
@@ -177,4 +173,22 @@ public class PaymentToolUtils {
         }
         return Base64.getUrlEncoder().encodeToString(rootNode.toString().getBytes(StandardCharsets.UTF_8));
     }
+
+    public static Long getFeeAmount(List<FinalCashFlowPosting> finalCashFlowPostings) {
+        return finalCashFlowPostings.stream()
+                .filter(PaymentToolUtils::isSystemFee)
+                .map(finalCashFlowPosting -> finalCashFlowPosting.getVolume().getAmount())
+                .reduce(Long::sum)
+                .orElse(null);
+    }
+
+    private static boolean isSystemFee(FinalCashFlowPosting cashFlowPosting) {
+        CashFlowAccount source = cashFlowPosting.getSource().getAccountType();
+        CashFlowAccount destination = cashFlowPosting.getDestination().getAccountType();
+
+        return source.isSetMerchant()
+                && source.getMerchant() == MerchantCashFlowAccount.settlement
+                && destination.isSetSystem();
+    }
+
 }
