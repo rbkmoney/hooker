@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.model;
 
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
-import com.rbkmoney.swag_webhook_events.PaymentError;
+import com.rbkmoney.swag_webhook_events.model.PaymentError;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

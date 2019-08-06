@@ -3,9 +3,10 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.utils.ErrorUtils;
-import com.rbkmoney.swag_webhook_events.*;
+import com.rbkmoney.swag_webhook_events.model.*;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -42,6 +43,7 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
     public static final String PAYMENT_FAILURE = "payment_failure";
     public static final String PAYMENT_FAILURE_REASON = "payment_failure_reason";
     public static final String PAYMENT_AMOUNT = "payment_amount";
+    public static final String PAYMENT_FEE = "payment_fee";
     public static final String PAYMENT_CURRENCY = "payment_currency";
     public static final String PAYMENT_CONTENT_TYPE = "payment_content_type";
     public static final String PAYMENT_CONTENT_DATA = "payment_content_data";
@@ -111,6 +113,7 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
                 payment.setError(ErrorUtils.toPaymentError(rs.getString(PAYMENT_FAILURE), rs.getString(PAYMENT_FAILURE_REASON)));
             }
             payment.setAmount(rs.getLong(PAYMENT_AMOUNT));
+            payment.setFee(rs.getLong(PAYMENT_FEE));
             payment.setCurrency(rs.getString(PAYMENT_CURRENCY));
             Content paymentMetadata = new Content();
             paymentMetadata.setType(rs.getString(PAYMENT_CONTENT_TYPE));
