@@ -9,6 +9,7 @@ import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
 
     @Override
     @Transactional
-    public void handle(List<MachineEvent> machineEvents) {
+    public void handle(List<MachineEvent> machineEvents, Acknowledgment ack) {
         List<InvoicingMessage> messages = new ArrayList<>();
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
@@ -47,5 +48,6 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
         if (!messages.isEmpty()) {
             batchService.process(messages);
         }
+        ack.acknowledge();
     }
 }

@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface MachineEventHandler {
 
-    void handle(List<MachineEvent> messages);
+    void handle(List<MachineEvent> messages, Acknowledgment ack);
 
 }

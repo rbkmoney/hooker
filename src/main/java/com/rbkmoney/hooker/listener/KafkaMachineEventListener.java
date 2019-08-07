@@ -20,8 +20,7 @@ public class KafkaMachineEventListener {
     @KafkaListener(topics = "${kafka.topics.invoice.id}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(List<ConsumerRecord<String, SinkEvent>> messages, Acknowledgment ack) {
         log.info("Got machineEvent batch with size: {}", messages.size());
-        machineEventHandler.handle(messages.stream().map(m -> m.value().getEvent()).collect(Collectors.toList()));
-        ack.acknowledge();
+        machineEventHandler.handle(messages.stream().map(m -> m.value().getEvent()).collect(Collectors.toList()), ack);
         log.info("Batch has been committed, size={}, {}", messages.size(), LogUtils.toSummaryStringWithValues(messages));
     }
 }
