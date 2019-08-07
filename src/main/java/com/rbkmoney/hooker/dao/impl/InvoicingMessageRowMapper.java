@@ -6,6 +6,7 @@ import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.utils.ErrorUtils;
+import com.rbkmoney.hooker.utils.PayerTypeUtils;
 import com.rbkmoney.swag_webhook_events.model.*;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -124,40 +125,7 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
             payment.setContactInfo(new PaymentContactInfo(rs.getString(PAYMENT_EMAIL), rs.getString(PAYMENT_PHONE)));
             payment.setIp(rs.getString(PAYMENT_IP));
             payment.setFingerprint(rs.getString(PAYMENT_FINGERPRINT));
-            Payer.PayerTypeEnum payerType = Payer.PayerTypeEnum.fromValue(rs.getString(PAYMENT_PAYER_TYPE));
-            switch (payerType) {
-                case CUSTOMERPAYER:
-                    payment.setPayer(new CustomerPayer().customerID(rs.getString(PAYMENT_CUSTOMER_ID)));
-                    break;
-                case PAYMENTRESOURCEPAYER:
-                    PaymentResourcePayer payer = new PaymentResourcePayer()
-                            .paymentToolToken(rs.getString(PAYMENT_TOOL_TOKEN))
-                            .paymentSession(rs.getString(PAYMENT_SESSION))
-                            .contactInfo(new ContactInfo()
-                                    .email(rs.getString(PAYMENT_EMAIL))
-                                    .phoneNumber(rs.getString(PAYMENT_PHONE)))
-                            .clientInfo(new ClientInfo()
-                                    .fingerprint(rs.getString(PAYMENT_FINGERPRINT))
-                                    .ip(rs.getString(PAYMENT_IP)));
-
-                    payer.setPaymentToolDetails(getPaymentToolDetails(rs.getString(PAYMENT_TOOL_DETAILS_TYPE), rs.getString(PAYMENT_CARD_BIN),
-                            rs.getString(PAYMENT_CARD_LAST_DIGITS), rs.getString(PAYMENT_CARD_NUMBER_MASK), rs.getString(PAYMENT_CARD_TOKEN_PROVIDER), rs.getString(PAYMENT_SYSTEM), rs.getString(PAYMENT_TERMINAL_PROVIDER),
-                            rs.getString(PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(PAYMENT_DIGITAL_WALLET_ID), rs.getString(PAYMENT_CRYPTO_CURRENCY)));
-                    payment.setPayer(payer);
-                    break;
-                case RECURRENTPAYER:
-                    payment.setPayer(new RecurrentPayer()
-                            .recurrentParentPayment(new PaymentRecurrentParent()
-                                    .invoiceID(rs.getString(PAYMENT_RECURRENT_PARENT_INVOICE_ID))
-                                    .paymentID(rs.getString(PAYMENT_RECURRENT_PARENT_PAYMENT_ID)))
-                            .contactInfo(new ContactInfo()
-                                    .email(rs.getString(PAYMENT_EMAIL))
-                                    .phoneNumber(rs.getString(PAYMENT_PHONE))));
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+ Arrays.toString(Payer.PayerTypeEnum.values()));
-            }
-            payment.getPayer().setPayerType(payerType);
+            PayerTypeUtils.fillPayerType(rs, payment);
         }
         if (message.isRefund()) {
             Refund refund = new Refund();
@@ -174,4 +142,6 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
         }
         return message;
     }
+
+
 }
