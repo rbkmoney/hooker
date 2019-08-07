@@ -54,8 +54,7 @@ public class MachineEventHandlerImplTest {
         event.setPayload(payload);
         Mockito.when(eventParser.parse(message)).thenReturn(payload);
 
-        machineEventHandler.handle(Collections.singletonList(message));
-        ack.acknowledge();
+        machineEventHandler.handle(Collections.singletonList(message), ack);
 
         Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
         Mockito.verify(handler, Mockito.times(0)).handle(any(), any(), any(), any(), any(), any());
@@ -66,7 +65,7 @@ public class MachineEventHandlerImplTest {
     public void listenEmptyException() {
         MachineEvent message = new MachineEvent();
         Mockito.when(eventParser.parse(message)).thenThrow(new ParseException());
-        machineEventHandler.handle(Collections.singletonList(message));
+        machineEventHandler.handle(Collections.singletonList(message), ack);
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
     }
@@ -83,8 +82,7 @@ public class MachineEventHandlerImplTest {
         Mockito.when(eventParser.parse(message)).thenReturn(payload);
         Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
 
-        machineEventHandler.handle(Collections.singletonList(message));
-        ack.acknowledge();
+        machineEventHandler.handle(Collections.singletonList(message), ack);
 
         Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
         Mockito.verify(handler, Mockito.times(1)).handle(any(), any(), any(), any(), any(), any());
