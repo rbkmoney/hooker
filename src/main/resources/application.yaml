@@ -57,6 +57,8 @@ spring.datasource:
   hikari:
     maximum-pool-size: 10
     idle-timeout: 30000
+    data-source-properties:
+      reWriteBatchedInserts: true
 
 db:
   jdbc:
