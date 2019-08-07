@@ -27,26 +27,25 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
     @Override
     @Transactional
     public void handle(List<MachineEvent> machineEvents) {
+        List<InvoicingMessage> messages = new ArrayList<>();
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
             if (payload.isSetInvoiceChanges()) {
                 for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
                     InvoiceChange invoiceChange = payload.getInvoiceChanges().get(i);
                     int j = i;
-                    List<InvoicingMessage> messages = new ArrayList<>();
-                    handlerManager.getHandler(invoiceChange)
-                            .ifPresent(handler -> {
-                                log.info("Start to handle event {}", invoiceChange);
-                                InvoicingMessage message = handler.handle(invoiceChange, null, me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
-                                if (message != null) {
-                                    messages.add(message);
-                                }
-                            });
-                    if (!messages.isEmpty()) {
-                        batchService.process(messages);
-                    }
+                    handlerManager.getHandler(invoiceChange).ifPresent(handler -> {
+                        log.info("Start to handle event {}", invoiceChange);
+                        InvoicingMessage message = handler.handle(invoiceChange, null, me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
+                        if (message != null) {
+                            messages.add(message);
+                        }
+                    });
                 }
             }
         });
+        if (!messages.isEmpty()) {
+            batchService.process(messages);
+        }
     }
 }
