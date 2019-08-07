@@ -43,18 +43,21 @@ public class InvoicingMessage extends Message {
         BeanUtils.copyProperties(this, copied);
         copied.setInvoice(new Invoice());
         BeanUtils.copyProperties(this.getInvoice(), copied.getInvoice());
-        if (getPayment() != null) {
+        if (this.getPayment() != null) {
             copied.setPayment(new Payment());
             BeanUtils.copyProperties(this.getPayment(), copied.getPayment());
-            copied.getPayment().setError(new PaymentError());
-            BeanUtils.copyProperties(this.getPayment().getError(), copied.getPayment().getError());
+            if (this.getPayment().getError() != null) {
+                copied.getPayment().setError(new PaymentError());
+                BeanUtils.copyProperties(this.getPayment().getError(), copied.getPayment().getError());
+            }
         }
-        if (getRefund() != null) {
+        if (this.getRefund() != null) {
             copied.setRefund(new Refund());
             BeanUtils.copyProperties(this.getRefund(), copied.getRefund());
-            copied.getRefund().setError(new PaymentError());
-            BeanUtils.copyProperties(this.getRefund().getError(), copied.getRefund().getError());
-
+            if (this.getRefund().getError() != null) {
+                copied.getRefund().setError(new PaymentError());
+                BeanUtils.copyProperties(this.getRefund().getError(), copied.getRefund().getError());
+            }
         }
         return copied;
     }
