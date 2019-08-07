@@ -195,7 +195,6 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
         String key = key(invoiceId, paymentId, refundId);
         InvoicingMessage result = invoicingCache.getIfPresent(key);
         if (result != null) {
-            log.info("From cache {}", result.getId());
             return result.copy();
         }
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id" +
@@ -219,7 +218,6 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
             throw new DaoException(String.format("InvoicingMessage error with invoiceId=%s, paymentId=%s, refundId=%s, type=%s",
                     invoiceId, paymentId, refundId, type), e);
         }
-        log.info("From database {}", result.getId());
         return result;
     }
 
