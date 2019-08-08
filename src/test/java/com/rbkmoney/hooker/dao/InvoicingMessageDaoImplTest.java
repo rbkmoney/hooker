@@ -42,7 +42,7 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         if (!messagesCreated) {
-            messageDao.saveBatch(BuildUtils.buildBatchMessages(
+            messageDao.saveBatch(Arrays.asList(
                     buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status"),
                     buildMessage(InvoicingMessageEnum.INVOICE.value(), "1235", "56678", EventType.INVOICE_CREATED, "status", cart(), true),
                     buildMessage(InvoicingMessageEnum.PAYMENT.value(), "1236", "56678", EventType.INVOICE_CREATED, "status", cart(), false)));
@@ -67,7 +67,7 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void testDuplication(){
         InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status");
-        assertTrue(messageDao.saveBatch(BuildUtils.buildBatchMessages(message)).isEmpty());
+        assertTrue(messageDao.saveBatch(Collections.singletonList(message)).isEmpty());
     }
 
     @Ignore

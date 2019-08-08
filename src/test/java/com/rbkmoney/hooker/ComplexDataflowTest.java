@@ -81,16 +81,16 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(),"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid", null, true, 0L, 0);
-        batchService.process(buildBatchMessages(message));
+        batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.PAYMENT.value(),"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured", null, true, 0L, 1);
-        batchService.process(buildBatchMessages(message));
+        batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed", null, true, 0L, 0);
-        batchService.process(buildBatchMessages(message));
+        batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed", null, true, 0L, 1);
-        batchService.process(buildBatchMessages(message));
+        batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
 
         List<DataflowTest.MockMessage> hooks = new ArrayList<>();

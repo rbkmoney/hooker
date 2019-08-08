@@ -21,7 +21,11 @@ public abstract class NeedReadInvoiceEventMapper extends AbstractInvoiceEventMap
         InvoicingMessage message;
         InvoicingMessageKey messageKey = getMessageKey(eventInfo.getSourceId(), ic);
         try {
-            message = storage.getOrDefault(messageKey, messageDao.getInvoicingMessage(messageKey)).copy();
+            message = storage.get(messageKey);
+            if (message == null) {
+                message = messageDao.getInvoicingMessage(messageKey);
+            }
+            message = message.copy();
         } catch (NotFoundException e) {
             log.warn(e.getMessage());
             return null;

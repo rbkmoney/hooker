@@ -30,7 +30,8 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
     @Override
     @Transactional
     public void handle(List<MachineEvent> machineEvents, Acknowledgment ack) {
-        LinkedHashMap<InvoicingMessageKey, InvoicingMessage> batchMessages = new LinkedHashMap<>();
+        List<InvoicingMessage> messages = new ArrayList<>();
+        LinkedHashMap<InvoicingMessageKey, InvoicingMessage> localCache = new LinkedHashMap<>();
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
             if (payload.isSetInvoiceChanges()) {
@@ -41,16 +42,17 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
                         log.info("Start to handle event {}", invoiceChange);
                         InvoicingMessage message = handler.handle(invoiceChange,
                                 new EventInfo(null, me.getCreatedAt(), me.getSourceId(), me.getEventId(), j),
-                                batchMessages);
+                                localCache);
                         if (message != null) {
-                            batchMessages.put(KeyUtils.key(message), message);
+                            localCache.put(KeyUtils.key(message), message);
+                            messages.add(message);
                         }
                     });
                 }
             }
         });
-        if (!batchMessages.isEmpty()) {
-            batchService.process(batchMessages);
+        if (!localCache.isEmpty()) {
+            batchService.process(messages);
         }
         ack.acknowledge();
     }

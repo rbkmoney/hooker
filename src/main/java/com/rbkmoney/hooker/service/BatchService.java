@@ -28,16 +28,15 @@ public class BatchService {
     private final InvoicingTaskDao invoicingTaskDao;
     private final MessageIdsGeneratorDaoImpl messageIdsGeneratorDao;
 
-    public void process(LinkedHashMap<InvoicingMessageKey, InvoicingMessage> batchMessages){
-        log.info("Start processing of batch, size={}", batchMessages.size());
-        List<InvoicingMessage> messages = new ArrayList<>(batchMessages.values());
+    public void process(List<InvoicingMessage> messages){
+        log.info("Start processing of batch, size={}", messages.size());
         List<Long> ids = messageIdsGeneratorDao.get(messages.size());
         List<Long> eventIds = messageIdsGeneratorDao.get(messages.size());
         for (int i = 0; i < messages.size(); ++i) {
             messages.get(i).setId(ids.get(i));
             messages.get(i).setEventId(eventIds.get(i));
         }
-        List<InvoicingMessage> filteredMessages = invoicingMessageDao.saveBatch(batchMessages);
+        List<InvoicingMessage> filteredMessages = invoicingMessageDao.saveBatch(messages);
         log.info("Filtered batch, size={}", filteredMessages.size());
         List<Long> filteredMessageIds = filteredMessages.stream().map(Message::getId).collect(Collectors.toList());
         int[] queueBatchResult = invoicingQueueDao.saveBatchWithPolicies(filteredMessageIds);

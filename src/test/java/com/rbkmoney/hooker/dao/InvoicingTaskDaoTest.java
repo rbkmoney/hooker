@@ -52,7 +52,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.saveBatch(BuildUtils.buildBatchMessages(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(),"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
+        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(),"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
         messageId = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("2345").type(InvoicingMessageEnum.INVOICE).build()).getId();
     }
 
@@ -74,7 +74,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSelectForUpdate() {
         for (int i = 0; i < 20; ++i) {
-            messageDao.saveBatch(BuildUtils.buildBatchMessages(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(), ""+i, "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
+            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(), ""+i, "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
         }
 
         Set<Long> scheduledOne = new HashSet<>();
