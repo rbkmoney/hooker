@@ -26,15 +26,15 @@ public class InvoicingMessage extends Message {
     private Refund refund;
 
     public boolean isInvoice() {
-        return InvoicingMessageEnum.INVOICE.value().equals(getType());
+        return InvoicingMessageEnum.INVOICE.equals(InvoicingMessageEnum.lookup(getType()));
     }
 
     public boolean isPayment() {
-        return InvoicingMessageEnum.PAYMENT.name().equals(getType());
+        return InvoicingMessageEnum.PAYMENT.equals(InvoicingMessageEnum.lookup(getType()));
     }
 
     public boolean isRefund() {
-        return InvoicingMessageEnum.REFUND.name().equals(getType());
+        return InvoicingMessageEnum.REFUND.equals(InvoicingMessageEnum.lookup(getType()));
     }
 
     public InvoicingMessage copy(){

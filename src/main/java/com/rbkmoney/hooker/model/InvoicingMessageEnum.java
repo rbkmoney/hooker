@@ -14,4 +14,13 @@ public enum InvoicingMessageEnum {
     public String value() {
         return value;
     }
+
+    public static InvoicingMessageEnum lookup(String v) {
+        for (InvoicingMessageEnum e : values()) {
+            if (e.value().equals(v)) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException(v);
+    }
 }

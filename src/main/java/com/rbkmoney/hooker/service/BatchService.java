@@ -37,7 +37,7 @@ public class BatchService {
             messages.get(i).setId(ids.get(i));
             messages.get(i).setEventId(eventIds.get(i));
         }
-        List<InvoicingMessage> filteredMessages = invoicingMessageDao.saveBatch(messages);
+        List<InvoicingMessage> filteredMessages = invoicingMessageDao.saveBatch(batchMessages);
         log.info("Filtered batch, size={}", filteredMessages.size());
         List<Long> filteredMessageIds = filteredMessages.stream().map(Message::getId).collect(Collectors.toList());
         int[] queueBatchResult = invoicingQueueDao.saveBatchWithPolicies(filteredMessageIds);

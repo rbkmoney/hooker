@@ -6,6 +6,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.InvoicingMessageEnum;
 import com.rbkmoney.hooker.model.InvoicingMessageKey;
+import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -41,7 +42,7 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         if (!messagesCreated) {
-            messageDao.saveBatch(Arrays.asList(
+            messageDao.saveBatch(BuildUtils.buildBatchMessages(
                     buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status"),
                     buildMessage(InvoicingMessageEnum.INVOICE.value(), "1235", "56678", EventType.INVOICE_CREATED, "status", cart(), true),
                     buildMessage(InvoicingMessageEnum.PAYMENT.value(), "1236", "56678", EventType.INVOICE_CREATED, "status", cart(), false)));
@@ -66,7 +67,7 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     @Test
     public void testDuplication(){
         InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status");
-        assertTrue(messageDao.saveBatch(Collections.singletonList(message)).isEmpty());
+        assertTrue(messageDao.saveBatch(BuildUtils.buildBatchMessages(message)).isEmpty());
     }
 
     @Ignore

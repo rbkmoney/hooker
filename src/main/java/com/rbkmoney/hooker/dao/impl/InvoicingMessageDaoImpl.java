@@ -80,16 +80,17 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                 .addValue(REFUND_REASON, null);
     }
 
-    public List<InvoicingMessage> saveBatch(List<InvoicingMessage> messages) throws DaoException {
+    public List<InvoicingMessage> saveBatch(LinkedHashMap<InvoicingMessageKey, InvoicingMessage> messages) throws DaoException {
         int[] batchResult = saveBatchMessages(messages);
-        List<InvoicingMessage> filteredMessages = FilterUtils.filter(batchResult, messages);
+        List<InvoicingMessage> filteredMessages = FilterUtils.filter(batchResult, new ArrayList<>(messages.values()));
         saveBatchCart(filteredMessages);
         return filteredMessages;
     }
 
-    private int[] saveBatchMessages(List<InvoicingMessage> messages) {
+    private int[] saveBatchMessages(LinkedHashMap<InvoicingMessageKey, InvoicingMessage> batchMessages) {
         try {
-            messages.forEach(m -> invoicingCache.put(KeyUtils.key(m), m));
+            batchMessages.keySet().forEach(key -> invoicingCache.put(key, batchMessages.get(key)));
+
             final String sql = "INSERT INTO hook.message" +
                     "(id, new_event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
                     "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
@@ -110,7 +111,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                     ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
                     "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING ";
 
-            MapSqlParameterSource[] sqlParameterSources = messages.stream().map(message -> {
+            MapSqlParameterSource[] sqlParameterSources = batchMessages.values().stream().map(message -> {
                 MapSqlParameterSource params = new MapSqlParameterSource()
                         .addValue(ID, message.getId())
                         .addValue(NEW_EVENT_ID, message.getEventId())
@@ -171,7 +172,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
 
             return jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
-            List<String> shortInfo = messages.stream().map(m -> "(" + m.getId() + " : " + m.getInvoice().getId() + ")").collect(Collectors.toList());
+            List<String> shortInfo = batchMessages.keySet().stream().map(InvoicingMessageKey::toString).collect(Collectors.toList());
             throw new DaoException("Couldn't save batch messages: " + shortInfo, e);
         }
     }
@@ -202,7 +203,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
         MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, key.getInvoiceId())
                 .addValue(PAYMENT_ID, key.getPaymentId())
                 .addValue(REFUND_ID, key.getRefundId())
-                .addValue(TYPE, key.getType().name());
+                .addValue(TYPE, key.getType().value());
         try {
             result = jdbcTemplate.queryForObject(sql, params, messageRowMapper);
             List<InvoiceCartPosition> cart = invoicingCartDao.getByMessageId(result.getId());

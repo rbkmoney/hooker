@@ -27,7 +27,7 @@ public abstract class NeedReadInvoiceEventMapper extends AbstractInvoiceEventMap
             return null;
         }
         message.setEventType(getEventType());
-        message.setType(getMessageType().name());
+        message.setType(getMessageType().value());
         message.setEventTime(eventInfo.getEventCreatedAt());
         message.setSequenceId(eventInfo.getSequenceId());
         message.setChangeId(eventInfo.getChangeId());
