@@ -38,6 +38,8 @@ public abstract class NeedReadInvoiceEventMapper extends AbstractInvoiceEventMap
 
     protected abstract InvoicingMessageEnum getMessageType();
 
+    protected abstract InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) throws NotFoundException, DaoException;
+
     protected abstract EventType getEventType();
 
     protected abstract void modifyMessage(InvoiceChange ic, InvoicingMessage message);

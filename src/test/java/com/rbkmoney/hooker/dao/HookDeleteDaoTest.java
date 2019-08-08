@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.buildBatchMessages;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -39,7 +40,7 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
     public void setUp() {
         Long hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
         Long hookId2 = hookDao.create(HookDaoImplTest.buildHook("partyId2", "fake2.url")).getId();
-        batchService.process(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.invoice.name(),"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
+        batchService.process(buildBatchMessages(BuildUtils.buildMessage(InvoicingMessageEnum.invoice.name(),"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
         assertEquals(queueDao.getWithPolicies(taskDao.getScheduled(new ArrayList<>()).keySet()).size(), 1);
         hookDao.delete(hookId2);
         assertNotEquals(queueDao.getWithPolicies(taskDao.getScheduled(new ArrayList<>()).keySet()).size(), 0);

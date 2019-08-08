@@ -8,7 +8,9 @@ import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.swag_webhook_events.model.*;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Created by jeckep on 25.04.17.
@@ -154,5 +156,11 @@ public class BuildUtils {
             )));
         }
         return customerMessage;
+    }
+
+    public static LinkedHashMap<InvoicingMessageKey, InvoicingMessage> buildBatchMessages(InvoicingMessage... messages) {
+        LinkedHashMap<InvoicingMessageKey, InvoicingMessage> map = new LinkedHashMap<>();
+        Stream.of(messages).forEach(m -> map.put(KeyUtils.key(m), m));
+        return map;
     }
 }

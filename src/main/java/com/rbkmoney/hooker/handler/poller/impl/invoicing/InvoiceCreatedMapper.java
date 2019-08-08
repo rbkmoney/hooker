@@ -10,7 +10,6 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.NotFoundException;
 import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,14 +23,6 @@ public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
     private EventType eventType = EventType.INVOICE_CREATED;
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
-
-    @Override
-    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) throws NotFoundException, DaoException {
-        return InvoicingMessageKey.builder()
-                .invoiceId(invoiceId)
-                .type(InvoicingMessageEnum.invoice)
-                .build();
-    }
 
     @Override
     @Transactional

@@ -2,17 +2,16 @@ package com.rbkmoney.hooker;
 
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Hook;
-import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.service.BatchService;
+import com.rbkmoney.hooker.utils.KeyUtils;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +23,9 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.buildBatchMessages;
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -80,16 +81,16 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(InvoicingMessageEnum.invoice.name(),"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid", null, true, 0L, 0);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.payment.name(),"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured", null, true, 0L, 1);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.payment.name(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed", null, true, 0L, 0);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.payment.name(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed", null, true, 0L, 1);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
 
         List<DataflowTest.MockMessage> hooks = new ArrayList<>();

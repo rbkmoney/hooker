@@ -59,7 +59,7 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
         assertEquals(1, messages.size());
         assertFalse(messages.get(0).getInvoice().getCart().isEmpty());
 
-        InvoicingMessage payment = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1236").paymentId("123").type(InvoicingMessageEnum.invoice).build());
+        InvoicingMessage payment = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1236").paymentId("123").type(InvoicingMessageEnum.payment).build());
         assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);
     }
 

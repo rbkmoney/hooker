@@ -5,12 +5,16 @@ import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.dao.impl.MessageIdsGeneratorDaoImpl;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.utils.FilterUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,8 +28,9 @@ public class BatchService {
     private final InvoicingTaskDao invoicingTaskDao;
     private final MessageIdsGeneratorDaoImpl messageIdsGeneratorDao;
 
-    public void process(List<InvoicingMessage> messages){
-        log.info("Start processing of batch, size={}", messages.size());
+    public void process(LinkedHashMap<InvoicingMessageKey, InvoicingMessage> batchMessages){
+        log.info("Start processing of batch, size={}", batchMessages.size());
+        List<InvoicingMessage> messages = new ArrayList<>(batchMessages.values());
         List<Long> ids = messageIdsGeneratorDao.get(messages.size());
         List<Long> eventIds = messageIdsGeneratorDao.get(messages.size());
         for (int i = 0; i < messages.size(); ++i) {

@@ -7,9 +7,6 @@ import com.rbkmoney.hooker.model.Message;
 
 import java.util.Map;
 
-/**
- * Created by inal on 24.11.2016.
- */
 public interface Mapper<C, M extends Message> {
     default boolean accept(C change) {
         return getFilter().match(change);

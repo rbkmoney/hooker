@@ -7,6 +7,7 @@ import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.hooker.service.HandlerManager;
+import com.rbkmoney.hooker.utils.KeyUtils;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +16,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -32,8 +30,7 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
     @Override
     @Transactional
     public void handle(List<MachineEvent> machineEvents, Acknowledgment ack) {
-        Map<InvoicingMessageKey, InvoicingMessage> temporalStorage = new HashMap<>();
-        List<InvoicingMessage> messages = new ArrayList<>();
+        LinkedHashMap<InvoicingMessageKey, InvoicingMessage> batchMessages = new LinkedHashMap<>();
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
             if (payload.isSetInvoiceChanges()) {
@@ -44,16 +41,16 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
                         log.info("Start to handle event {}", invoiceChange);
                         InvoicingMessage message = handler.handle(invoiceChange,
                                 new EventInfo(null, me.getCreatedAt(), me.getSourceId(), me.getEventId(), j),
-                                temporalStorage);
+                                batchMessages);
                         if (message != null) {
-                            messages.add(message);
+                            batchMessages.put(KeyUtils.key(message), message);
                         }
                     });
                 }
             }
         });
-        if (!messages.isEmpty()) {
-            batchService.process(messages);
+        if (!batchMessages.isEmpty()) {
+            batchService.process(batchMessages);
         }
         ack.acknowledge();
     }

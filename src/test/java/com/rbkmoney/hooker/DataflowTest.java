@@ -28,8 +28,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
-import static com.rbkmoney.hooker.utils.BuildUtils.cart;
+import static com.rbkmoney.hooker.utils.BuildUtils.*;
 import static org.junit.Assert.*;
 
 /**
@@ -76,28 +75,28 @@ public class DataflowTest extends AbstractIntegrationTest {
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
         InvoicingMessage message = buildMessage(InvoicingMessageEnum.invoice.name(), "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true, 0L, 0);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.payment.name(), "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status", cart(), true, 0L, 1);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.invoice.name(),"3", "partyId1", EventType.INVOICE_CREATED, "status");
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.invoice.name(), "4", "qwe", EventType.INVOICE_CREATED, "status");
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.invoice.name(), "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false, 0L, 0);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.payment.name(), "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false, 0L, 1);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.refund.name(), "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false, 0L, 2);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
         message = buildMessage(InvoicingMessageEnum.payment.name(), "5", "partyId2", EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED, "status", cart(), false, 0L, 1);
-        batchService.process(Collections.singletonList(message));
+        batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
 
         List<MockMessage> inv1 = new ArrayList<>();
