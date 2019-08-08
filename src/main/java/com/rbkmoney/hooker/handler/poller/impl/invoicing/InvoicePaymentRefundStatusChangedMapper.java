@@ -34,13 +34,13 @@ public class InvoicePaymentRefundStatusChangedMapper extends NeedReadInvoiceEven
                 .invoiceId(invoiceId)
                 .paymentId(ic.getInvoicePaymentChange().getId())
                 .refundId(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getId())
-                .type(InvoicingMessageEnum.refund)
+                .type(InvoicingMessageEnum.REFUND)
                 .build();
     }
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.refund;
+        return InvoicingMessageEnum.REFUND;
     }
 
     @Override

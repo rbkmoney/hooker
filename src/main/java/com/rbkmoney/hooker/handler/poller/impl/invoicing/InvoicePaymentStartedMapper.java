@@ -35,7 +35,7 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.payment;
+        return InvoicingMessageEnum.PAYMENT;
     }
 
     @Override
@@ -106,7 +106,7 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
     protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
         return InvoicingMessageKey.builder()
                 .invoiceId(invoiceId)
-                .type(InvoicingMessageEnum.invoice)
+                .type(InvoicingMessageEnum.INVOICE)
                 .build();
     }
 }

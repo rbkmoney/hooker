@@ -42,16 +42,16 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         if (!messagesCreated) {
             messageDao.saveBatch(Arrays.asList(
-                    buildMessage(InvoicingMessageEnum.invoice.name(), "1234", "56678", EventType.INVOICE_CREATED, "status"),
-                    buildMessage(InvoicingMessageEnum.invoice.name(), "1235", "56678", EventType.INVOICE_CREATED, "status", cart(), true),
-                    buildMessage(InvoicingMessageEnum.payment.name(), "1236", "56678", EventType.INVOICE_CREATED, "status", cart(), false)));
+                    buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status"),
+                    buildMessage(InvoicingMessageEnum.INVOICE.value(), "1235", "56678", EventType.INVOICE_CREATED, "status", cart(), true),
+                    buildMessage(InvoicingMessageEnum.PAYMENT.value(), "1236", "56678", EventType.INVOICE_CREATED, "status", cart(), false)));
             messagesCreated = true;
         }
     }
 
     @Test
     public void get() throws Exception {
-        InvoicingMessage message = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1235").type(InvoicingMessageEnum.invoice).build());
+        InvoicingMessage message = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1235").type(InvoicingMessageEnum.INVOICE).build());
         assertEquals(message.getInvoice().getAmount(), 12235);
         assertEquals(message.getInvoice().getCart().size(), 2);
 
@@ -59,13 +59,13 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
         assertEquals(1, messages.size());
         assertFalse(messages.get(0).getInvoice().getCart().isEmpty());
 
-        InvoicingMessage payment = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1236").paymentId("123").type(InvoicingMessageEnum.payment).build());
+        InvoicingMessage payment = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1236").paymentId("123").type(InvoicingMessageEnum.PAYMENT).build());
         assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);
     }
 
     @Test
     public void testDuplication(){
-        InvoicingMessage message = buildMessage(InvoicingMessageEnum.invoice.name(), "1234", "56678", EventType.INVOICE_CREATED, "status");
+        InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status");
         assertTrue(messageDao.saveBatch(Collections.singletonList(message)).isEmpty());
     }
 

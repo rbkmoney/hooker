@@ -18,7 +18,6 @@ public abstract class NeedReadInvoiceEventMapper extends AbstractInvoiceEventMap
 
     @Override
     protected InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo, Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException {
-        //getAny any saved message for related invoice
         InvoicingMessage message;
         InvoicingMessageKey messageKey = getMessageKey(eventInfo.getSourceId(), ic);
         try {

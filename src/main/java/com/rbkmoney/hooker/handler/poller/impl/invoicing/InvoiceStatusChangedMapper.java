@@ -33,13 +33,13 @@ public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
     protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
         return InvoicingMessageKey.builder()
                 .invoiceId(invoiceId)
-                .type(InvoicingMessageEnum.invoice)
+                .type(InvoicingMessageEnum.INVOICE)
                 .build();
     }
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.invoice;
+        return InvoicingMessageEnum.INVOICE;
     }
 
     @Override

@@ -33,7 +33,7 @@ public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
         message.setEventTime(eventInfo.getEventCreatedAt());
         message.setSequenceId(eventInfo.getSequenceId());
         message.setChangeId(eventInfo.getChangeId());
-        message.setType(InvoicingMessageEnum.invoice.name());
+        message.setType(InvoicingMessageEnum.INVOICE.value());
         message.setPartyId(invoiceOrigin.getOwnerId());
         message.setEventType(eventType);
         com.rbkmoney.hooker.model.Invoice invoice = new com.rbkmoney.hooker.model.Invoice();

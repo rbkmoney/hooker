@@ -35,13 +35,13 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
         return InvoicingMessageKey.builder()
                 .invoiceId(invoiceId)
                 .paymentId(ic.getInvoicePaymentChange().getId())
-                .type(InvoicingMessageEnum.payment)
+                .type(InvoicingMessageEnum.PAYMENT)
                 .build();
     }
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.refund;
+        return InvoicingMessageEnum.REFUND;
     }
 
     @Override

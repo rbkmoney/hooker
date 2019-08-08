@@ -80,16 +80,16 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
-        InvoicingMessage message = buildMessage(InvoicingMessageEnum.invoice.name(),"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid", null, true, 0L, 0);
+        InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(),"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid", null, true, 0L, 0);
         batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.payment.name(),"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured", null, true, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(),"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured", null, true, 0L, 1);
         batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.payment.name(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed", null, true, 0L, 0);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed", null, true, 0L, 0);
         batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.payment.name(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed", null, true, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed", null, true, 0L, 1);
         batchService.process(buildBatchMessages(message));
         sourceMessages.add(message);
 

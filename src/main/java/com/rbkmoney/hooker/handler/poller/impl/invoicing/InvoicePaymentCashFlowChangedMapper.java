@@ -31,13 +31,13 @@ public class InvoicePaymentCashFlowChangedMapper extends NeedReadInvoiceEventMap
         return InvoicingMessageKey.builder()
                 .invoiceId(invoiceId)
                 .paymentId(ic.getInvoicePaymentChange().getId())
-                .type(InvoicingMessageEnum.payment)
+                .type(InvoicingMessageEnum.PAYMENT)
                 .build();
     }
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.payment;
+        return InvoicingMessageEnum.PAYMENT;
     }
 
     @Override
