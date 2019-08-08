@@ -8,6 +8,7 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.EventInfo;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.CustomerUtils;
 import com.rbkmoney.swag_webhook_events.model.ContactInfo;
@@ -34,13 +35,13 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
     }
 
     @Override
-    protected CustomerMessage saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
+    protected void saveEvent(CustomerChange cc, EventInfo eventInfo) throws DaoException {
         com.rbkmoney.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
-        customerMessage.setEventId(eventId);
-        customerMessage.setOccuredAt(eventCreatedAt);
-        customerMessage.setSequenceId(sequenceId);
-        customerMessage.setChangeId(changeId);
+        customerMessage.setEventId(eventInfo.getEventId());
+        customerMessage.setOccuredAt(eventInfo.getEventCreatedAt());
+        customerMessage.setSequenceId(eventInfo.getSequenceId());
+        customerMessage.setChangeId(eventInfo.getChangeId());
         customerMessage.setType(CUSTOMER);
         customerMessage.setPartyId(customerCreatedOrigin.getOwnerId());
         customerMessage.setEventType(eventType);
@@ -54,6 +55,5 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
                 .metadata(new CustomerUtils().getResult(customerCreatedOrigin.getMetadata()));
         customerMessage.setCustomer(customer);
         customerDao.create(customerMessage);
-        return customerMessage;
     }
 }

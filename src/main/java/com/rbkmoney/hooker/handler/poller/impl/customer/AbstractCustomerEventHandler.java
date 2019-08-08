@@ -4,7 +4,7 @@ import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.model.CustomerMessage;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
+import com.rbkmoney.hooker.model.EventInfo;
 
 /**
  * Created by inalarsanukaev on 07.04.17.
@@ -15,9 +15,9 @@ public abstract class AbstractCustomerEventHandler implements Handler<CustomerCh
     public static final String BINDING = "binding";
 
     @Override
-    public CustomerMessage handle(CustomerChange c, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException{
-        return saveEvent(c, eventId, eventCreatedAt, sourceId, sequenceId, changeId);
+    public void handle(CustomerChange c, EventInfo eventInfo) throws DaoException{
+        saveEvent(c, eventInfo);
     }
 
-    protected abstract CustomerMessage saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException;
+    protected abstract void saveEvent(CustomerChange cc, EventInfo eventInfo) throws DaoException;
 }

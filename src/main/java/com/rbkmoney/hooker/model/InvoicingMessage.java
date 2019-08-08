@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.model;
 
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.swag_webhook_events.model.PaymentError;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,15 +26,15 @@ public class InvoicingMessage extends Message {
     private Refund refund;
 
     public boolean isInvoice() {
-        return AbstractInvoiceEventHandler.INVOICE.equals(getType());
+        return InvoicingMessageEnum.invoice.name().equals(getType());
     }
 
     public boolean isPayment() {
-        return AbstractInvoiceEventHandler.PAYMENT.equals(getType());
+        return InvoicingMessageEnum.payment.name().equals(getType());
     }
 
     public boolean isRefund() {
-        return AbstractInvoiceEventHandler.REFUND.equals(getType());
+        return InvoicingMessageEnum.refund.name().equals(getType());
     }
 
     public InvoicingMessage copy(){

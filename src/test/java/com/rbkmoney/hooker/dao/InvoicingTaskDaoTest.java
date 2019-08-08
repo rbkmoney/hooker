@@ -4,8 +4,9 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.After;
@@ -14,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -52,8 +52,8 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
-        messageId = messageDao.getInvoice("2345").getId();
+        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.invoice.name(),"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
+        messageId = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("2345").type(InvoicingMessageEnum.invoice).build()).getId();
     }
 
     @After
@@ -74,7 +74,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSelectForUpdate() {
         for (int i = 0; i < 20; ++i) {
-            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE, ""+i, "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
+            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.invoice.name(), ""+i, "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
         }
 
         Set<Long> scheduledOne = new HashSet<>();

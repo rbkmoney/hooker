@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.service;
 
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +12,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class HandlerManager {
 
-    private final List<AbstractInvoiceEventHandler> handlers;
+    private final List<AbstractInvoiceEventMapper> handlers;
 
-    public Optional<AbstractInvoiceEventHandler> getHandler(InvoiceChange change) {
+    public Optional<AbstractInvoiceEventMapper> getHandler(InvoiceChange change) {
         return handlers.stream().filter(handler -> handler.accept(change)).findFirst();
     }
 }

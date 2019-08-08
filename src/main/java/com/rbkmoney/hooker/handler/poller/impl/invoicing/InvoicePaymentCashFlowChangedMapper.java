@@ -9,33 +9,35 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.NotFoundException;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
-public class InvoicePaymentCashFlowChangedHandler extends NeedReadInvoiceEventHandler {
+public class InvoicePaymentCashFlowChangedMapper extends NeedReadInvoiceEventMapper {
 
     private final EventType eventType = EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED;
 
     private final Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
 
-    private final InvoicingMessageDao messageDao;
-
-    @Override
-    protected InvoicingMessage getMessage(String invoiceId, InvoiceChange ic) throws NotFoundException, DaoException {
-        return messageDao.getPayment(invoiceId, ic.getInvoicePaymentChange().getId());
+    public InvoicePaymentCashFlowChangedMapper(InvoicingMessageDao messageDao) {
+        super(messageDao);
     }
 
     @Override
-    protected String getMessageType() {
-        return PAYMENT;
+    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) throws NotFoundException, DaoException {
+        return InvoicingMessageKey.builder()
+                .invoiceId(invoiceId)
+                .paymentId(ic.getInvoicePaymentChange().getId())
+                .type(InvoicingMessageEnum.payment)
+                .build();
+    }
+
+    @Override
+    protected InvoicingMessageEnum getMessageType() {
+        return InvoicingMessageEnum.payment;
     }
 
     @Override

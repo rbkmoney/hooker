@@ -4,8 +4,7 @@ import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.exception.ParseException;
-import com.rbkmoney.hooker.handler.Handler;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventMapper;
 import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
@@ -27,7 +26,7 @@ public class MachineEventHandlerImplTest {
     @Mock
     private HandlerManager handlerManager;
     @Mock
-    private AbstractInvoiceEventHandler handler;
+    private AbstractInvoiceEventMapper handler;
     @Mock
     private MachineEventParser<EventPayload> eventParser;
     @Mock
@@ -57,7 +56,7 @@ public class MachineEventHandlerImplTest {
         machineEventHandler.handle(Collections.singletonList(message), ack);
 
         Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(0)).handle(any(), any(), any(), any(), any(), any());
+        Mockito.verify(handler, Mockito.times(0)).handle(any(), any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 
@@ -85,7 +84,7 @@ public class MachineEventHandlerImplTest {
         machineEventHandler.handle(Collections.singletonList(message), ack);
 
         Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(1)).handle(any(), any(), any(), any(), any(), any());
+        Mockito.verify(handler, Mockito.times(1)).handle(any(), any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 

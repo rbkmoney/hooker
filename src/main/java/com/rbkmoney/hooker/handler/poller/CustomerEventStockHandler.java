@@ -10,6 +10,7 @@ import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
+import com.rbkmoney.hooker.model.EventInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,7 +47,7 @@ public class CustomerEventStockHandler implements EventHandler<StockEvent> {
                 if (pollingEventHandler.accept(cc)) {
                     try {
                         log.info("We got an event {}", new TBaseProcessor().process(stockEvent, JsonHandler.newPrettyJsonInstance()));
-                        pollingEventHandler.handle(cc, stockEvent.getId(), stockEvent.getTime(), sourceId, (long) processingEvent.getSequence(), i);
+                        pollingEventHandler.handle(cc, new EventInfo(stockEvent.getId(), stockEvent.getTime(), sourceId, (long) processingEvent.getSequence(), i));
                     } catch (DaoException e) {
                         log.error("DaoException when poller handling with eventId {}", id, e);
                         if (count.decrementAndGet() > 0) {

@@ -13,22 +13,20 @@ import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
-import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
-import com.rbkmoney.swag_webhook_events.model.*;
-import lombok.RequiredArgsConstructor;
 import com.rbkmoney.swag_webhook_events.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
+public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_PAYMENT_STARTED;
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
 
-    private final InvoicingMessageDao messageDao;
+    public InvoicePaymentStartedMapper(InvoicingMessageDao messageDao) {
+        super(messageDao);
+    }
 
     @Override
     public Filter getFilter() {
@@ -36,8 +34,8 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected String getMessageType() {
-        return PAYMENT;
+    protected InvoicingMessageEnum getMessageType() {
+        return InvoicingMessageEnum.payment;
     }
 
     @Override
@@ -105,7 +103,10 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected InvoicingMessage getMessage(String invoiceId, InvoiceChange ic) {
-        return messageDao.getInvoice(invoiceId);
+    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
+        return InvoicingMessageKey.builder()
+                .invoiceId(invoiceId)
+                .type(InvoicingMessageEnum.invoice)
+                .build();
     }
 }

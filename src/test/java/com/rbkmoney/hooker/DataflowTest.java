@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
@@ -76,28 +75,28 @@ public class DataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
-        InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true, 0L, 0);
+        InvoicingMessage message = buildMessage(InvoicingMessageEnum.invoice.name(), "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true, 0L, 0);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status", cart(), true, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.payment.name(), "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status", cart(), true, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status");
+        message = buildMessage(InvoicingMessageEnum.invoice.name(),"3", "partyId1", EventType.INVOICE_CREATED, "status");
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "4", "qwe", EventType.INVOICE_CREATED, "status");
+        message = buildMessage(InvoicingMessageEnum.invoice.name(), "4", "qwe", EventType.INVOICE_CREATED, "status");
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false, 0L, 0);
+        message = buildMessage(InvoicingMessageEnum.invoice.name(), "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false, 0L, 0);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.payment.name(), "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.REFUND, "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false, 0L, 2);
+        message = buildMessage(InvoicingMessageEnum.refund.name(), "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false, 0L, 2);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED, "status", cart(), false, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.payment.name(), "5", "partyId2", EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED, "status", cart(), false, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
 

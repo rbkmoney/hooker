@@ -8,22 +8,20 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.model.Refund;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.ErrorUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class InvoicePaymentRefundStatusChangedHandler extends NeedReadInvoiceEventHandler {
+public class InvoicePaymentRefundStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED;
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
 
-    private final InvoicingMessageDao messageDao;
+    public InvoicePaymentRefundStatusChangedMapper(InvoicingMessageDao messageDao) {
+        super(messageDao);
+    }
 
     @Override
     public Filter getFilter() {
@@ -31,15 +29,18 @@ public class InvoicePaymentRefundStatusChangedHandler extends NeedReadInvoiceEve
     }
 
     @Override
-    protected InvoicingMessage getMessage(String invoiceId, InvoiceChange ic) {
-        String paymentId = ic.getInvoicePaymentChange().getId();
-        String refundId = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getId();
-        return messageDao.getRefund(invoiceId, paymentId, refundId);
+    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
+        return InvoicingMessageKey.builder()
+                .invoiceId(invoiceId)
+                .paymentId(ic.getInvoicePaymentChange().getId())
+                .refundId(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getId())
+                .type(InvoicingMessageEnum.refund)
+                .build();
     }
 
     @Override
-    protected String getMessageType() {
-        return REFUND;
+    protected InvoicingMessageEnum getMessageType() {
+        return InvoicingMessageEnum.refund;
     }
 
     @Override

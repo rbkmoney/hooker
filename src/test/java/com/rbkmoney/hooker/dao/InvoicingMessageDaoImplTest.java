@@ -2,9 +2,10 @@ package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -41,16 +42,16 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         if (!messagesCreated) {
             messageDao.saveBatch(Arrays.asList(
-                    buildMessage(AbstractInvoiceEventHandler.INVOICE, "1234", "56678", EventType.INVOICE_CREATED, "status"),
-                    buildMessage(AbstractInvoiceEventHandler.INVOICE, "1235", "56678", EventType.INVOICE_CREATED, "status", cart(), true),
-                    buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1236", "56678", EventType.INVOICE_CREATED, "status", cart(), false)));
+                    buildMessage(InvoicingMessageEnum.invoice.name(), "1234", "56678", EventType.INVOICE_CREATED, "status"),
+                    buildMessage(InvoicingMessageEnum.invoice.name(), "1235", "56678", EventType.INVOICE_CREATED, "status", cart(), true),
+                    buildMessage(InvoicingMessageEnum.payment.name(), "1236", "56678", EventType.INVOICE_CREATED, "status", cart(), false)));
             messagesCreated = true;
         }
     }
 
     @Test
     public void get() throws Exception {
-        InvoicingMessage message = messageDao.getInvoice("1235");
+        InvoicingMessage message = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1235").type(InvoicingMessageEnum.invoice).build());
         assertEquals(message.getInvoice().getAmount(), 12235);
         assertEquals(message.getInvoice().getCart().size(), 2);
 
@@ -58,19 +59,19 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
         assertEquals(1, messages.size());
         assertFalse(messages.get(0).getInvoice().getCart().isEmpty());
 
-        InvoicingMessage payment = messageDao.getPayment("1236", "123");
+        InvoicingMessage payment = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1236").paymentId("123").type(InvoicingMessageEnum.invoice).build());
         assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);
     }
 
     @Test
     public void testDuplication(){
-        InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1234", "56678", EventType.INVOICE_CREATED, "status");
+        InvoicingMessage message = buildMessage(InvoicingMessageEnum.invoice.name(), "1234", "56678", EventType.INVOICE_CREATED, "status");
         assertTrue(messageDao.saveBatch(Collections.singletonList(message)).isEmpty());
     }
 
     @Ignore
     @Test(expected = NotFoundException.class)
     public void testNotFound(){
-        messageDao.getRefund("kek", "lol", "kk");
+        messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("kek").paymentId("lol").refundId("kk").build());
     }
 }

@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.EventInfo;
 import com.rbkmoney.hooker.model.EventType;
 import lombok.RequiredArgsConstructor;
 
@@ -16,22 +17,21 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
     protected final CustomerDaoImpl customerDao;
 
     @Override
-    protected CustomerMessage saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
+    protected void saveEvent(CustomerChange cc, EventInfo eventInfo) throws DaoException {
         //getAny any saved message for related invoice
-        CustomerMessage message = getCustomerMessage(sourceId);
+        CustomerMessage message = getCustomerMessage(eventInfo.getSourceId());
         if (message == null) {
-            throw new DaoException("CustomerMessage for customer with id " + sourceId + " not exist");
+            throw new DaoException("CustomerMessage for customer with id " + eventInfo.getSourceId() + " not exist");
         }
         message.setEventType(getEventType());
         message.setType(getMessageType());
-        message.setEventId(eventId);
-        message.setOccuredAt(eventCreatedAt);
-        message.setSequenceId(sequenceId);
-        message.setChangeId(changeId);
+        message.setEventId(eventInfo.getEventId());
+        message.setOccuredAt(eventInfo.getEventCreatedAt());
+        message.setSequenceId(eventInfo.getSequenceId());
+        message.setChangeId(eventInfo.getChangeId());
         modifyMessage(cc, message);
 
         customerDao.create(message);
-        return message;
     }
 
     protected CustomerMessage getCustomerMessage(String customerId) {

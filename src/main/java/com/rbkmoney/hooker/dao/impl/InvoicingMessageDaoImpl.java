@@ -9,6 +9,7 @@ import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.FilterUtils;
+import com.rbkmoney.hooker.utils.KeyUtils;
 import com.rbkmoney.hooker.utils.PayerTypeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +19,11 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.*;
-import static com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler.*;
 
 @Slf4j
 @Component
@@ -34,7 +32,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    private final Cache<String, InvoicingMessage> invoicingCache;
+    private final Cache<InvoicingMessageKey, InvoicingMessage> invoicingCache;
 
     private final InvoicingCartDao invoicingCartDao;
 
@@ -91,7 +89,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
 
     private int[] saveBatchMessages(List<InvoicingMessage> messages) {
         try {
-            messages.forEach(m -> invoicingCache.put(key(m), m));
+            messages.forEach(m -> invoicingCache.put(KeyUtils.key(m), m));
             final String sql = "INSERT INTO hook.message" +
                     "(id, new_event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
                     "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
@@ -144,7 +142,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                             .addValue(PAYMENT_FAILURE, payment.getError() != null ? ErrorUtils.toStringFailure(payment.getError()) : null)
                             .addValue(PAYMENT_FAILURE_REASON, payment.getError() != null ? payment.getError().getMessage() : null)
                             .addValue(PAYMENT_AMOUNT, payment.getAmount())
-                            .addValue(PAYMENT_AMOUNT, payment.getFee())
+                            .addValue(PAYMENT_FEE, payment.getFee())
                             .addValue(PAYMENT_CURRENCY, payment.getCurrency())
                             .addValue(PAYMENT_CONTENT_TYPE, payment.getMetadata().getType())
                             .addValue(PAYMENT_CONTENT_DATA, payment.getMetadata().getData())
@@ -191,20 +189,20 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
         invoicingCartDao.saveBatch(carts);
     }
 
-    private InvoicingMessage getAny(String invoiceId, String paymentId, String refundId, String type) throws NotFoundException, DaoException {
-        String key = key(invoiceId, paymentId, refundId);
+    @Override
+    public InvoicingMessage getInvoicingMessage(InvoicingMessageKey key) throws NotFoundException, DaoException {
         InvoicingMessage result = invoicingCache.getIfPresent(key);
         if (result != null) {
-            return result.copy();
+            return result;
         }
         final String sql = "SELECT * FROM hook.message WHERE invoice_id =:invoice_id" +
                 " AND (payment_id IS NULL OR payment_id=:payment_id)" +
                 " AND (refund_id IS NULL OR refund_id=:refund_id)" +
                 " AND type =:type ORDER BY id DESC LIMIT 1";
-        MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, invoiceId)
-                .addValue(PAYMENT_ID, paymentId)
-                .addValue(REFUND_ID, refundId)
-                .addValue(TYPE, type);
+        MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, key.getInvoiceId())
+                .addValue(PAYMENT_ID, key.getPaymentId())
+                .addValue(REFUND_ID, key.getRefundId())
+                .addValue(TYPE, key.getType().name());
         try {
             result = jdbcTemplate.queryForObject(sql, params, messageRowMapper);
             List<InvoiceCartPosition> cart = invoicingCartDao.getByMessageId(result.getId());
@@ -212,23 +210,11 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                 result.getInvoice().setCart(cart);
             }
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException(String.format("InvoicingMessage not found with invoiceId=%s, paymentId=%s, refundId=%s, type=%s!",
-                    invoiceId, paymentId, refundId, type));
+            throw new NotFoundException(String.format("InvoicingMessage not found %s!", key.toString()));
         } catch (NestedRuntimeException e) {
-            throw new DaoException(String.format("InvoicingMessage error with invoiceId=%s, paymentId=%s, refundId=%s, type=%s",
-                    invoiceId, paymentId, refundId, type), e);
+            throw new DaoException(String.format("InvoicingMessage error %s", key.toString()), e);
         }
         return result;
-    }
-
-    private String key(String... keys) {
-        return Stream.of(keys).filter(Objects::nonNull).collect(Collectors.joining("_"));
-    }
-
-    private String key(InvoicingMessage message) {
-        return key(message.getInvoice().getId(),
-                message.getPayment() != null ? message.getPayment().getId() : null,
-                message.getRefund() != null ? message.getRefund().getId() : null);
     }
 
     @Override
@@ -247,20 +233,5 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't get invoice message by ids: " + messageIds, e);
         }
-    }
-
-    @Override
-    public InvoicingMessage getInvoice(String invoiceId) throws NotFoundException, DaoException {
-        return getAny(invoiceId, null, null, INVOICE);
-    }
-
-    @Override
-    public InvoicingMessage getPayment(String invoiceId, String paymentId) throws NotFoundException, DaoException {
-        return getAny(invoiceId, paymentId, null, PAYMENT);
-    }
-
-    @Override
-    public InvoicingMessage getRefund(String invoiceId, String paymentId, String refundId) throws NotFoundException, DaoException {
-        return getAny(invoiceId, paymentId, refundId, REFUND);
     }
 }

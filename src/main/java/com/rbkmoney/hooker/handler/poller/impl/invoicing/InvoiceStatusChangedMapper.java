@@ -9,18 +9,20 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import lombok.RequiredArgsConstructor;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
+public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_STATUS_CHANGED;
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
 
-    private final InvoicingMessageDao messageDao;
+    public InvoiceStatusChangedMapper(InvoicingMessageDao messageDao) {
+        super(messageDao);
+    }
 
     @Override
     public Filter getFilter() {
@@ -28,13 +30,16 @@ public class InvoiceStatusChangedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected InvoicingMessage getMessage(String invoiceId, InvoiceChange ic) {
-        return messageDao.getInvoice(invoiceId);
+    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
+        return InvoicingMessageKey.builder()
+                .invoiceId(invoiceId)
+                .type(InvoicingMessageEnum.invoice)
+                .build();
     }
 
     @Override
-    protected String getMessageType() {
-        return INVOICE;
+    protected InvoicingMessageEnum getMessageType() {
+        return InvoicingMessageEnum.invoice;
     }
 
     @Override

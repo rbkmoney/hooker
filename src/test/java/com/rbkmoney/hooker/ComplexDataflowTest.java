@@ -2,10 +2,10 @@ package com.rbkmoney.hooker;
 
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
 import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import lombok.extern.slf4j.Slf4j;
@@ -79,16 +79,16 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
-        InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid", null, true, 0L, 0);
+        InvoicingMessage message = buildMessage(InvoicingMessageEnum.invoice.name(),"1", "partyId1", EventType.INVOICE_STATUS_CHANGED, "unpaid", null, true, 0L, 0);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured", null, true, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.payment.name(),"1", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "captured", null, true, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed", null, true, 0L, 0);
+        message = buildMessage(InvoicingMessageEnum.payment.name(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "processed", null, true, 0L, 0);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed", null, true, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.payment.name(), "2", "partyId1", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "failed", null, true, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
 

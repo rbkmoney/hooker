@@ -2,7 +2,6 @@ package com.rbkmoney.hooker.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.swag_webhook_events.model.Customer;
 import com.rbkmoney.swag_webhook_events.model.DigitalWalletDetails;
@@ -17,7 +16,7 @@ import org.junit.Test;
 public class MessageJsonTest {
     @Test
     public void test() throws JsonProcessingException {
-        InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled");
+        InvoicingMessage message = BuildUtils.buildMessage(InvoicingMessageEnum.payment.name(), "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled");
         String json = InvoicingMessageJson.buildMessageJson(message);
         System.out.println(json);
         Assert.assertTrue(json.contains("\"kek\":\"lol\""));
@@ -25,7 +24,7 @@ public class MessageJsonTest {
 
     @Test
     public void testCart() throws JsonProcessingException {
-        InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), true);
+        InvoicingMessage message = BuildUtils.buildMessage(InvoicingMessageEnum.payment.name(), "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), true);
         String messageJson = InvoicingMessageJson.buildMessageJson(message);
         System.out.println(messageJson);
         Assert.assertTrue(messageJson.contains("taxMode"));
@@ -33,7 +32,7 @@ public class MessageJsonTest {
 
     @Test
     public void testInvoiceCustomer() throws JsonProcessingException {
-        InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), false);
+        InvoicingMessage message = BuildUtils.buildMessage(InvoicingMessageEnum.payment.name(), "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), false);
         String messageJson = InvoicingMessageJson.buildMessageJson(message);
         System.out.println(messageJson);
         Assert.assertTrue(messageJson.contains("CustomerPayer"));
