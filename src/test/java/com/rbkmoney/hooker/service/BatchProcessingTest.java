@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.handler.poller;
+package com.rbkmoney.hooker.service;
 
 import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.damsel.domain.*;
@@ -37,12 +37,11 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
     @Autowired
     private InvoicingTaskDao taskDao;
 
-
     @Autowired
     private InvoicingQueueDao invoicingQueueDao;
 
     @Test
-    public void buildEvent() {
+    public void testBatchProcess() {
         LinkedHashMap<InvoicingMessageKey, InvoicingMessage> storage = new LinkedHashMap<>();
         List<InvoicingMessage> messages = new ArrayList<>();
 
@@ -69,6 +68,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         assertEquals("PaymentResourcePayer", paymentStarted.getPayment().getPayer().getPayerType().getValue());
         assertEquals(InvoicingMessageEnum.PAYMENT.value(), paymentStarted.getType());
         assertEquals("partyId", paymentStarted.getPartyId());
+        assertNotEquals(invoiceCreated.getChangeId(), paymentStarted.getChangeId());
         storage.put(KeyUtils.key(paymentStarted), paymentStarted);
         messages.add(paymentStarted);
 
@@ -84,6 +84,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         assertNotNull(statusChanged);
         assertEquals("partyId", statusChanged.getPartyId());
         assertEquals("processed", statusChanged.getPayment().getStatus());
+        assertNotEquals(statusChanged.getPayment().getStatus(), paymentStarted.getPayment().getStatus());
         storage.put(KeyUtils.key(statusChanged), statusChanged);
         messages.add(statusChanged);
 
@@ -101,15 +102,23 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
 
         batchService.process(messages);
         //
-        InvoicingMessage invoicingMessage = messageDao.getInvoicingMessage(KeyUtils.key(invoiceCreated));
-        assertNotNull(invoicingMessage);
-        assertNotNull(invoicingMessage.getId());
-        assertNotNull(invoicingMessage.getEventId());
-        assertNotNull(messageDao.getInvoicingMessage(KeyUtils.key(statusChanged)));
-        assertNotNull(messageDao.getInvoicingMessage(KeyUtils.key(paymentStarted)));
+        InvoicingMessage invoiceCreatedFromDB = messageDao.getInvoicingMessage(KeyUtils.key(invoiceCreated));
+        assertNotNull(invoiceCreatedFromDB);
+        assertNotNull(invoiceCreatedFromDB.getId());
+        assertNotNull(invoiceCreatedFromDB.getEventId());
+        InvoicingMessage lastStateOfPayment = messageDao.getInvoicingMessage(KeyUtils.key(statusChanged));
+        assertNotNull(lastStateOfPayment);
+        assertNotEquals(lastStateOfPayment.getId(), invoiceCreatedFromDB.getId());
+        InvoicingMessage theSameLastStateOfPayment = messageDao.getInvoicingMessage(KeyUtils.key(paymentStarted));
+        assertNotNull(theSameLastStateOfPayment);
+        Long messageId = theSameLastStateOfPayment.getId();
+        assertEquals(messageId, lastStateOfPayment.getId());
+
+        assertNotEquals(messageDao.getBy(Collections.singletonList(messageId - 1)).get(0).getPayment().getStatus(),
+                messageDao.getBy(Collections.singletonList(messageId)).get(0).getPayment().getStatus());
 
         assertTrue(taskDao.getScheduled(Collections.EMPTY_LIST).isEmpty());
-        assertTrue(invoicingQueueDao.getWithPolicies(Collections.singletonList(invoicingMessage.getId())).isEmpty());
+        assertTrue(invoicingQueueDao.getWithPolicies(Collections.singletonList(invoiceCreatedFromDB.getId())).isEmpty());
 
     }
 
