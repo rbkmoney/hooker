@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 
 public class FilterUtils {
     public static<T> List<T> filter(int[] batchResult, List<T> messages) {
-        return IntStream.range(0, batchResult.length - 1)
+        return IntStream.range(0, batchResult.length)
                 .filter(i -> batchResult[i] != 0)
                 .mapToObj(messages::get)
                 .collect(Collectors.toList());

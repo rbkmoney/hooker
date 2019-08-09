@@ -84,7 +84,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
     public List<InvoicingMessage> saveBatch(List<InvoicingMessage> messages) throws DaoException {
         int[] batchMessagesResult = saveBatchMessages(messages);
         log.info("Batch messages saved info {}",
-                IntStream.range(0, messages.size() - 1)
+                IntStream.range(0, messages.size())
                         .mapToObj(i -> "(" + i + " : " + batchMessagesResult[i] + " : " + messages.get(i).getId() + " : " + messages.get(i).getInvoice().getId() + ")")
                         .collect(Collectors.toList()));
         List<InvoicingMessage> filteredMessages = FilterUtils.filter(batchMessagesResult, messages);
@@ -196,7 +196,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
         });
         int[] batchResult = invoicingCartDao.saveBatch(carts);
         log.info("Batch carts saved info {}",
-                IntStream.range(0, carts.size() - 1)
+                IntStream.range(0, carts.size())
                         .mapToObj(i -> "(" + i + " : " + batchResult[i] + " : " + carts.get(i).getMessageId() + ")")
                         .collect(Collectors.toList()));
     }
