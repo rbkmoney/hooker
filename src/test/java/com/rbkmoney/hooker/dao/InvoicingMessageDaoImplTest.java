@@ -66,8 +66,8 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void testDuplication(){
-        InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status");
-        assertTrue(messageDao.saveBatch(Collections.singletonList(message)).isEmpty());
+        InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status", cart(), true);
+        assertTrue(messageDao.saveBatch(Arrays.asList(message, message)).isEmpty());
     }
 
     @Ignore

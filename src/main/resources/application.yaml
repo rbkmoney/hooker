@@ -8,7 +8,7 @@ spring:
 
 kafka:
   bootstrap-servers: kenny-kafka1.bst1.rbkmoney.net:9092
-  client-id: newway
+  client-id: hooker
   ssl:
     enabled: false
     trust-store-location: "test"

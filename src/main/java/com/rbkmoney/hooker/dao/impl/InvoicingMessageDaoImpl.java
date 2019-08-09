@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.*;
 
@@ -81,8 +82,12 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
     }
 
     public List<InvoicingMessage> saveBatch(List<InvoicingMessage> messages) throws DaoException {
-        int[] batchResult = saveBatchMessages(messages);
-        List<InvoicingMessage> filteredMessages = FilterUtils.filter(batchResult, messages);
+        int[] batchMessagesResult = saveBatchMessages(messages);
+        log.info("Batch messages saved info {}",
+                IntStream.range(0, messages.size() - 1)
+                        .mapToObj(i -> "(" + i + " : " + batchMessagesResult[i] + " : " + messages.get(i).getId() + " : " + messages.get(i).getInvoice().getId() + ")")
+                        .collect(Collectors.toList()));
+        List<InvoicingMessage> filteredMessages = FilterUtils.filter(batchMessagesResult, messages);
         saveBatchCart(filteredMessages);
         return filteredMessages;
     }
@@ -189,7 +194,11 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                 carts.addAll(cart);
             }
         });
-        invoicingCartDao.saveBatch(carts);
+        int[] batchResult = invoicingCartDao.saveBatch(carts);
+        log.info("Batch carts saved info {}",
+                IntStream.range(0, carts.size() - 1)
+                        .mapToObj(i -> "(" + i + " : " + batchResult[i] + " : " + carts.get(i).getMessageId() + ")")
+                        .collect(Collectors.toList()));
     }
 
     @Override

@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface InvoicingCartDao {
     List<InvoiceCartPosition> getByMessageId(Long messageId) throws DaoException;
-    void saveBatch(List<InvoiceCartPosition> carts) throws DaoException;
+    int[] saveBatch(List<InvoiceCartPosition> carts) throws DaoException;
 }

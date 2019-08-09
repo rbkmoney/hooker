@@ -1,18 +1,16 @@
 package com.rbkmoney.hooker.utils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class FilterUtils {
     public static<T> List<T> filter(int[] batchResult, List<T> messages) {
-        List<T> result = new ArrayList<>();
-        for (int i = 0; i < batchResult.length; i++) {
-            if (batchResult[i] != 0) {
-                result.add(messages.get(i));
-            }
-        }
-        return result;
+        return IntStream.range(0, batchResult.length - 1)
+                .filter(i -> batchResult[i] != 0)
+                .mapToObj(messages::get)
+                .collect(Collectors.toList());
     }
 
     public static int[] filter(int[] batchResult) {

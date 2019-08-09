@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +33,7 @@ public class InvoicingCartDaoImpl implements InvoicingCartDao {
     }
 
     @Override
-    public void saveBatch(List<InvoiceCartPosition> carts) throws DaoException {
+    public int[] saveBatch(List<InvoiceCartPosition> carts) throws DaoException {
         try {
             final String sql = "INSERT INTO hook.cart_position(message_id, product, price, quantity, cost, rate) " +
                     "VALUES (:message_id, :product, :price, :quantity, :cost, :rate) ";
@@ -48,9 +49,10 @@ public class InvoicingCartDaoImpl implements InvoicingCartDao {
                             .addValue("rate", cartPosition.getTaxMode() == null ? null : cartPosition.getTaxMode().getRate()))
                     .toArray(MapSqlParameterSource[]::new);
 
-            jdbcTemplate.batchUpdate(sql, sqlParameterSources);
+            return jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Couldn't save carts", e);
+            List<Long> messageIds = carts.stream().map(InvoiceCartPosition::getMessageId).collect(Collectors.toList());
+            throw new DaoException("Couldn't save carts with messageIds: " + messageIds, e);
         }
     }
 }
