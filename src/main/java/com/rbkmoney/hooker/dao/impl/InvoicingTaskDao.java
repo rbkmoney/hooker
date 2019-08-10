@@ -2,8 +2,6 @@ package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.AbstractTaskDao;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.utils.FilterUtils;
-import lombok.RequiredArgsConstructor;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
@@ -11,8 +9,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
-import java.util.Arrays;
 import java.util.List;
 
 /**

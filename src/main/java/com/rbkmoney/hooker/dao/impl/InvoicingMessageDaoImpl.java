@@ -8,7 +8,6 @@ import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.ErrorUtils;
-import com.rbkmoney.hooker.utils.FilterUtils;
 import com.rbkmoney.hooker.utils.KeyUtils;
 import com.rbkmoney.hooker.utils.PayerTypeUtils;
 import lombok.RequiredArgsConstructor;
@@ -81,15 +80,13 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                 .addValue(REFUND_REASON, null);
     }
 
-    public List<InvoicingMessage> saveBatch(List<InvoicingMessage> messages) throws DaoException {
+    public void saveBatch(List<InvoicingMessage> messages) throws DaoException {
         int[] batchMessagesResult = saveBatchMessages(messages);
         log.info("Batch messages saved info {}",
                 IntStream.range(0, messages.size())
                         .mapToObj(i -> "(" + i + " : " + batchMessagesResult[i] + " : " + messages.get(i).getId() + " : " + messages.get(i).getInvoice().getId() + ")")
                         .collect(Collectors.toList()));
-        List<InvoicingMessage> filteredMessages = FilterUtils.filter(batchMessagesResult, messages);
-        saveBatchCart(filteredMessages);
-        return filteredMessages;
+        saveBatchCart(messages);
     }
 
     private int[] saveBatchMessages(List<InvoicingMessage> messages) {

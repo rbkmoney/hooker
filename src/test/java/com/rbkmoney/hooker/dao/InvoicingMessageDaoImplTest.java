@@ -64,12 +64,6 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
         assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);
     }
 
-    @Test
-    public void testDuplication(){
-        InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, "status", cart(), true);
-        assertTrue(messageDao.saveBatch(Arrays.asList(message, message)).isEmpty());
-    }
-
     @Ignore
     @Test(expected = NotFoundException.class)
     public void testNotFound(){
