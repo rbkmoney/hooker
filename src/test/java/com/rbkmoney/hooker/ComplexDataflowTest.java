@@ -25,7 +25,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import static com.rbkmoney.hooker.utils.BuildUtils.buildBatchMessages;
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

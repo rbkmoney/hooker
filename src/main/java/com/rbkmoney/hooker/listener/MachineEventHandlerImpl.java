@@ -31,7 +31,7 @@ public class MachineEventHandlerImpl implements MachineEventHandler {
     @Transactional
     public void handle(List<MachineEvent> machineEvents, Acknowledgment ack) {
         List<InvoicingMessage> messages = new ArrayList<>();
-        LinkedHashMap<InvoicingMessageKey, InvoicingMessage> localCache = new LinkedHashMap<>();
+        Map<InvoicingMessageKey, InvoicingMessage> localCache = new HashMap<>();
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
             if (payload.isSetInvoiceChanges()) {

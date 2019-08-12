@@ -7,6 +7,7 @@ import com.rbkmoney.damsel.domain.InvoicePayment;
 import com.rbkmoney.damsel.domain.InvoicePaymentPending;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
@@ -14,6 +15,7 @@ import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventMap
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.hooker.service.HandlerManager;
+import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.hooker.utils.KeyUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
@@ -40,8 +42,15 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
     @Autowired
     private InvoicingQueueDao invoicingQueueDao;
 
+    @Autowired
+    private HookDao hookDao;
+
     @Test
     public void testBatchProcess() {
+
+        hookDao.create(BuildUtils.buildHook("partyId", "www.kek.ru", EventType.INVOICE_CREATED));
+
+
         LinkedHashMap<InvoicingMessageKey, InvoicingMessage> storage = new LinkedHashMap<>();
         List<InvoicingMessage> messages = new ArrayList<>();
 
@@ -117,9 +126,12 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         assertNotEquals(messageDao.getBy(Collections.singletonList(messageId - 1)).get(0).getPayment().getStatus(),
                 messageDao.getBy(Collections.singletonList(messageId)).get(0).getPayment().getStatus());
 
-        assertTrue(taskDao.getScheduled(Collections.EMPTY_LIST).isEmpty());
-        assertTrue(invoicingQueueDao.getWithPolicies(Collections.singletonList(invoiceCreatedFromDB.getId())).isEmpty());
+        assertEquals(1, taskDao.getScheduled(Collections.EMPTY_LIST).size());
+        assertEquals(1, invoicingQueueDao.getWithPolicies(Collections.singletonList(1L)).size());
 
+        //test duplication
+        batchService.process(messages);
+        assertEquals(1, invoicingQueueDao.getWithPolicies(Collections.singletonList(1L)).size());
     }
 
     private InvoiceChange getInvoicePaymentStarted() {

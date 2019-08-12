@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.utils;
 
+import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
@@ -7,9 +8,7 @@ import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.swag_webhook_events.model.*;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -158,9 +157,20 @@ public class BuildUtils {
         return customerMessage;
     }
 
-    public static LinkedHashMap<InvoicingMessageKey, InvoicingMessage> buildBatchMessages(InvoicingMessage... messages) {
-        LinkedHashMap<InvoicingMessageKey, InvoicingMessage> map = new LinkedHashMap<>();
-        Stream.of(messages).forEach(m -> map.put(KeyUtils.key(m), m));
-        return map;
+    public static Hook buildHook(String partyId, String url, EventType... types) {
+        Hook hook = new Hook();
+        hook.setPartyId(partyId);
+        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
+        hook.setUrl(url);
+
+        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
+        for (EventType type : types) {
+            webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(type).build());
+        }
+        hook.setFilters(webhookAdditionalFilters);
+
+        return hook;
     }
+
+
 }

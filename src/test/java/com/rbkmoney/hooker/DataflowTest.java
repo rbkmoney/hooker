@@ -65,9 +65,9 @@ public class DataflowTest extends AbstractIntegrationTest {
             baseServerUrl = webserver(dispatcher());
             log.info("Mock server url: " + baseServerUrl);
 
-            hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
-            hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
-            hooks.add(hookDao.create(hook("partyId2", "http://" + baseServerUrl + HOOK_3, EventType.INVOICE_PAYMENT_STATUS_CHANGED, EventType.INVOICE_PAYMENT_REFUND_STARTED)));
+            hooks.add(hookDao.create(buildHook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
+            hooks.add(hookDao.create(buildHook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
+            hooks.add(hookDao.create(buildHook("partyId2", "http://" + baseServerUrl + HOOK_3, EventType.INVOICE_PAYMENT_STATUS_CHANGED, EventType.INVOICE_PAYMENT_REFUND_STARTED)));
         }
     }
 
@@ -134,21 +134,6 @@ public class DataflowTest extends AbstractIntegrationTest {
         assertTrue(inv4Queue.isEmpty());
         assertTrue(inv5Queue.isEmpty());
 
-    }
-
-    private static Hook hook(String partyId, String url, EventType... types) {
-        Hook hook = new Hook();
-        hook.setPartyId(partyId);
-        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
-        hook.setUrl(url);
-
-        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        for (EventType type : types) {
-            webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(type).build());
-        }
-        hook.setFilters(webhookAdditionalFilters);
-
-        return hook;
     }
 
     private Dispatcher dispatcher() {
