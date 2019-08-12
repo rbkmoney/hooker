@@ -174,17 +174,10 @@ public class HookDaoImpl implements HookDao {
     }
 
     @Override
-    @Transactional
     public void delete(long id) throws DaoException {
         final String sql =
-                " DELETE FROM hook.scheduled_task st USING hook.invoicing_queue q WHERE st.queue_id = q.id AND q.hook_id=:id;" +
-                " DELETE FROM hook.scheduled_task st USING hook.customer_queue q  WHERE st.queue_id = q.id AND q.hook_id=:id;" +
-                " DELETE FROM hook.simple_retry_policy srp USING hook.invoicing_queue q WHERE srp.queue_id = q.id AND q.hook_id=:id;" +
-                " DELETE FROM hook.simple_retry_policy srp USING hook.customer_queue q  WHERE srp.queue_id = q.id AND q.hook_id=:id;" +
-                " DELETE FROM hook.invoicing_queue where hook_id=:id;" +
-                " DELETE FROM hook.customer_queue where hook_id=:id;" +
-                " DELETE FROM hook.webhook_to_events where hook_id=:id;" +
-                " DELETE FROM hook.webhook where id=:id; ";
+                " DELETE FROM hook.scheduled_task st USING hook.invoicing_queue q WHERE st.queue_id = q.id AND q.hook_id=:id; " +
+                " UPDATE hook.webhook SET enabled = FALSE where id=:id;";
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (NestedRuntimeException e) {

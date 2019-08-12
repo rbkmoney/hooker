@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -36,14 +35,16 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
     BatchService batchService;
 
     @Test
-    public void setUp() {
+    public void testDelete() {
         Long hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
         Long hookId2 = hookDao.create(HookDaoImplTest.buildHook("partyId2", "fake2.url")).getId();
         batchService.process(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(),"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
-        assertEquals(queueDao.getWithPolicies(taskDao.getScheduled(new ArrayList<>()).keySet()).size(), 1);
+        assertEquals(queueDao.getWithPolicies(taskDao.getScheduled(Collections.EMPTY_LIST).keySet()).size(), 1);
         hookDao.delete(hookId2);
-        assertNotEquals(queueDao.getWithPolicies(taskDao.getScheduled(new ArrayList<>()).keySet()).size(), 0);
+        assertNotEquals(queueDao.getWithPolicies(taskDao.getScheduled(Collections.EMPTY_LIST).keySet()).size(), 0);
         hookDao.delete(hookId);
-        assertEquals(taskDao.getScheduled(new ArrayList<>()).keySet().size(), 0);
+        assertTrue(taskDao.getScheduled(Collections.EMPTY_LIST).keySet().isEmpty());
+        assertFalse(hookDao.getHookById(hookId).isEnabled());
+        assertFalse(hookDao.getHookById(hookId2).isEnabled());
     }
 }
