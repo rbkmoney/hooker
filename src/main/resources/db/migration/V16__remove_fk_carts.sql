@@ -1,0 +1,1 @@
+alter table hook.cart_position drop constraint if exists fk_cart_to_message;
