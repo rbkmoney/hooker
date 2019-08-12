@@ -1,6 +1,7 @@
 package com.rbkmoney.hooker.listener;
 
-import com.rbkmoney.hooker.utils.LogUtils;
+
+import com.rbkmoney.kafka.common.util.LogUtil;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,6 @@ public class KafkaMachineEventListener {
     public void listen(List<ConsumerRecord<String, SinkEvent>> messages, Acknowledgment ack) {
         log.info("Got machineEvent batch with size: {}", messages.size());
         machineEventHandler.handle(messages.stream().map(m -> m.value().getEvent()).collect(Collectors.toList()), ack);
-        log.info("Batch has been committed, size={}, {}", messages.size(), LogUtils.toSummaryStringWithValues(messages));
+        log.info("Batch has been committed, size={}, {}", messages.size(), LogUtil.toSummaryStringWithSinkEventValues(messages));
     }
 }
