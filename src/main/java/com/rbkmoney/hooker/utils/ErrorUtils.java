@@ -17,11 +17,7 @@ public class ErrorUtils {
             Failure failure = operationFailure.getFailure();
             PaymentError paymentError = new PaymentError();
             paymentError.setCode(failure.getCode());
-            if (failure.isSetReason()) {
-                paymentError.setMessage(failure.getReason());
-            } else {
-                paymentError.setMessage("Unknown error");
-            }
+            paymentError.setMessage(failure.getCode());
             if (failure.isSetSub()) {
                 SubFailure sub = failure.getSub();
                 paymentError.setSubError(getSubError(sub));
