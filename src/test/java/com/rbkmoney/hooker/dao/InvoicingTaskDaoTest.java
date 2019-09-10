@@ -64,7 +64,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void createDeleteGet() {
         queueDao.saveBatchWithPolicies(Collections.singletonList(messageId));
-        taskDao.saveBatch(Collections.singletonList(messageId));
+        taskDao.save(Collections.singletonList(messageId));
         Map<Long, List<Task>> scheduled = taskDao.getScheduled(new ArrayList<>());
         assertEquals(1, scheduled.size());
         taskDao.remove(scheduled.keySet().iterator().next(), messageId);

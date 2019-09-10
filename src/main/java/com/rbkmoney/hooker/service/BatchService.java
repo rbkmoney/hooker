@@ -35,8 +35,8 @@ public class BatchService {
         List<Long> messageIds = messages.stream().map(Message::getId).collect(Collectors.toList());
         int[] queueBatchResult = invoicingQueueDao.saveBatchWithPolicies(messageIds);
         log.info("Queue batch size={}", queueBatchResult.length);
-        int[] taskBatchResult = invoicingTaskDao.saveBatch(messageIds);
-        log.info("Task batch size={}", taskBatchResult.length);
+        int taskInsertResult = invoicingTaskDao.save(messageIds);
+        log.info("Task insert size={}", taskInsertResult);
         log.info("End processing of batch");
     }
 }
