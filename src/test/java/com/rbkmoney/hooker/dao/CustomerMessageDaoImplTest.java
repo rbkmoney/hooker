@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
+
 import static com.rbkmoney.hooker.utils.BuildUtils.buildCustomerMessage;
 import static org.junit.Assert.assertEquals;
 
@@ -34,9 +36,21 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         if(!messagesCreated){
-            messageDao.create(buildCustomerMessage(1L,"1234", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "124", "4356", Customer.StatusEnum.READY));
+            CustomerMessage message = buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "124", "4356", Customer.StatusEnum.READY);
+            message.setSequenceId(1L);
+            message.setChangeId(1);
+            messageDao.create(message);
             messagesCreated = true;
         }
+    }
+
+    @Test
+    public void testDuplication() {
+        CustomerMessage message = buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "124", "4356", Customer.StatusEnum.READY);
+        message.setSequenceId(1L);
+        message.setChangeId(1);
+        messageDao.create(message);
+        assertEquals(1, messageDao.getBy(Arrays.asList(1L, 2L, 3L, 4L, 5L, 6L, 7L)).size());
     }
 
     @Test

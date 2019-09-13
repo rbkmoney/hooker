@@ -163,6 +163,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 ":binding_payment_card_bin, :binding_payment_card_last_digits, :binding_payment_card_number_mask, :binding_payment_card_token_provider, :binding_payment_card_system, :binding_payment_terminal_provider, " +
                 ":binding_payment_digital_wallet_provider, :binding_payment_digital_wallet_id, :binding_payment_crypto_currency, " +
                 ":binding_client_ip, :binding_client_fingerprint, CAST(:binding_status as hook.customer_binding_status), :binding_error_code, :binding_error_message) " +
+                "ON CONFLICT (customer_id, sequence_id, change_id) DO NOTHING " +
                 "RETURNING id";
         Customer customer = message.getCustomer();
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -201,10 +202,13 @@ public class CustomerDaoImpl implements CustomerDao {
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(sql, params, keyHolder);
-            message.setId(keyHolder.getKey().longValue());
-            log.info("CustomerMessage {} saved to db.", message);
-            queueDao.createWithPolicy(message.getId());
-            taskDao.create(message.getId());
+            Number holderKey = keyHolder.getKey();
+            if (holderKey != null) {
+                message.setId(holderKey.longValue());
+                log.info("CustomerMessage {} saved to db.", message);
+                queueDao.createWithPolicy(message.getId());
+                taskDao.create(message.getId());
+            }
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't create customerMessage with customerId " + customer.getId(), e);
         }
