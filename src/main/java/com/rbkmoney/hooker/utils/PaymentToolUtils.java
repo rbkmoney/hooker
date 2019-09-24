@@ -181,6 +181,10 @@ public class PaymentToolUtils {
         } else if (paymentTool.isSetCryptoCurrency()) {
             rootNode.put("type", "crypto_currency");
             rootNode.put("crypto_currency", paymentTool.getCryptoCurrency().name());
+        } else if (paymentTool.isSetMobileCommerce()) {
+            rootNode.put("type", "mobile_commerce");
+            MobilePhone mobilePhone = paymentTool.getMobileCommerce().getPhone();
+            rootNode.put("mobile_commerce", mobilePhone.getCc() + mobilePhone.getCtn());
         } else {
             throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
