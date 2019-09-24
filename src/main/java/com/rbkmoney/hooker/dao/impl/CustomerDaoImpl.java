@@ -155,7 +155,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 "(event_id, occured_at, sequence_id, change_id, type, party_id, event_type, " +
                 "customer_id, customer_shop_id, customer_status, customer_email , customer_phone, customer_metadata, " +
                 "binding_id, binding_payment_tool_token, binding_payment_session, binding_payment_tool_details_type, " +
-                "binding_payment_card_bin, binding_payment_card_last_digits, binding_payment_card_number_mask, binding_payment_card_token_provider, binding_payment_card_system, BINDING_PAYMENT_TOOL_DETAILS_TYPE, " +
+                "binding_payment_card_bin, binding_payment_card_last_digits, binding_payment_card_number_mask, binding_payment_card_token_provider, binding_payment_card_system, binding_payment_terminal_provider, " +
                 "binding_payment_digital_wallet_provider, binding_payment_digital_wallet_id, binding_payment_crypto_currency, " +
                 "binding_payment_mobile_commerce_phone_number, " +
                 "binding_client_ip, binding_client_fingerprint, binding_status, binding_error_code, binding_error_message) " +
