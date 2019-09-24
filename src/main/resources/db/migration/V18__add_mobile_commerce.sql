@@ -1,2 +1,2 @@
 ALTER TABLE hook.message ADD COLUMN payment_mobile_commerce_phone_number character varying;
-ALTER TABLE hook.customer_message ADD COLUMN payment_mobile_commerce_phone_number character varying;
+ALTER TABLE hook.customer_message ADD COLUMN binding_payment_mobile_commerce_phone_number character varying;
