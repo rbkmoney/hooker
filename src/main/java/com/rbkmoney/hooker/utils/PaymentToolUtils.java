@@ -35,6 +35,7 @@ public class PaymentToolUtils {
         String digitalWalletType = null;
         String digitalWalletId = null;
         String cryptoWalletCurrency = null;
+        String phoneNumber = null;
         if (paymentTool.isSetBankCard()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD.getValue();
             bin = paymentTool.getBankCard().getBin();
@@ -54,13 +55,17 @@ public class PaymentToolUtils {
         } else if (paymentTool.isSetCryptoCurrency()) {
             detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET.getValue();
             cryptoWalletCurrency = paymentTool.getCryptoCurrency().name();
+        } else if (paymentTool.isSetMobileCommerce()) {
+            detailsType = PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSMOBILECOMMERCE.getValue();
+            MobilePhone phone = paymentTool.getMobileCommerce().getPhone();
+            phoneNumber = phone.getCc() + phone.getCtn();
         } else {
             throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
-        return getPaymentToolDetails(detailsType, bin, lastDigits, cardNumberMask, tokenProvider, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId, cryptoWalletCurrency);
+        return getPaymentToolDetails(detailsType, bin, lastDigits, cardNumberMask, tokenProvider, paymentSystem, terminalProvider, digitalWalletType, digitalWalletId, cryptoWalletCurrency, phoneNumber);
     }
 
-    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String lastDigits, String cardNumberMask, String tokenProvider, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId, String cryptoWalletCurrency) {
+    public static PaymentToolDetails getPaymentToolDetails(String sDetailsType, String bin, String lastDigits, String cardNumberMask, String tokenProvider, String paymentSystem, String providerTerminal, String digitalWalletProvider, String digitalWalletId, String cryptoWalletCurrency, String phoneNumber) {
         PaymentToolDetails.DetailsTypeEnum detailsType = PaymentToolDetails.DetailsTypeEnum.fromValue(sDetailsType);
         PaymentToolDetails paymentToolDetails;
         switch (detailsType) {
@@ -95,6 +100,9 @@ public class PaymentToolUtils {
             case PAYMENTTOOLDETAILSCRYPTOWALLET:
                 paymentToolDetails = new PaymentToolDetailsCryptoWallet().cryptoCurrency(CryptoCurrency.fromValue(cryptoWalletCurrency));
                 break;
+            case PAYMENTTOOLDETAILSMOBILECOMMERCE:
+                paymentToolDetails = new PaymentToolDetailsMobileCommerce().phoneNumber(phoneNumber);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+ Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));
         }
@@ -104,7 +112,8 @@ public class PaymentToolUtils {
 
     public static void setPaymentToolDetailsParam(MapSqlParameterSource params, PaymentToolDetails paymentToolDetails,
                                             String detailsTypeParamName, String binParamName, String lastDigitsParamName, String cardNumberMaskParamName, String tokenProviderParamName, String paymentSystemParamName, String terminalProviderParamName,
-                                                  String digitalWalletProviderParamName, String digitalWalletIdParamName, String cryptoWalletCurrencyParamName) {
+                                                  String digitalWalletProviderParamName, String digitalWalletIdParamName, String cryptoWalletCurrencyParamName,
+                                                  String mobileCommercePhoneNumberParamName) {
         PaymentToolDetails.DetailsTypeEnum detailsType = paymentToolDetails.getDetailsType();
         params.addValue(detailsTypeParamName, detailsType.getValue());
         switch (detailsType) {
@@ -140,6 +149,10 @@ public class PaymentToolUtils {
             case PAYMENTTOOLDETAILSCRYPTOWALLET:
                 PaymentToolDetailsCryptoWallet paymentToolDetailsCryptoWallet = (PaymentToolDetailsCryptoWallet) paymentToolDetails;
                 params.addValue(cryptoWalletCurrencyParamName, paymentToolDetailsCryptoWallet.getCryptoCurrency().getValue());
+                break;
+            case PAYMENTTOOLDETAILSMOBILECOMMERCE:
+                PaymentToolDetailsMobileCommerce paymentToolDetailsMobileCommerce = (PaymentToolDetailsMobileCommerce) paymentToolDetails;
+                params.addValue(mobileCommercePhoneNumberParamName, paymentToolDetailsMobileCommerce.getPhoneNumber());
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown detailsType "+detailsType+"; must be one of these: "+Arrays.toString(PaymentToolDetails.DetailsTypeEnum.values()));

@@ -70,6 +70,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                 .addValue(PAYMENT_DIGITAL_WALLET_PROVIDER, null)
                 .addValue(PAYMENT_DIGITAL_WALLET_ID, null)
                 .addValue(PAYMENT_CRYPTO_CURRENCY, null)
+                .addValue(PAYMENT_MOBILE_COMMERCE_PHONE_NUMBER, null)
                 .addValue(REFUND_ID, null)
                 .addValue(REFUND_CREATED_AT, null)
                 .addValue(REFUND_STATUS, null)
@@ -100,7 +101,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                     "payment_id, payment_created_at, payment_status, payment_failure, payment_failure_reason, payment_amount, " +
                     "payment_currency, payment_content_type, payment_content_data, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
                     "payment_customer_id, payment_payer_type, payment_recurrent_parent_invoice_id, payment_recurrent_parent_payment_id, payment_tool_details_type, payment_card_bin, payment_card_last_digits, payment_card_number_mask, payment_card_token_provider, payment_system, payment_terminal_provider, " +
-                    "payment_digital_wallet_provider, payment_digital_wallet_id, payment_crypto_currency, payment_fee, " +
+                    "payment_digital_wallet_provider, payment_digital_wallet_id, payment_crypto_currency, payment_mobile_commerce_phone_number, payment_fee, " +
                     "refund_id, refund_created_at, refund_status, refund_failure, refund_failure_reason, refund_amount, refund_currency, refund_reason) " +
                     "VALUES " +
                     "(:id, :new_event_id, :event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
@@ -109,7 +110,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                     ":payment_id, :payment_created_at, :payment_status, :payment_failure, :payment_failure_reason, :payment_amount, " +
                     ":payment_currency, :payment_content_type, :payment_content_data, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
                     ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), :payment_recurrent_parent_invoice_id, :payment_recurrent_parent_payment_id, CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
-                    ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, :payment_crypto_currency, :payment_fee, " +
+                    ":payment_card_bin, :payment_card_last_digits, :payment_card_number_mask, :payment_card_token_provider, :payment_system, :payment_terminal_provider, :payment_digital_wallet_provider, :payment_digital_wallet_id, :payment_crypto_currency, :payment_mobile_commerce_phone_number, :payment_fee, " +
                     ":refund_id, :refund_created_at, :refund_status, :refund_failure, :refund_failure_reason, :refund_amount, :refund_currency, :refund_reason) " +
                     "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING ";
 

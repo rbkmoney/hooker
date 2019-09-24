@@ -68,6 +68,7 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
     public static final String PAYMENT_DIGITAL_WALLET_PROVIDER = "payment_digital_wallet_provider";
     public static final String PAYMENT_DIGITAL_WALLET_ID = "payment_digital_wallet_id";
     public static final String PAYMENT_CRYPTO_CURRENCY = "payment_crypto_currency";
+    public static final String PAYMENT_MOBILE_COMMERCE_PHONE_NUMBER = "payment_mobile_commerce_phone_number";
     public static final String REFUND_ID = "refund_id";
     public static final String REFUND_CREATED_AT = "refund_created_at";
     public static final String REFUND_STATUS = "refund_status";

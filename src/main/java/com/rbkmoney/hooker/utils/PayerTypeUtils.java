@@ -32,7 +32,8 @@ public class PayerTypeUtils {
 
                 PaymentToolUtils.setPaymentToolDetailsParam(params, payer.getPaymentToolDetails(),
                         PAYMENT_TOOL_DETAILS_TYPE, PAYMENT_CARD_BIN, PAYMENT_CARD_LAST_DIGITS, PAYMENT_CARD_NUMBER_MASK, PAYMENT_CARD_TOKEN_PROVIDER, PAYMENT_SYSTEM, PAYMENT_TERMINAL_PROVIDER,
-                        PAYMENT_DIGITAL_WALLET_PROVIDER, PAYMENT_DIGITAL_WALLET_ID, PAYMENT_CRYPTO_CURRENCY);
+                        PAYMENT_DIGITAL_WALLET_PROVIDER, PAYMENT_DIGITAL_WALLET_ID, PAYMENT_CRYPTO_CURRENCY,
+                        PAYMENT_MOBILE_COMMERCE_PHONE_NUMBER);
                 break;
             case RECURRENTPAYER:
                 RecurrentPayer recurrentPayer = (RecurrentPayer) payment.getPayer();
@@ -63,7 +64,7 @@ public class PayerTypeUtils {
 
                 payer.setPaymentToolDetails(getPaymentToolDetails(rs.getString(PAYMENT_TOOL_DETAILS_TYPE), rs.getString(PAYMENT_CARD_BIN),
                         rs.getString(PAYMENT_CARD_LAST_DIGITS), rs.getString(PAYMENT_CARD_NUMBER_MASK), rs.getString(PAYMENT_CARD_TOKEN_PROVIDER), rs.getString(PAYMENT_SYSTEM), rs.getString(PAYMENT_TERMINAL_PROVIDER),
-                        rs.getString(PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(PAYMENT_DIGITAL_WALLET_ID), rs.getString(PAYMENT_CRYPTO_CURRENCY)));
+                        rs.getString(PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(PAYMENT_DIGITAL_WALLET_ID), rs.getString(PAYMENT_CRYPTO_CURRENCY), rs.getString(PAYMENT_MOBILE_COMMERCE_PHONE_NUMBER)));
                 payment.setPayer(payer);
                 break;
             case RECURRENTPAYER:

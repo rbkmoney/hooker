@@ -63,6 +63,7 @@ public class CustomerDaoImpl implements CustomerDao {
     public static final String BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER = "binding_payment_digital_wallet_provider";
     public static final String BINDING_PAYMENT_DIGITAL_WALLET_ID = "binding_payment_digital_wallet_id";
     public static final String BINDING_PAYMENT_CRYPTO_CURRENCY = "binding_payment_crypto_currency";
+    public static final String BINDING_PAYMENT_MOBILE_COMMERCE_PHONE_NUMBER = "binding_payment_mobile_commerce_phone_number";
     public static final String BINDING_CLIENT_IP = "binding_client_ip";
     public static final String BINDING_CLIENT_FINGERPRINT = "binding_client_fingerprint";
     public static final String BINDING_STATUS = "binding_status";
@@ -84,6 +85,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 .addValue(BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER, null)
                 .addValue(BINDING_PAYMENT_DIGITAL_WALLET_ID, null)
                 .addValue(BINDING_PAYMENT_CRYPTO_CURRENCY, null)
+                .addValue(BINDING_PAYMENT_MOBILE_COMMERCE_PHONE_NUMBER, null)
                 .addValue(BINDING_CLIENT_IP, null)
                 .addValue(BINDING_CLIENT_FINGERPRINT, null)
                 .addValue(BINDING_STATUS, null)
@@ -127,7 +129,7 @@ public class CustomerDaoImpl implements CustomerDao {
 
             paymentResource.setPaymentToolDetails(getPaymentToolDetails(rs.getString(BINDING_PAYMENT_TOOL_DETAILS_TYPE), rs.getString(BINDING_PAYMENT_CARD_BIN),
                     rs.getString(BINDING_PAYMENT_CARD_LAST_DIGITS), rs.getString(BINDING_PAYMENT_CARD_NUMBER_MASK), rs.getString(BINDING_PAYMENT_CARD_TOKEN_PROVIDER), rs.getString(BINDING_PAYMENT_CARD_SYSTEM), rs.getString(BINDING_PAYMENT_TERMINAL_PROVIDER),
-                    rs.getString(BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(BINDING_PAYMENT_DIGITAL_WALLET_ID), rs.getString(BINDING_PAYMENT_CRYPTO_CURRENCY)));
+                    rs.getString(BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER), rs.getString(BINDING_PAYMENT_DIGITAL_WALLET_ID), rs.getString(BINDING_PAYMENT_CRYPTO_CURRENCY), rs.getString(BINDING_PAYMENT_MOBILE_COMMERCE_PHONE_NUMBER)));
         }
         return message;
     };
@@ -153,8 +155,9 @@ public class CustomerDaoImpl implements CustomerDao {
                 "(event_id, occured_at, sequence_id, change_id, type, party_id, event_type, " +
                 "customer_id, customer_shop_id, customer_status, customer_email , customer_phone, customer_metadata, " +
                 "binding_id, binding_payment_tool_token, binding_payment_session, binding_payment_tool_details_type, " +
-                "binding_payment_card_bin, binding_payment_card_last_digits, binding_payment_card_number_mask, binding_payment_card_token_provider, binding_payment_card_system, binding_payment_terminal_provider, " +
+                "binding_payment_card_bin, binding_payment_card_last_digits, binding_payment_card_number_mask, binding_payment_card_token_provider, binding_payment_card_system, BINDING_PAYMENT_TOOL_DETAILS_TYPE, " +
                 "binding_payment_digital_wallet_provider, binding_payment_digital_wallet_id, binding_payment_crypto_currency, " +
+                "binding_payment_mobile_commerce_phone_number, " +
                 "binding_client_ip, binding_client_fingerprint, binding_status, binding_error_code, binding_error_message) " +
                 "VALUES " +
                 "(:event_id, :occured_at, :sequence_id, :change_id, CAST(:type as hook.customer_message_type), :party_id, CAST(:event_type as hook.eventtype), " +
@@ -162,6 +165,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 ":binding_id, :binding_payment_tool_token, :binding_payment_session, CAST(:binding_payment_tool_details_type as hook.payment_tool_details_type), " +
                 ":binding_payment_card_bin, :binding_payment_card_last_digits, :binding_payment_card_number_mask, :binding_payment_card_token_provider, :binding_payment_card_system, :binding_payment_terminal_provider, " +
                 ":binding_payment_digital_wallet_provider, :binding_payment_digital_wallet_id, :binding_payment_crypto_currency, " +
+                ":binding_payment_mobile_commerce_phone_number, " +
                 ":binding_client_ip, :binding_client_fingerprint, CAST(:binding_status as hook.customer_binding_status), :binding_error_code, :binding_error_message) " +
                 "ON CONFLICT (customer_id, sequence_id, change_id) DO NOTHING " +
                 "RETURNING id";
@@ -197,7 +201,7 @@ public class CustomerDaoImpl implements CustomerDao {
 
             PaymentToolUtils.setPaymentToolDetailsParam(params, paymentResource.getPaymentToolDetails(),
                     BINDING_PAYMENT_TOOL_DETAILS_TYPE, BINDING_PAYMENT_CARD_BIN, BINDING_PAYMENT_CARD_LAST_DIGITS, BINDING_PAYMENT_CARD_NUMBER_MASK, BINDING_PAYMENT_CARD_TOKEN_PROVIDER, BINDING_PAYMENT_CARD_SYSTEM, BINDING_PAYMENT_TERMINAL_PROVIDER,
-                    BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER, BINDING_PAYMENT_DIGITAL_WALLET_ID, BINDING_PAYMENT_CRYPTO_CURRENCY);
+                    BINDING_PAYMENT_DIGITAL_WALLET_PROVIDER, BINDING_PAYMENT_DIGITAL_WALLET_ID, BINDING_PAYMENT_CRYPTO_CURRENCY, BINDING_PAYMENT_MOBILE_COMMERCE_PHONE_NUMBER);
         }
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();

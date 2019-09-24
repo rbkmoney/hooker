@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsCryptoWallet;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsMobileCommerce;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -25,11 +26,11 @@ public class PaymentToolUtilsTest {
 
     @Test
     public void testGetPaymentToolDetails1() {
-        PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails("PaymentToolDetailsBankCard", "4242424242424242", "4242", "424242*******4242", "applepay", "visa", "qiwi", "digitalWalletProvider", "digitalWalletId", "bitcoin");
+        PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails("PaymentToolDetailsBankCard", "4242424242424242", "4242", "424242*******4242", "applepay", "visa", "qiwi", "digitalWalletProvider", "digitalWalletId", "bitcoin", "79152345115");
         assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD, paymentToolDetails.getDetailsType());
         assertEquals("visa", ((PaymentToolDetailsBankCard) paymentToolDetails).getPaymentSystem());
 
-        paymentToolDetails = PaymentToolUtils.getPaymentToolDetails("PaymentToolDetailsCryptoWallet", "4242424242424242", "4242", "424242*******4242", "applepay", "visa", "qiwi", "digitalWalletProvider", "digitalWalletId", "bitcoin");
+        paymentToolDetails = PaymentToolUtils.getPaymentToolDetails("PaymentToolDetailsCryptoWallet", "4242424242424242", "4242", "424242*******4242", "applepay", "visa", "qiwi", "digitalWalletProvider", "digitalWalletId", "bitcoin", "79152345115");
         assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET, paymentToolDetails.getDetailsType());
         assertEquals("bitcoin", ((PaymentToolDetailsCryptoWallet) paymentToolDetails).getCryptoCurrency().getValue());
     }
@@ -41,9 +42,21 @@ public class PaymentToolUtilsTest {
         paymentToolDetails.setDetailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET);
         PaymentToolUtils.setPaymentToolDetailsParam(params, paymentToolDetails,
                 "detailsTypeParamName", "binParamName", "lastDigitsParamName", "cardNumberMaskParamName", "tokenProviderParamName",
-                "paymentSystemParamName", "terminalProviderParamName", "digitalWalletProviderParamName", "digitalWalletIdParamName", "cryptoWalletCurrencyParamName");
+                "paymentSystemParamName", "terminalProviderParamName", "digitalWalletProviderParamName", "digitalWalletIdParamName", "cryptoWalletCurrencyParamName", "mobileCommercePhoneNumberParamName");
         assertEquals("PaymentToolDetailsCryptoWallet", params.getValue("detailsTypeParamName"));
         assertEquals("bitcoin", params.getValue("cryptoWalletCurrencyParamName"));
+    }
+
+    @Test
+    public void testSetPaymentToolDetailsMobileCommerce() {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        PaymentToolDetails paymentToolDetails = new PaymentToolDetailsMobileCommerce().phoneNumber("7915");
+        paymentToolDetails.setDetailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSMOBILECOMMERCE);
+        PaymentToolUtils.setPaymentToolDetailsParam(params, paymentToolDetails,
+                "detailsTypeParamName", "binParamName", "lastDigitsParamName", "cardNumberMaskParamName", "tokenProviderParamName",
+                "paymentSystemParamName", "terminalProviderParamName", "digitalWalletProviderParamName", "digitalWalletIdParamName", "cryptoWalletCurrencyParamName", "mobileCommercePhoneNumberParamName");
+        assertEquals("PaymentToolDetailsMobileCommerce", params.getValue("detailsTypeParamName"));
+        assertEquals("7915", params.getValue("mobileCommercePhoneNumberParamName"));
     }
 
     @Test
