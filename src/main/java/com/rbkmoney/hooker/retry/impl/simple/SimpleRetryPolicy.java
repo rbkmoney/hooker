@@ -28,7 +28,9 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
     public void updateFailed(SimpleRetryPolicyRecord record) {
         record.setFailCount(record.getFailCount() + 1);
         record.setLastFailTime(System.currentTimeMillis());
-        record.setNextFireTime(record.getLastFailTime() + (delays[record.getFailCount() - 1] * 1000));
+        if (record.getFailCount() <= delays.length) {
+            record.setNextFireTime(record.getLastFailTime() + (delays[record.getFailCount() - 1] * 1000));
+        }
     }
 
     @Override
