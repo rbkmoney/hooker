@@ -69,7 +69,7 @@ public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
     @Override
     public List<InvoicingQueue> getWithPolicies(Collection<Long> ids) {
         final String sql =
-                " select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time, srp.message_type " +
+                " select q.id, q.hook_id, q.invoice_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time, srp.next_fire_time_ms, srp.message_type " +
                         " from hook.invoicing_queue q " +
                         " join hook.webhook wh on wh.id = q.hook_id and wh.enabled and wh.topic=CAST(:message_type as hook.message_topic)" +
                         " join hook.party_key k on k.party_id = wh.party_id " +

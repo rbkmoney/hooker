@@ -30,12 +30,6 @@ public class RetryPoliciesService {
         }
     }
 
-    public List<Queue> filter(Collection<? extends Queue> queues) {
-        return queues.stream().
-                filter(q -> getRetryPolicyByType(q.getHook().getRetryPolicyType()).isActive(q.getRetryPolicyRecord()))
-                .collect(Collectors.toList());
-    }
-
     public void update(RetryPolicyRecord record) {
         if (RetryPolicyType.SIMPLE.equals(record.getType())) {
             simpleRetryPolicyDao.update((SimpleRetryPolicyRecord) record);

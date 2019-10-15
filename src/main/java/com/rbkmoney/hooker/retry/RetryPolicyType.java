@@ -25,6 +25,7 @@ public enum RetryPolicyType {
             record.setMessageType(rs.getString("message_type"));
             record.setFailCount(rs.getInt("fail_count"));
             record.setLastFailTime(rs.getLong("last_fail_time"));
+            record.setNextFireTime(rs.getLong("next_fire_time_ms"));
             return record;
         }
 

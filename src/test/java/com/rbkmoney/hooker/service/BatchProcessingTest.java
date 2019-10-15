@@ -126,7 +126,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         assertNotEquals(messageDao.getBy(Collections.singletonList(messageId - 1)).get(0).getPayment().getStatus(),
                 messageDao.getBy(Collections.singletonList(messageId)).get(0).getPayment().getStatus());
 
-        assertEquals(1, taskDao.getScheduled(Collections.EMPTY_LIST).size());
+        assertEquals(1, taskDao.getScheduled().size());
         assertEquals(1, invoicingQueueDao.getWithPolicies(Collections.singletonList(1L)).size());
 
         //test duplication

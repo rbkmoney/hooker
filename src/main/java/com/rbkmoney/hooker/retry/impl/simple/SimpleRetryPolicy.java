@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.retry.impl.simple;
 
-import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.retry.RetryPolicy;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +13,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
 
-    private final SimpleRetryPolicyDao simpleRetryPolicyDao;
-
     private long[] delays = {30, 300, 900, 3600,
             3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600,
             3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600,
@@ -28,23 +25,14 @@ public class SimpleRetryPolicy implements RetryPolicy<SimpleRetryPolicyRecord> {
     }
 
     @Override
-    public boolean isFail(SimpleRetryPolicyRecord rp) {
-        rp.setFailCount(rp.getFailCount() + 1);
-        rp.setLastFailTime(System.currentTimeMillis());
-        simpleRetryPolicyDao.update(rp);
-
-        return rp.getFailCount() > delays.length;
+    public void updateFailed(SimpleRetryPolicyRecord record) {
+        record.setFailCount(record.getFailCount() + 1);
+        record.setLastFailTime(System.currentTimeMillis());
+        record.setNextFireTime(record.getLastFailTime() + (delays[record.getFailCount() - 1] * 1000));
     }
 
     @Override
-    public boolean isActive(SimpleRetryPolicyRecord rp) {
-        if (rp.getFailCount() == 0) {
-            return true;
-        } else if (rp.getFailCount() <= delays.length
-                && System.currentTimeMillis() > (rp.getLastFailTime() + (delays[rp.getFailCount()-1] * 1000))) {
-            return true;
-        }
-
-        return false;
+    public boolean shouldDisable(SimpleRetryPolicyRecord rp) {
+        return rp.getFailCount() > delays.length;
     }
 }

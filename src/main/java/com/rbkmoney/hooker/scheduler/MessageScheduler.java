@@ -8,6 +8,7 @@ import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
+import com.rbkmoney.hooker.retry.RetryPolicy;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
@@ -40,7 +41,6 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     @Autowired
     private TransactionTemplate transactionTemplate;
 
-    private final Set<Long> processedQueues = Collections.synchronizedSet(new HashSet<>());
     private ExecutorService executorService;
 
 
@@ -60,23 +60,18 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     }
 
     private void processLoop() {
-        final List<Long> currentlyProcessedQueues = new ArrayList<>(processedQueues);
 
-        log.debug("currentlyProcessedQueues {}", processedQueues);
-
-        final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedQueues);
+        final Map<Long, List<Task>> scheduledTasks = getScheduledTasks();
 
         log.debug("scheduledTasks {}", scheduledTasks);
 
         if (scheduledTasks.entrySet().isEmpty()) {
             return;
         }
-        final Map<Long, Queue> healthyQueues = loadQueues(scheduledTasks.keySet())
+        final Map<Long, Q> healthyQueues = loadQueues(scheduledTasks.keySet())
                 .stream().collect(Collectors.toMap(Queue::getId, v -> v));
 
         log.debug("healthyQueues {}", healthyQueues);
-
-        processedQueues.addAll(healthyQueues.keySet());
 
         final Set<Long> messageIdsToSend = getMessageIdsFilteredByQueues(scheduledTasks, healthyQueues.keySet());
 
@@ -112,7 +107,6 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
                         MessageSender.QueueStatus queueStatus = status.get();
                         try {
                             Queue queue = queueStatus.getQueue();
-                            processedQueues.remove(queue.getId());
                             queueStatus.getMessagesDone().forEach(id -> taskDao.remove(queue.getId(), id));
                             if (queueStatus.isSuccess()) {
                                 done(queue);
@@ -136,7 +130,6 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
     protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue, Signer signer, PostSender postSender);
 
-    //worker should invoke this method when it is done with scheduled messages for hookId
     private void done(Queue queue) {
         //reset fail count for hook
         if (queue.getRetryPolicyRecord().isFailed()) {
@@ -146,25 +139,27 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         }
     }
 
-    //worker should invoke this method when it is fail to send message to hookId
     private void fail(Queue queue) {
         log.warn("Queue {} failed.", queue.getId());
-        if (retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType())
-                .isFail(queue.getRetryPolicyRecord())) {
+        RetryPolicy retryPolicy = retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType());
+        RetryPolicyRecord retryPolicyRecord = queue.getRetryPolicyRecord();
+        retryPolicy.updateFailed(retryPolicyRecord);
+        retryPoliciesService.update(retryPolicyRecord);
+        if (retryPolicy.shouldDisable(retryPolicyRecord)) {
             queueDao.disable(queue.getId());
             taskDao.removeAll(queue.getId());
             log.warn("Queue {} was disabled according to retry policy.", queue.getId());
         }
     }
 
-    private Map<Long, List<Task>> getScheduledTasks(Collection<Long> excludeQueueIds) {
-        return taskDao.getScheduled(excludeQueueIds);
+    private Map<Long, List<Task>> getScheduledTasks() {
+        return taskDao.getScheduled();
     }
 
-    private List<Queue> loadQueues(Collection<Long> queueIds) {
-        List<? extends Queue> queuesWaitingMessages = queueDao.getWithPolicies(queueIds);
+    private List<Q> loadQueues(Collection<Long> queueIds) {
+        List<Q> queuesWaitingMessages = queueDao.getWithPolicies(queueIds);
         log.debug("queuesWaitingMessages {}", queuesWaitingMessages.stream().map(Queue::getId).collect(Collectors.toList()));
-        return retryPoliciesService.filter(queuesWaitingMessages);
+        return queuesWaitingMessages;
     }
 
     private Set<Long> getMessageIdsFilteredByQueues(Map<Long, List<Task>> scheduledTasks, Collection<Long> queueIds) {

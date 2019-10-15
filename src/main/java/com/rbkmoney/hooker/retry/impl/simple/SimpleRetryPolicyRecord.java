@@ -17,10 +17,11 @@ import lombok.Setter;
 public class SimpleRetryPolicyRecord extends RetryPolicyRecord {
     public static RetryPolicyType type = RetryPolicyType.SIMPLE;
 
-    long queueId;
-    String messageType;
-    int failCount;
-    long lastFailTime;
+    private Long queueId;
+    private String messageType;
+    private Integer failCount;
+    private Long lastFailTime;
+    private Long nextFireTime;
 
     @Override
     public boolean isFailed() {
@@ -30,6 +31,8 @@ public class SimpleRetryPolicyRecord extends RetryPolicyRecord {
     @Override
     public void reset() {
         failCount = 0;
+        lastFailTime = null;
+        nextFireTime = null;
     }
 
     @Override

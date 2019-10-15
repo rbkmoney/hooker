@@ -4,8 +4,7 @@ package com.rbkmoney.hooker.retry;
  * Created by jeckep on 17.04.17.
  */
 public interface RetryPolicy<T> {
-    boolean isFail(T record);
-    //returns false if we should wait timeout to send message to this hook
-    boolean isActive(T record);
+    boolean shouldDisable(T record);
     RetryPolicyType getType();
+    void updateFailed(T record);
 }

@@ -65,10 +65,10 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     public void createDeleteGet() {
         queueDao.saveBatchWithPolicies(Collections.singletonList(messageId));
         taskDao.save(Collections.singletonList(messageId));
-        Map<Long, List<Task>> scheduled = taskDao.getScheduled(new ArrayList<>());
+        Map<Long, List<Task>> scheduled = taskDao.getScheduled();
         assertEquals(1, scheduled.size());
         taskDao.remove(scheduled.keySet().iterator().next(), messageId);
-        assertEquals(0, taskDao.getScheduled(new ArrayList<>()).size());
+        assertEquals(0, taskDao.getScheduled().size());
     }
 
     @Test
@@ -79,7 +79,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
         Set<Long> scheduledOne = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
-            scheduledOne.addAll(taskDao.getScheduled(new ArrayList<>()).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
+            scheduledOne.addAll(taskDao.getScheduled().values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
             System.out.println("scheduledOne: " + scheduledOne);
             try {
                 Thread.sleep(500);
@@ -97,7 +97,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
         Set<Long> scheduledTwo = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
-            scheduledTwo.addAll(taskDao.getScheduled(new ArrayList<>()).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
+            scheduledTwo.addAll(taskDao.getScheduled().values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
             System.out.println("scheduledTwo :" + scheduledTwo);
             return 1;
         })).start();

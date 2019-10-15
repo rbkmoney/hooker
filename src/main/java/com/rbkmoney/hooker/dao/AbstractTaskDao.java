@@ -56,18 +56,19 @@ public abstract class AbstractTaskDao implements TaskDao {
     }
 
     @Override
-    // TODO think about limit
-    public Map<Long, List<Task>> getScheduled(Collection<Long> excludeQueueIds) throws DaoException {
-        final String sql =
-                " SELECT st.message_id, st.queue_id FROM hook.scheduled_task st WHERE message_type=CAST(:message_type as hook.message_topic)" +
-                        (excludeQueueIds.size() > 0 ? " AND st.queue_id not in (:queue_ids)" : "") +
-                        " ORDER BY message_id ASC LIMIT 10000 FOR UPDATE SKIP LOCKED";
+    public Map<Long, List<Task>> getScheduled() throws DaoException {
+        final String sql = "SELECT st.message_id, st.queue_id " +
+                "FROM hook.scheduled_task st " +
+                "JOIN hook.simple_retry_policy srp ON st.queue_id=srp.queue_id " +
+                "AND st.message_type=srp.message_type " +
+                "WHERE st.message_type = CAST(:message_type as hook.message_topic) " +
+                "AND COALESCE(srp.next_fire_time_ms, 0) < :curr_time " +
+                "ORDER BY st.message_id ASC LIMIT 10000 FOR UPDATE SKIP LOCKED";
         try {
-            List<Task> tasks = jdbcTemplate.query(
-                    sql, new MapSqlParameterSource()
-                            .addValue("queue_ids", excludeQueueIds)
-                            .addValue("message_type", getMessageTopic())
-                    , taskRowMapper);
+            List<Task> tasks = jdbcTemplate.query(sql,
+                    new MapSqlParameterSource("message_type", getMessageTopic())
+                    .addValue("curr_time", System.currentTimeMillis()),
+                    taskRowMapper);
             return splitByQueue(tasks);
         } catch (NestedRuntimeException e) {
             log.warn("Fail to get active tasks from scheduled_task", e);
