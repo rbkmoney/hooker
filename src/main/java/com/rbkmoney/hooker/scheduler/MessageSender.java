@@ -29,7 +29,7 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
     }
 
     @Override
-    public MessageSender.QueueStatus call() throws Exception {
+    public MessageSender.QueueStatus call() {
         M currentMessage = null;
         try {
             for (M message : messages) {
