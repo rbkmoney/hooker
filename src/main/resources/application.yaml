@@ -41,6 +41,11 @@ bm.pooling:
   delay: 5000
   maxQuerySize: 500
 
+service:
+  invoicing:
+    url: http://hellgate:8022/v1/processing/invoicing
+    networkTimeout: 5000
+
 cache:
   invoice:
     size: 10000

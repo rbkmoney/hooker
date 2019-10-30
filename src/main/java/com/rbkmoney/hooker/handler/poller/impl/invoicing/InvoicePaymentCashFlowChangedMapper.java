@@ -47,10 +47,7 @@ public class InvoicePaymentCashFlowChangedMapper extends NeedReadInvoiceEventMap
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        Payment payment = message.getPayment();
-        List<FinalCashFlowPosting> cashFlow = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentCashFlowChanged().getCashFlow();
-        Long feeAmount = PaymentToolUtils.getFeeAmount(cashFlow);
-        payment.setFee(feeAmount);
+        message.setPaymentFee(PaymentToolUtils.getFeeAmount(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentCashFlowChanged().getCashFlow()));
     }
 
     @Override

@@ -8,9 +8,9 @@ public class KeyUtils {
 
     public static InvoicingMessageKey key(InvoicingMessage message) {
         return InvoicingMessageKey.builder()
-                .invoiceId(message.getInvoice().getId())
-                .paymentId(message.getPayment() != null ? message.getPayment().getId() : null)
-                .refundId(message.getRefund() != null ? message.getRefund().getId() : null)
+                .invoiceId(message.getInvoiceId())
+                .paymentId(message.getPaymentId())
+                .refundId(message.getRefundId())
                 .type(InvoicingMessageEnum.lookup(message.getType()))
                 .build();
     }

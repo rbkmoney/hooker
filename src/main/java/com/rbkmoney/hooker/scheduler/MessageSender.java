@@ -1,11 +1,14 @@
 package com.rbkmoney.hooker.scheduler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Queue;
+import com.rbkmoney.hooker.service.EventService;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import com.rbkmoney.hooker.service.err.PostRequestException;
+import com.rbkmoney.swag_webhook_events.model.Event;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 
@@ -14,19 +17,15 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 @Slf4j
+@RequiredArgsConstructor
 public abstract class MessageSender<M extends Message> implements Callable<MessageSender.QueueStatus> {
 
-    private MessageSender.QueueStatus queueStatus;
-    private List<M> messages;
-    private Signer signer;
-    private PostSender postSender;
-
-    public MessageSender(MessageSender.QueueStatus queueStatus, List<M> messages, Signer signer, PostSender postSender) {
-        this.queueStatus = queueStatus;
-        this.messages = messages;
-        this.signer = signer;
-        this.postSender = postSender;
-    }
+    private final MessageSender.QueueStatus queueStatus;
+    private final List<M> messages;
+    private final Signer signer;
+    private final PostSender postSender;
+    private final EventService<M> eventService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public MessageSender.QueueStatus call() {
@@ -34,7 +33,8 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
         try {
             for (M message : messages) {
                 currentMessage = message;
-                final String messageJson = getMessageJson(message);
+                Event event = eventService.getByMessage(message);
+                final String messageJson = objectMapper.writeValueAsString(event);
                 final String signature = signer.sign(messageJson, queueStatus.getQueue().getHook().getPrivKey());
                 int statusCode = postSender.doPost(queueStatus.getQueue().getHook().getUrl(), message.getId(), messageJson, signature);
                 if (statusCode != HttpStatus.SC_OK) {
@@ -52,9 +52,6 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
         }
         return queueStatus;
     }
-
-    protected abstract String getMessageJson(M message) throws JsonProcessingException;
-
 
     public static class QueueStatus {
         private Queue queue;

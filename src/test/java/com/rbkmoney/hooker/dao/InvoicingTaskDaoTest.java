@@ -4,10 +4,7 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.InvoicingMessageEnum;
-import com.rbkmoney.hooker.model.InvoicingMessageKey;
-import com.rbkmoney.hooker.model.Task;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -21,7 +18,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static org.junit.Assert.*;
 
 /**
@@ -52,7 +48,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(),"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
+        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
         messageId = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("2345").type(InvoicingMessageEnum.INVOICE).build()).getId();
     }
 
@@ -74,7 +70,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSelectForUpdate() {
         for (int i = 0; i < 20; ++i) {
-            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(), ""+i, "partyId", EventType.INVOICE_CREATED, "status", cart(), true)));
+            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(), ""+i, "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
         }
 
         Set<Long> scheduledOne = new HashSet<>();

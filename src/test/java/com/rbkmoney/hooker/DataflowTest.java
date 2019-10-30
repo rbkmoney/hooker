@@ -6,9 +6,7 @@ import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.service.BatchService;
-import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
-import com.rbkmoney.swag_webhook_events.model.Event;
-import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
+import com.rbkmoney.swag_webhook_events.model.*;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -74,28 +72,28 @@ public class DataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
-        InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true, 0L, 0);
+        InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1", "partyId1", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured, 0L, 0);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status", cart(), true, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.INVOICE.value(),"3", "partyId1", EventType.INVOICE_CREATED, "status");
+        message = buildMessage(InvoicingMessageEnum.INVOICE.value(),"3", "partyId1", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "4", "qwe", EventType.INVOICE_CREATED, "status");
+        message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "4", "qwe", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false, 0L, 0);
+        message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "5", "partyId2", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured,  0L, 0);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.REFUND.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false, 0L, 2);
+        message = buildMessage(InvoicingMessageEnum.REFUND.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured, 0L, 2);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED, "status", cart(), false, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
 
@@ -125,7 +123,7 @@ public class DataflowTest extends AbstractIntegrationTest {
         inv5.add(inv5Queue.poll(1, TimeUnit.SECONDS));
         inv5.add(inv5Queue.poll(1, TimeUnit.SECONDS));
         assertNotNull(inv5.get(0));
-        assertEquals(sourceMessages.get(5).getInvoice().getId(), inv5.get(0).getInvoice().getId());
+        assertEquals(sourceMessages.get(5).getInvoiceId(), inv5.get(0).getInvoice().getId());
         assertTrue(inv5.get(0).getPayment().getPayer() instanceof CustomerPayer);
         assertNotNull(inv5.get(1).getRefund());
 
@@ -240,7 +238,7 @@ public class DataflowTest extends AbstractIntegrationTest {
             this.payment = payment;
         }
 
-        public class Payment extends com.rbkmoney.hooker.model.Payment{
+        public class Payment extends com.rbkmoney.swag_webhook_events.model.Payment{
             private PaymentResourcePayer payer;
 
             @Override
@@ -279,7 +277,7 @@ public class DataflowTest extends AbstractIntegrationTest {
             this.payment = payment;
         }
 
-        public class Payment extends com.rbkmoney.hooker.model.Payment{
+        public class Payment extends com.rbkmoney.swag_webhook_events.model.Payment{
             private CustomerPayer payer;
 
             @Override

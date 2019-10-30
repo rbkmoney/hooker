@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.scheduler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.QueueDao;
@@ -10,6 +11,7 @@ import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
 import com.rbkmoney.hooker.retry.RetryPolicy;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
+import com.rbkmoney.hooker.service.EventService;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,9 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     private TaskDao taskDao;
     private QueueDao<Q> queueDao;
     private MessageDao<M> messageDao;
+    private EventService eventService;
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private RetryPoliciesService retryPoliciesService;
     @Autowired
@@ -43,11 +48,11 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
     private ExecutorService executorService;
 
-
-    public MessageScheduler(TaskDao taskDao, QueueDao<Q> queueDao, MessageDao<M> messageDao, int numberOfWorkers) {
+    public MessageScheduler(TaskDao taskDao, QueueDao<Q> queueDao, MessageDao<M> messageDao, EventService eventService, int numberOfWorkers) {
         this.taskDao = taskDao;
         this.queueDao = queueDao;
         this.messageDao = messageDao;
+        this.eventService = eventService;
         this.executorService = Executors.newFixedThreadPool(numberOfWorkers);
     }
 
@@ -76,7 +81,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         for (Long queueId : queueIds) {
             List<M> messagesForQueue = scheduledTasks.get(queueId).stream().map(t -> messagesMap.get(t.getMessageId())).collect(Collectors.toList());
             MessageSender messageSender = getMessageSender(new MessageSender.QueueStatus(queuesMap.get(queueId)),
-                    messagesForQueue, signer, new PostSender(connectionPoolSize, httpTimeout));
+                    messagesForQueue, signer, new PostSender(connectionPoolSize, httpTimeout), eventService, objectMapper);
             messageSenders.add(messageSender);
         }
 
@@ -109,7 +114,8 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         }
     }
 
-    protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue, Signer signer, PostSender postSender);
+    protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue,
+                                                      Signer signer, PostSender postSender, EventService eventService, ObjectMapper objectMapper);
 
     private void done(Queue queue) {
         if (queue.getRetryPolicyRecord().isFailed()) {

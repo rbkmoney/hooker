@@ -3,7 +3,7 @@ package com.rbkmoney.hooker.listener;
 import com.rbkmoney.eventstock.client.*;
 import com.rbkmoney.eventstock.client.poll.EventFlowFilter;
 import com.rbkmoney.hooker.handler.poller.CustomerEventStockHandler;
-import com.rbkmoney.hooker.service.EventService;
+import com.rbkmoney.hooker.service.CustomerLastEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -17,7 +17,7 @@ public class OnStart implements ApplicationListener<ApplicationReadyEvent> {
 
     private final List<EventPublisher> eventPublishers;
     private final List<CustomerEventStockHandler> customerEventStockHandlers;
-    private final EventService eventService;
+    private final CustomerLastEventService eventService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {

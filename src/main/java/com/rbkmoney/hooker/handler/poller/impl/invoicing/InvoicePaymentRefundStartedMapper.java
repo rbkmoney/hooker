@@ -51,22 +51,19 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getPayload().getInvoicePaymentRefundCreated();
-        Refund refund = new Refund();
-        message.setRefund(refund);
+        InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
+                .getPayload().getInvoicePaymentRefundCreated();
         InvoicePaymentRefund refundOrigin = refundCreated.getRefund();
-        refund.setId(refundOrigin.getId());
-        refund.setCreatedAt(refundOrigin.getCreatedAt());
-        refund.setStatus(refundOrigin.getStatus().getSetField().getFieldName());
+        message.setRefundId(refundOrigin.getId());
+        message.setRefundStatus(RefundStatusEnum.valueOf(refundOrigin.getStatus().getSetField().getFieldName()));
         List<FinalCashFlowPosting> cashFlow = refundCreated.getCashFlow();
         if (refundOrigin.isSetCash()) {
-            refund.setAmount(refundOrigin.getCash().getAmount());
-            refund.setCurrency(refundOrigin.getCash().getCurrency().getSymbolicCode());
+            message.setRefundAmount(refundOrigin.getCash().getAmount());
+            message.setRefundCurrency(refundOrigin.getCash().getCurrency().getSymbolicCode());
         } else {
-            refund.setAmount(getAmount(cashFlow));
-            refund.setCurrency(cashFlow.get(0).getVolume().getCurrency().getSymbolicCode());
+            message.setRefundAmount(getAmount(cashFlow));
+            message.setRefundCurrency(cashFlow.get(0).getVolume().getCurrency().getSymbolicCode());
         }
-        refund.setReason(refundOrigin.getReason());
     }
 
     public static long getAmount(List<FinalCashFlowPosting> finalCashFlow) {

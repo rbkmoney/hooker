@@ -7,10 +7,7 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.model.InvoicingMessageEnum;
-import com.rbkmoney.hooker.model.InvoicingMessageKey;
+import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -49,12 +46,6 @@ public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoiceStatus statusOrigin = ic.getInvoiceStatusChanged().getStatus();
-        message.getInvoice().setStatus(statusOrigin.getSetField().getFieldName());
-        if (statusOrigin.isSetCancelled()) {
-            message.getInvoice().setReason(statusOrigin.getCancelled().getDetails());
-        } else if (statusOrigin.isSetFulfilled()) {
-            message.getInvoice().setReason(statusOrigin.getFulfilled().getDetails());
-        }
+        message.setInvoiceStatus(InvoiceStatusEnum.valueOf(ic.getInvoiceStatusChanged().getStatus().getSetField().getFieldName()));
     }
 }

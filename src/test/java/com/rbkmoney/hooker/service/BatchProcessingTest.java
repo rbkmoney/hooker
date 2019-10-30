@@ -13,8 +13,6 @@ import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventMapper;
 import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.hooker.service.BatchService;
-import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.hooker.utils.KeyUtils;
 import org.jetbrains.annotations.NotNull;
@@ -61,9 +59,8 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         AbstractInvoiceEventMapper invoiceEventMapper = eventMapperOptional.get();
         InvoicingMessage invoiceCreated = invoiceEventMapper.handle(ic, eventInfo, storage);
         assertNotNull(invoiceCreated);
-        assertEquals("invoiceId", invoiceCreated.getInvoice().getId());
+        assertEquals("invoiceId", invoiceCreated.getInvoiceId());
         assertEquals(InvoicingMessageEnum.INVOICE.value(), invoiceCreated.getType());
-        assertEquals(123L, invoiceCreated.getInvoice().getAmount());
         storage.put(KeyUtils.key(invoiceCreated), invoiceCreated);
         messages.add(invoiceCreated);
 
@@ -74,7 +71,6 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         AbstractInvoiceEventMapper invoicePaymentStartedEventMapper = eventMapperPaymentStartedOptional.get();
         InvoicingMessage paymentStarted = invoicePaymentStartedEventMapper.handle(icPaymentStarted, eventInfoPaymentStarted, storage);
         assertNotNull(paymentStarted);
-        assertEquals("PaymentResourcePayer", paymentStarted.getPayment().getPayer().getPayerType().getValue());
         assertEquals(InvoicingMessageEnum.PAYMENT.value(), paymentStarted.getType());
         assertEquals("partyId", paymentStarted.getPartyId());
         assertNotEquals(invoiceCreated.getChangeId(), paymentStarted.getChangeId());
@@ -92,8 +88,8 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         InvoicingMessage statusChanged = invoicePaymentStatusChangedEventMapper.handle(icStatusChanged, eventInfoPaymentStatusChanged, storage);
         assertNotNull(statusChanged);
         assertEquals("partyId", statusChanged.getPartyId());
-        assertEquals("processed", statusChanged.getPayment().getStatus());
-        assertNotEquals(statusChanged.getPayment().getStatus(), paymentStarted.getPayment().getStatus());
+        assertEquals(PaymentStatusEnum.processed, statusChanged.getPaymentStatus());
+        assertNotEquals(statusChanged.getPaymentStatus(), paymentStarted.getPaymentStatus());
         storage.put(KeyUtils.key(statusChanged), statusChanged);
         messages.add(statusChanged);
 
@@ -123,8 +119,8 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         Long messageId = theSameLastStateOfPayment.getId();
         assertEquals(messageId, lastStateOfPayment.getId());
 
-        assertNotEquals(messageDao.getBy(Collections.singletonList(messageId - 1)).get(0).getPayment().getStatus(),
-                messageDao.getBy(Collections.singletonList(messageId)).get(0).getPayment().getStatus());
+        assertNotEquals(messageDao.getBy(Collections.singletonList(messageId - 1)).get(0).getPaymentStatus(),
+                messageDao.getBy(Collections.singletonList(messageId)).get(0).getPaymentStatus());
 
         assertEquals(1, taskDao.getScheduled().size());
         assertEquals(1, invoicingQueueDao.getWithPolicies(Collections.singletonList(1L)).size());

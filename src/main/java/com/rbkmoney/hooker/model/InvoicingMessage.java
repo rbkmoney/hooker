@@ -1,9 +1,6 @@
 package com.rbkmoney.hooker.model;
 
-import com.rbkmoney.swag_webhook_events.model.PaymentError;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.beans.BeanUtils;
 
 
@@ -11,8 +8,8 @@ import org.springframework.beans.BeanUtils;
  * Created by inalarsanukaev on 07.04.17.
  */
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
+@ToString
 public class InvoicingMessage extends Message {
     private Long eventId;
     private Long sequenceId;
@@ -20,10 +17,17 @@ public class InvoicingMessage extends Message {
     private String eventTime;
     private String type;
     private String partyId;
+    private String shopID;
     private EventType eventType;
-    private Invoice invoice;
-    private Payment payment;
-    private Refund refund;
+    private String invoiceId;
+    private InvoiceStatusEnum invoiceStatus;
+    private String paymentId;
+    private PaymentStatusEnum paymentStatus;
+    private Long paymentFee;
+    private String refundId;
+    private RefundStatusEnum refundStatus;
+    private Long refundAmount;
+    private String refundCurrency;
 
     public boolean isInvoice() {
         return InvoicingMessageEnum.INVOICE.equals(InvoicingMessageEnum.lookup(getType()));
@@ -40,37 +44,6 @@ public class InvoicingMessage extends Message {
     public InvoicingMessage copy(){
         InvoicingMessage copied = new InvoicingMessage();
         BeanUtils.copyProperties(this, copied);
-        copied.setInvoice(new Invoice());
-        BeanUtils.copyProperties(this.getInvoice(), copied.getInvoice());
-        if (this.getPayment() != null) {
-            copied.setPayment(new Payment());
-            BeanUtils.copyProperties(this.getPayment(), copied.getPayment());
-            if (this.getPayment().getError() != null) {
-                copied.getPayment().setError(new PaymentError());
-                BeanUtils.copyProperties(this.getPayment().getError(), copied.getPayment().getError());
-            }
-        }
-        if (this.getRefund() != null) {
-            copied.setRefund(new Refund());
-            BeanUtils.copyProperties(this.getRefund(), copied.getRefund());
-            if (this.getRefund().getError() != null) {
-                copied.getRefund().setError(new PaymentError());
-                BeanUtils.copyProperties(this.getRefund().getError(), copied.getRefund().getError());
-            }
-        }
         return copied;
-    }
-
-    @Override
-    public String toString() {
-        return "InvoicingMessage{" +
-                "id=" + getId() +
-                ", eventId=" + eventId +
-                ", eventTime='" + eventTime + '\'' +
-                ", invoiceId=" + invoice.getId() +
-                ", invoiceStatus=" + invoice.getStatus() +
-                (isPayment() ? ", paymentId=" + payment.getId() : "") +
-                (isPayment() ? ", paymentStatus=" + payment.getStatus() : "") +
-                '}';
     }
 }

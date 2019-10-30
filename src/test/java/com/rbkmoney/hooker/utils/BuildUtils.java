@@ -1,15 +1,10 @@
 package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.model.Invoice;
-import com.rbkmoney.hooker.model.Payment;
-import com.rbkmoney.hooker.model.PaymentContactInfo;
-import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.swag_webhook_events.model.*;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Created by jeckep on 25.04.17.
@@ -17,15 +12,11 @@ import java.util.stream.Stream;
 public class BuildUtils {
     private static int messageId = 1;
 
-    public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status) {
-        return buildMessage(type, invoiceId, partyId, eventType, status, null, true);
+    public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, InvoiceStatusEnum invoiceStatus,  PaymentStatusEnum paymentStatus) {
+        return buildMessage(type, invoiceId, partyId, eventType, invoiceStatus, paymentStatus, null, 0);
     }
 
-    public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
-        return buildMessage(type, invoiceId, partyId, eventType, status, cart, isPayer, 0L, 0);
-    }
-
-    public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer, Long sequenceId, Integer changeId) {
+    public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType, InvoiceStatusEnum invoiceStatus,  PaymentStatusEnum paymentStatus, Long sequenceId, Integer changeId) {
         InvoicingMessage message = new InvoicingMessage();
         message.setId((long) messageId++);
         message.setEventId((long) messageId++);
@@ -33,93 +24,24 @@ public class BuildUtils {
         message.setType(type);
         message.setPartyId(partyId);
         message.setEventType(eventType);
-        Invoice invoice = new Invoice();
-        message.setInvoice(invoice);
-        invoice.setId(invoiceId);
-        invoice.setShopID("123");
-        invoice.setCreatedAt("12.12.2008");
-        if (message.isInvoice()) {
-            invoice.setStatus(status);
-        } else {
-            invoice.setStatus("unpaid");
-        }
-        invoice.setDueDate("12.12.2008");
-        invoice.setAmount(12235);
-        invoice.setCurrency("RUB");
-        Content metadata = new Content();
-        metadata.setType("fff");
-        metadata.setData("{\"cms\":\"drupal\",\"cms_version\":\"7.50\",\"module\":\"uc_rbkmoney\",\"order_id\":\"118\"}".getBytes());
-        invoice.setMetadata(metadata);
-        invoice.setProduct("product");
-        invoice.setDescription("description");
-        invoice.setCart(cart);
+        message.setInvoiceId(invoiceId);
+        message.setShopID("123");
+        message.setInvoiceStatus(invoiceStatus);
         if (message.isPayment() || message.isRefund()) {
-            Payment payment = new Payment();
-            message.setPayment(payment);
-            payment.setId("123");
-            payment.setCreatedAt("13.12.20017");
-            payment.setStatus(status);
-            PaymentError paymentError = new PaymentError();
-            paymentError.setCode("code");
-            paymentError.setMessage("mess");
-            SubError subError = new SubError();
-            subError.setCode("sub_code");
-            paymentError.setSubError(subError);
-            payment.setError(paymentError);
-            payment.setAmount(1);
-            payment.setFee(1L);
-            payment.setCurrency("RUB");
-            Content paymentContent = new Content();
-            paymentContent.setType("kek");
-            paymentContent.setData("{\"kek\": \"lol\"}".getBytes());
-            payment.setMetadata(paymentContent);
-            payment.setPaymentToolToken("payment tool token");
-            payment.setPaymentSession("payment session");
-            payment.setContactInfo(new PaymentContactInfo("aaaa@mail.ru", "89037279209"));
-            payment.setIp("127.0.0.1");
-            payment.setFingerprint("fingerbox");
-            if (isPayer) {
-                payment.setPayer(new PaymentResourcePayer()
-                        .paymentToolToken("payment tool token")
-                        .paymentSession("payment session")
-                        .contactInfo(new ContactInfo()
-                                .email("aaaa@mail.ru")
-                                .phoneNumber("89037279269"))
-                        .clientInfo(new ClientInfo()
-                                .ip("127.0.0.1")
-                                .fingerprint("fingerbox"))
-                        .paymentToolDetails(new PaymentToolDetailsBankCard()
-                                .bin("520034")
-                                .lastDigits("1234")
-                                .cardNumberMask("520034******1234")
-                                .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.APPLEPAY)
-                                .paymentSystem("visa")
-                                .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD))
-                        .payerType(Payer.PayerTypeEnum.PAYMENTRESOURCEPAYER));
-            } else { //if customer
-                payment.setPayer(new CustomerPayer().customerID("12345").payerType(Payer.PayerTypeEnum.CUSTOMERPAYER));
-            }
+            message.setPaymentId("123");
+            message.setPaymentStatus(paymentStatus);
+            message.setPaymentFee(1L);
         }
 
         if (message.isRefund()) {
-            Refund refund = new Refund();
-            message.setRefund(refund);
-            refund.setId("123");
-            refund.setAmount(115L);
-            refund.setCurrency("RUB");
-            refund.setStatus("status");
-            refund.setReason("kek");
+            message.setRefundId("123");
+            message.setRefundAmount(115L);
+            message.setRefundCurrency("RUB");
+            message.setRefundStatus(RefundStatusEnum.succeeded);
         }
         message.setSequenceId(sequenceId);
         message.setChangeId(changeId);
         return message;
-    }
-
-    public static ArrayList<InvoiceCartPosition> cart() {
-        ArrayList<InvoiceCartPosition> cart = new ArrayList<>();
-        cart.add(new InvoiceCartPosition(1L, "Зверушка",123L, 5, 5 * 123L, new TaxMode("18%")));
-        cart.add(new InvoiceCartPosition(1L, "Квакушка", 456L,6, 6 * 456L, null));
-        return cart;
     }
 
     public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, String type, String custId, String shopId, Customer.StatusEnum custStatus){
@@ -168,9 +90,6 @@ public class BuildUtils {
             webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(type).build());
         }
         hook.setFilters(webhookAdditionalFilters);
-
         return hook;
     }
-
-
 }
