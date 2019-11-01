@@ -15,7 +15,7 @@ public class InvoicingMessage extends Message {
     private Long sequenceId;
     private Integer changeId;
     private String eventTime;
-    private String type;
+    private InvoicingMessageEnum type;
     private String partyId;
     private String shopID;
     private EventType eventType;
@@ -30,15 +30,15 @@ public class InvoicingMessage extends Message {
     private String refundCurrency;
 
     public boolean isInvoice() {
-        return InvoicingMessageEnum.INVOICE.equals(InvoicingMessageEnum.lookup(getType()));
+        return type == InvoicingMessageEnum.INVOICE;
     }
 
     public boolean isPayment() {
-        return InvoicingMessageEnum.PAYMENT.equals(InvoicingMessageEnum.lookup(getType()));
+        return type == InvoicingMessageEnum.PAYMENT;
     }
 
     public boolean isRefund() {
-        return InvoicingMessageEnum.REFUND.equals(InvoicingMessageEnum.lookup(getType()));
+        return type == InvoicingMessageEnum.REFUND;
     }
 
     public InvoicingMessage copy(){

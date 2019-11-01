@@ -73,7 +73,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                         .addValue(EVENT_TIME, message.getEventTime())
                         .addValue(SEQUENCE_ID, message.getSequenceId())
                         .addValue(CHANGE_ID, message.getChangeId())
-                        .addValue(TYPE, message.getType())
+                        .addValue(TYPE, message.getType().value())
                         .addValue(PARTY_ID, message.getPartyId())
                         .addValue(EVENT_TYPE, message.getEventType().toString())
                         .addValue(INVOICE_ID, message.getInvoiceId())

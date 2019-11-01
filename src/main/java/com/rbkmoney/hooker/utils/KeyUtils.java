@@ -11,7 +11,7 @@ public class KeyUtils {
                 .invoiceId(message.getInvoiceId())
                 .paymentId(message.getPaymentId())
                 .refundId(message.getRefundId())
-                .type(InvoicingMessageEnum.lookup(message.getType()))
+                .type(message.getType())
                 .build();
     }
 }

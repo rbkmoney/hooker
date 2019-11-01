@@ -5,13 +5,12 @@ import com.rbkmoney.damsel.payment_processing.Invoice;
 import com.rbkmoney.hooker.converter.InvoiceConverter;
 import com.rbkmoney.hooker.converter.PaymentConverter;
 import com.rbkmoney.hooker.converter.RefundConverter;
-import com.rbkmoney.hooker.model.InvoiceStatusEnum;
 import com.rbkmoney.swag_webhook_events.model.*;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCreated;
 import lombok.RequiredArgsConstructor;
-import org.apache.thrift.TException;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -27,18 +26,14 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
     private final PaymentConverter paymentConverter;
     private final RefundConverter refundConverter;
 
+    @SneakyThrows
     @Override
     public Event getByMessage(InvoicingMessage message) {
-        try {
-            Invoice invoiceInfo = invoicingClient.get(userInfo, message.getInvoiceId(), new EventRange().setLimit(message.getSequenceId().intValue()));
-            Event event = resolveEvent(message, invoiceInfo);
-            event.setEventID(message.getEventId().intValue());
-            event.setOccuredAt(OffsetDateTime.parse(message.getEventTime(), DateTimeFormatter.ISO_DATE_TIME));
-            event.setTopic(Event.TopicEnum.INVOICESTOPIC);
-            return event;
-        } catch (TException e) {
-            throw new RuntimeException(e);
-        }
+        Invoice invoiceInfo = invoicingClient.get(userInfo, message.getInvoiceId(), new EventRange().setLimit(message.getSequenceId().intValue()));
+        return resolveEvent(message, invoiceInfo)
+                .eventID(message.getEventId().intValue())
+                .occuredAt(OffsetDateTime.parse(message.getEventTime(), DateTimeFormatter.ISO_DATE_TIME))
+                .topic(Event.TopicEnum.INVOICESTOPIC);
     }
 
     private Event resolveEvent(InvoicingMessage m, Invoice invoiceInfo) {
@@ -47,18 +42,18 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
                 return new InvoiceCreated()
                         .invoice(invoiceConverter.convert(invoiceInfo.getInvoice()));
             case INVOICE_STATUS_CHANGED:
-                return resolveInvoiceStatusChanged(m.getInvoiceStatus(), invoiceInfo);
+                return resolveInvoiceStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_STARTED:
                 return new PaymentStarted()
                         .invoice(invoiceConverter.convert(invoiceInfo.getInvoice()))
-                        .payment(paymentConverter.convert(extractPayment(m, invoiceInfo)));
+                        .payment(paymentConverter.convert(extractPayment(m, invoiceInfo)).fee(m.getPaymentFee()));
             case INVOICE_PAYMENT_STATUS_CHANGED:
                 return resolvePaymentStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_REFUND_STARTED:
                 return new RefundCreated()
                         .invoice(invoiceConverter.convert(invoiceInfo.getInvoice()))
-                        .payment(paymentConverter.convert(extractPayment(m, invoiceInfo)))
-                        .refund(refundConverter.convert(extractRefund(m, invoiceInfo)));
+                        .payment(paymentConverter.convert(extractPayment(m, invoiceInfo)).fee(m.getPaymentFee()))
+                        .refund(refundConverter.convert(extractRefund(m, invoiceInfo)).amount(m.getRefundAmount()).currency(m.getRefundCurrency()));
             case INVOICE_PAYMENT_REFUND_STATUS_CHANGED:
                 return resolveRefundStatusChanged(m, invoiceInfo);
             default:
@@ -82,20 +77,20 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
                 .findFirst().orElseThrow();
     }
 
-    private Event resolveInvoiceStatusChanged(InvoiceStatusEnum status, Invoice invoiceInfo) {
+    private Event resolveInvoiceStatusChanged(InvoicingMessage message, Invoice invoiceInfo) {
         com.rbkmoney.swag_webhook_events.model.Invoice convertedInvoice = invoiceConverter.convert(invoiceInfo.getInvoice());
-        switch (status) {
+        switch (message.getInvoiceStatus()) {
             case unpaid: return new InvoiceCreated().invoice(convertedInvoice);
             case paid: return new InvoicePaid().invoice(convertedInvoice);
             case cancelled: return new InvoiceCancelled().invoice(convertedInvoice);
             case fulfilled: return new InvoiceFulfilled().invoice(convertedInvoice);
-            default: throw new UnsupportedOperationException("Unknown invoice status " + status);
+            default: throw new UnsupportedOperationException("Unknown invoice status " + message.getInvoiceStatus());
         }
     }
 
     private Event resolvePaymentStatusChanged(InvoicingMessage message, Invoice invoiceInfo) {
         com.rbkmoney.swag_webhook_events.model.Invoice convertedInvoice = invoiceConverter.convert(invoiceInfo.getInvoice());
-        Payment convertedPayment = paymentConverter.convert(extractPayment(message, invoiceInfo));
+        Payment convertedPayment = paymentConverter.convert(extractPayment(message, invoiceInfo)).fee(message.getPaymentFee());
         switch (message.getPaymentStatus()) {
             case pending: return new PaymentStarted().invoice(convertedInvoice).payment(convertedPayment);
             case processed: return new PaymentProcessed().invoice(convertedInvoice).payment(convertedPayment);
@@ -109,8 +104,8 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
 
     private Event resolveRefundStatusChanged(InvoicingMessage message, Invoice invoiceInfo) {
         com.rbkmoney.swag_webhook_events.model.Invoice convertedInvoice = invoiceConverter.convert(invoiceInfo.getInvoice());
-        Payment convertedPayment = paymentConverter.convert(extractPayment(message, invoiceInfo));
-        Refund convertedRefund = refundConverter.convert(extractRefund(message, invoiceInfo));
+        Payment convertedPayment = paymentConverter.convert(extractPayment(message, invoiceInfo)).fee(message.getPaymentFee());
+        Refund convertedRefund = refundConverter.convert(extractRefund(message, invoiceInfo)).amount(message.getRefundAmount()).currency(message.getRefundCurrency());
         switch (message.getRefundStatus()) {
             case pending: return new RefundCreated().invoice(convertedInvoice).payment(convertedPayment).refund(convertedRefund);
             case succeeded: return new RefundSucceeded().invoice(convertedInvoice).payment(convertedPayment).refund(convertedRefund);

@@ -21,7 +21,7 @@ public class BuildUtils {
         message.setId((long) messageId++);
         message.setEventId((long) messageId++);
         message.setEventTime("time");
-        message.setType(type);
+        message.setType(InvoicingMessageEnum.lookup(type));
         message.setPartyId(partyId);
         message.setEventType(eventType);
         message.setInvoiceId(invoiceId);

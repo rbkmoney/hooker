@@ -60,7 +60,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         InvoicingMessage invoiceCreated = invoiceEventMapper.handle(ic, eventInfo, storage);
         assertNotNull(invoiceCreated);
         assertEquals("invoiceId", invoiceCreated.getInvoiceId());
-        assertEquals(InvoicingMessageEnum.INVOICE.value(), invoiceCreated.getType());
+        assertEquals(InvoicingMessageEnum.INVOICE, invoiceCreated.getType());
         storage.put(KeyUtils.key(invoiceCreated), invoiceCreated);
         messages.add(invoiceCreated);
 
@@ -71,7 +71,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         AbstractInvoiceEventMapper invoicePaymentStartedEventMapper = eventMapperPaymentStartedOptional.get();
         InvoicingMessage paymentStarted = invoicePaymentStartedEventMapper.handle(icPaymentStarted, eventInfoPaymentStarted, storage);
         assertNotNull(paymentStarted);
-        assertEquals(InvoicingMessageEnum.PAYMENT.value(), paymentStarted.getType());
+        assertEquals(InvoicingMessageEnum.PAYMENT, paymentStarted.getType());
         assertEquals("partyId", paymentStarted.getPartyId());
         assertNotEquals(invoiceCreated.getChangeId(), paymentStarted.getChangeId());
         storage.put(KeyUtils.key(paymentStarted), paymentStarted);

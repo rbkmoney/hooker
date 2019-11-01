@@ -32,7 +32,7 @@ public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
         message.setEventTime(eventInfo.getEventCreatedAt());
         message.setSequenceId(eventInfo.getSequenceId());
         message.setChangeId(eventInfo.getChangeId());
-        message.setType(InvoicingMessageEnum.INVOICE.value());
+        message.setType(InvoicingMessageEnum.INVOICE);
         message.setPartyId(invoiceOrigin.getOwnerId());
         message.setEventType(eventType);
         message.setInvoiceId(invoiceOrigin.getId());

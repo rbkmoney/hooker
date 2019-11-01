@@ -25,7 +25,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                 .status(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
                 .amount(source.getCost().getAmount())
                 .currency(source.getCost().getCurrency().getSymbolicCode())
-                .metadata(source.isSetContext() ? new Content(source.getContext().getType(), source.getContext().getData()) : new Content());
+                .metadata(source.isSetContext() ? new Content(source.getContext().getType(), source.getContext().getData()) : null);
 
         if (source.getStatus().isSetFailed()) {
             target.setError(ErrorUtils.getPaymentError(source.getStatus().getFailed().getFailure()));
