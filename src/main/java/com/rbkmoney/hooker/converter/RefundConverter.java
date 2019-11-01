@@ -13,13 +13,12 @@ import java.time.format.DateTimeFormatter;
 public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> {
     @Override
     public Refund convert(InvoicePaymentRefund source) {
-        Refund target = new Refund();
-        target.setCreatedAt(OffsetDateTime.parse(source.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME));
-        target.setReason(source.getReason());
-        target.setStatus(Refund.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()));
-        if (source.getStatus().isSetFailed()) {
-            target.setError(ErrorUtils.getRefundError(source.getStatus().getFailed().getFailure()));
-        }
-        return target;
+        return new Refund()
+                .createdAt(OffsetDateTime.parse(source.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME))
+                .reason(source.getReason())
+                .status(Refund.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
+                .error(source.getStatus().isSetFailed() ?
+                        ErrorUtils.getRefundError(source.getStatus().getFailed().getFailure())
+                        : null);
     }
 }

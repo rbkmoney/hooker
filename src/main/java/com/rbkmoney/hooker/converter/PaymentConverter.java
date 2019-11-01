@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.converter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.hooker.model.Content;
 import com.rbkmoney.hooker.utils.ErrorUtils;
@@ -10,6 +11,7 @@ import com.rbkmoney.swag_webhook_events.model.ContactInfo;
 import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
 import com.rbkmoney.swag_webhook_events.model.PaymentResourcePayer;
 import com.rbkmoney.swag_webhook_events.model.RecurrentPayer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +19,11 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Component
+@RequiredArgsConstructor
 public class PaymentConverter implements Converter<InvoicePayment, Payment> {
+
+    private final ObjectMapper objectMapper;
+
     @Override
     public Payment convert(InvoicePayment source) {
         Payment target = new Payment()

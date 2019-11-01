@@ -1,54 +1,49 @@
 package com.rbkmoney.hooker.converter;
 
-import com.rbkmoney.damsel.domain.InvoiceCart;
-import com.rbkmoney.damsel.domain.InvoiceLine;
-import com.rbkmoney.damsel.msgpack.Value;
-import com.rbkmoney.hooker.model.Content;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.swag_webhook_events.model.Invoice;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCartLine;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCartLineTaxMode;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.Invoice, Invoice> {
 
+    private final ObjectMapper objectMapper;
+
     @Override
+    @SneakyThrows
     public Invoice convert(com.rbkmoney.damsel.domain.Invoice source) {
-        Invoice target = new Invoice();
-        target.setCreatedAt(OffsetDateTime.parse(source.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME));
-        target.setStatus(Invoice.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()));
-        target.setDueDate(OffsetDateTime.parse(source.getDue(), DateTimeFormatter.ISO_DATE_TIME));
-        target.setAmount(source.getCost().getAmount());
-        target.setCurrency(source.getCost().getCurrency().getSymbolicCode());
-        Content metadata = new Content();
-        metadata.setType(source.getContext().getType());
-        metadata.setData(source.getContext().getData());
-        target.setMetadata(metadata);
-        target.setProduct(source.getDetails().getProduct());
-        target.setDescription(source.getDetails().getDescription());
-        InvoiceCart cart = source.getDetails().getCart();
-        if (cart != null && !cart.getLines().isEmpty()) {
-            target.setCart(new ArrayList<>());
-            for (InvoiceLine l : cart.getLines()) {
-                InvoiceCartLine icp = new InvoiceCartLine();
-                icp.setProduct(l.getProduct());
-                icp.setPrice(l.getPrice().getAmount());
-                icp.setQuantity((long) l.getQuantity());
-                icp.setCost(l.getPrice().getAmount() * l.getQuantity());
-                if (l.getMetadata() != null) {
-                    Value v = l.getMetadata().get("TaxMode");
-                    if (v != null) {
-                        icp.setTaxMode(new InvoiceCartLineTaxMode().rate(InvoiceCartLineTaxMode.RateEnum.fromValue(v.getStr())));
-                    }
-                }
-                target.getCart().add(icp);
-            }
-        }
-        return target;
+        return new Invoice()
+                .createdAt(OffsetDateTime.parse(source.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME))
+                .status(Invoice.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
+                .dueDate(OffsetDateTime.parse(source.getDue(), DateTimeFormatter.ISO_DATE_TIME))
+                .amount(source.getCost().getAmount())
+                .currency(source.getCost().getCurrency().getSymbolicCode())
+                .metadata(source.isSetContext() ? objectMapper.readValue(source.getContext().getData(), HashMap.class) : null)
+                .product(source.getDetails().getProduct())
+                .description(source.getDetails().getDescription())
+                .cart(source.getDetails().isSetCart() ?
+                        source.getDetails().getCart().getLines().stream().map(l ->
+                                new InvoiceCartLine()
+                                        .product(l.getProduct())
+                                        .price(l.getPrice().getAmount())
+                                        .quantity((long) l.getQuantity())
+                                        .cost(l.getPrice().getAmount() * l.getQuantity())
+                                        .taxMode(l.getMetadata() != null && l.getMetadata().get("TaxMode") != null ?
+                                                new InvoiceCartLineTaxMode()
+                                                        .rate(InvoiceCartLineTaxMode.RateEnum.fromValue(l.getMetadata().get("TaxMode").getStr()))
+                                                : null))
+                                .collect(Collectors.toList())
+                        : null);
     }
 }
