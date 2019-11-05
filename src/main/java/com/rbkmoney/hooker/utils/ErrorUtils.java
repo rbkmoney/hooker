@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.utils;
 import com.rbkmoney.damsel.domain.Failure;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.domain.SubFailure;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingError;
 import com.rbkmoney.swag_webhook_events.model.PaymentError;
 import com.rbkmoney.swag_webhook_events.model.RefundError;
 import com.rbkmoney.swag_webhook_events.model.SubError;
@@ -47,6 +48,20 @@ public class ErrorUtils {
             return refundError;
         }
         return null;
+    }
+
+    public static CustomerBindingError getCustomerBindingError(OperationFailure failure){
+        String errCode = null;
+        String errMess = null;
+        if (failure.isSetFailure()) {
+            Failure external = failure.getFailure();
+            errCode = external.getCode();
+            errMess = external.getReason();
+        } else if (failure.isSetOperationTimeout()) {
+            errCode = "408";
+            errMess = "Operation timeout";
+        }
+        return new CustomerBindingError().code(errCode).message(errMess);
     }
 
     private static SubError getSubError(SubFailure sub) {

@@ -11,14 +11,7 @@ import org.springframework.beans.BeanUtils;
 @Data
 @ToString
 public class InvoicingMessage extends Message {
-    private Long eventId;
-    private Long sequenceId;
-    private Integer changeId;
-    private String eventTime;
     private InvoicingMessageEnum type;
-    private String partyId;
-    private String shopID;
-    private EventType eventType;
     private String invoiceId;
     private InvoiceStatusEnum invoiceStatus;
     private String paymentId;

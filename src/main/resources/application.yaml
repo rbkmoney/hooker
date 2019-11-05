@@ -45,6 +45,9 @@ service:
   invoicing:
     url: http://hellgate:8022/v1/processing/invoicing
     networkTimeout: 5000
+  customer:
+    url: http://hellgate:8022/v1/processing/customer
+    networkTimeout: 5000
 
 cache:
   invoice:

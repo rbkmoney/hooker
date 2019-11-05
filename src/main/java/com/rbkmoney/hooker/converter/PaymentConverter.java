@@ -1,8 +1,6 @@
 package com.rbkmoney.hooker.converter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.damsel.domain.*;
-import com.rbkmoney.hooker.model.Content;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.model.*;
@@ -22,7 +20,7 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
-    private final ObjectMapper objectMapper;
+    private final MetadataDeserializer deserializer;
 
     @Override
     public Payment convert(InvoicePayment source) {
@@ -31,7 +29,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                 .status(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
                 .amount(source.getCost().getAmount())
                 .currency(source.getCost().getCurrency().getSymbolicCode())
-                .metadata(source.isSetContext() ? new Content(source.getContext().getType(), source.getContext().getData()) : null);
+                .metadata(source.isSetContext() ? deserializer.deserialize(source.getContext().getData()) : null);
 
         if (source.getStatus().isSetFailed()) {
             target.setError(ErrorUtils.getPaymentError(source.getStatus().getFailed().getFailure()));

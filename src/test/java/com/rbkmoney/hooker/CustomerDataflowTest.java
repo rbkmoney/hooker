@@ -8,6 +8,7 @@ import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.BuildUtils;
@@ -82,22 +83,22 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<CustomerMessage> sourceMessages = new ArrayList<>();
-        CustomerMessage message = BuildUtils.buildCustomerMessage(1L, "partyId1", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
+        CustomerMessage message = BuildUtils.buildCustomerMessage(1L, "partyId1", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
         customerDao.create(message);
         sourceMessages.add(message);
-        message = BuildUtils.buildCustomerMessage(2L, "partyId1", EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
+        message = BuildUtils.buildCustomerMessage(2L, "partyId1", EventType.CUSTOMER_READY, CustomerMessageEnum.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
         customerDao.create(message);
         sourceMessages.add(message);
-        message = BuildUtils.buildCustomerMessage(3L, "partyId2", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
+        message = BuildUtils.buildCustomerMessage(3L, "partyId2", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
         customerDao.create(message);
         sourceMessages.add(message);
-        message = BuildUtils.buildCustomerMessage(4L, "partyId2", EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
+        message = BuildUtils.buildCustomerMessage(4L, "partyId2", EventType.CUSTOMER_READY, CustomerMessageEnum.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
         customerDao.create(message);
         sourceMessages.add(message);
-        message = BuildUtils.buildCustomerMessage(5L, "partyId2", EventType.CUSTOMER_BINDING_STARTED, AbstractCustomerEventHandler.BINDING, "2", "2342", Customer.StatusEnum.READY);
+        message = BuildUtils.buildCustomerMessage(5L, "partyId2", EventType.CUSTOMER_BINDING_STARTED, CustomerMessageEnum.BINDING, "2", "2342", Customer.StatusEnum.READY);
         customerDao.create(message);
         sourceMessages.add(message);
-        message = BuildUtils.buildCustomerMessage(6L, "partyId2", EventType.CUSTOMER_BINDING_SUCCEEDED, AbstractCustomerEventHandler.BINDING, "3", "2342", Customer.StatusEnum.READY);
+        message = BuildUtils.buildCustomerMessage(6L, "partyId2", EventType.CUSTOMER_BINDING_SUCCEEDED, CustomerMessageEnum.BINDING, "3", "2342", Customer.StatusEnum.READY);
         customerDao.create(message);
         sourceMessages.add(message);
 

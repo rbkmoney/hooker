@@ -1,7 +1,9 @@
 package com.rbkmoney.hooker.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.damsel.json.Value;
+import com.rbkmoney.hooker.converter.MetadataDeserializer;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -28,7 +30,7 @@ public class CustomerUtilsTest {
         Value value = new Value();
         value.setArr(value1);
 
-        JsonNode result = new CustomerUtils().getResult(value);
+        JsonNode result = new MetadataDeserializer(new ObjectMapper()).deserialize(value);
         assertTrue("[123,123,123]".equals(result.toString()));
     }
 
@@ -49,7 +51,7 @@ public class CustomerUtilsTest {
         value2.setArr(value3);
         map.put("field2", value2);
         value.setObj(map);
-        JsonNode result = new CustomerUtils().getResult(value);
+        JsonNode result = new MetadataDeserializer(new ObjectMapper()).deserialize(value);
         assertTrue("{\"field1\":\"value1\",\"field2\":[123,123,123]}".equals(result.toString()));
     }
 

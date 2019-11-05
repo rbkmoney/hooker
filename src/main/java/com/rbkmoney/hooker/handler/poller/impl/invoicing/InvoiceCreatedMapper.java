@@ -36,7 +36,7 @@ public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
         message.setPartyId(invoiceOrigin.getOwnerId());
         message.setEventType(eventType);
         message.setInvoiceId(invoiceOrigin.getId());
-        message.setShopID(invoiceOrigin.getShopId());
+        message.setShopId(invoiceOrigin.getShopId());
         message.setInvoiceStatus(InvoiceStatusEnum.valueOf(invoiceOrigin.getStatus().getSetField().getFieldName()));
         return message;
     }

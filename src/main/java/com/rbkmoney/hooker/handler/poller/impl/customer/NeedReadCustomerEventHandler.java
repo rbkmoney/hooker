@@ -4,6 +4,7 @@ import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventInfo;
 import com.rbkmoney.hooker.model.EventType;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
         message.setEventType(getEventType());
         message.setType(getMessageType());
         message.setEventId(eventInfo.getEventId());
-        message.setOccuredAt(eventInfo.getEventCreatedAt());
+        message.setEventTime(eventInfo.getEventCreatedAt());
         message.setSequenceId(eventInfo.getSequenceId());
         message.setChangeId(eventInfo.getChangeId());
         modifyMessage(cc, message);
@@ -38,9 +39,10 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
         return customerDao.getAny(customerId, getMessageType());
     }
 
-    protected abstract String getMessageType();
+    protected abstract CustomerMessageEnum getMessageType();
 
     protected abstract EventType getEventType();
 
-    protected abstract void modifyMessage(CustomerChange cc, CustomerMessage message);
+    protected void modifyMessage(CustomerChange cc, CustomerMessage message) {
+    }
 }

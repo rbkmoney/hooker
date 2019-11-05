@@ -1,16 +1,12 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
-import com.rbkmoney.damsel.domain.Failure;
-import com.rbkmoney.damsel.domain.OperationFailure;
-import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
-import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.swag_webhook_events.model.CustomerBindingError;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,30 +29,12 @@ public class CustomerBindingFailedHandler extends NeedReadCustomerEventHandler {
     }
 
     @Override
-    protected String getMessageType() {
-        return AbstractCustomerEventHandler.BINDING;
+    protected CustomerMessageEnum getMessageType() {
+        return CustomerMessageEnum.BINDING;
     }
 
     @Override
     protected EventType getEventType() {
         return eventType;
-    }
-
-    @Override
-    protected void modifyMessage(CustomerChange cc, CustomerMessage message) {
-        OperationFailure failure = cc.getCustomerBindingChanged().getPayload().getStatusChanged().getStatus().getFailed().getFailure();
-        String errCode = null;
-        String errMess = null;
-        if (failure.isSetFailure()) {
-            Failure external = failure.getFailure();
-            errCode = external.getCode();
-            errMess = external.getReason();
-        } else if (failure.isSetOperationTimeout()) {
-            errCode = "408";
-            errMess = "Operation timeout";
-        }
-        message.getCustomerBinding().setError(new CustomerBindingError()
-                .code(errCode)
-                .message(errMess));
     }
 }

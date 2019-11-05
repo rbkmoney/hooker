@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.configuration;
 
+import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
 import com.rbkmoney.damsel.payment_processing.InvoicingSrv;
 import com.rbkmoney.woody.thrift.impl.http.THSpawnClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,5 +18,13 @@ public class HgConfig {
         return new THSpawnClientBuilder()
                 .withNetworkTimeout(networkTimeout)
                 .withAddress(resource.getURI()).build(InvoicingSrv.Iface.class);
+    }
+
+    @Bean
+    public CustomerManagementSrv.Iface customerClient(@Value("${service.customer.url}") Resource resource,
+                                                       @Value("${service.customer.networkTimeout}") int networkTimeout) throws IOException {
+        return new THSpawnClientBuilder()
+                .withNetworkTimeout(networkTimeout)
+                .withAddress(resource.getURI()).build(CustomerManagementSrv.Iface.class);
     }
 }

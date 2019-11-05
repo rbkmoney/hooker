@@ -77,7 +77,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                         .addValue(PARTY_ID, message.getPartyId())
                         .addValue(EVENT_TYPE, message.getEventType().toString())
                         .addValue(INVOICE_ID, message.getInvoiceId())
-                        .addValue(SHOP_ID, message.getShopID())
+                        .addValue(SHOP_ID, message.getShopId())
                         .addValue(INVOICE_STATUS, message.getInvoiceStatus().toString());
                 setNullPaymentParamValues(params);
                 if (message.isPayment() || message.isRefund()) {

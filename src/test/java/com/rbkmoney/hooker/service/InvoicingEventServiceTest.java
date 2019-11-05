@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.damsel.payment_processing.Invoice;
 import com.rbkmoney.damsel.payment_processing.InvoicePayment;
 import com.rbkmoney.damsel.payment_processing.InvoicingSrv;
@@ -11,7 +12,6 @@ import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.swag_webhook_events.model.Event;
-import com.rbkmoney.swag_webhook_events.model.PaymentCaptured;
 import com.rbkmoney.swag_webhook_events.model.RefundSucceeded;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
@@ -39,12 +40,13 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        MockTBaseProcessor tBaseProcessor = new MockTBaseProcessor(MockMode.ALL, 15, 1);
+        MockTBaseProcessor tBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
         Mockito.when(invoicingClient.get(any(), any(), any()))
                 .thenReturn(new Invoice()
                         .setInvoice(tBaseProcessor.process(new com.rbkmoney.damsel.domain.Invoice(),
                                 new TBaseHandler<>(com.rbkmoney.damsel.domain.Invoice.class))
                                 .setCreatedAt("2016-03-22T06:12:27Z")
+                                .setContext(new Content("lel", ByteBuffer.wrap("{\"payment_id\": 271771960}".getBytes())))
                                 .setDue("2016-03-22T06:12:27Z"))
                         .setPayments(Collections.singletonList(new InvoicePayment()
                                 .setPayment(tBaseProcessor.process(new com.rbkmoney.damsel.domain.InvoicePayment(),
@@ -82,7 +84,8 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
         message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
         message.setPaymentStatus(PaymentStatusEnum.captured);
         Event event = service.getByMessage(message);
-        assertTrue(event instanceof PaymentCaptured);
-        System.out.println(objectMapper.writeValueAsString(event));
+        String json = objectMapper.writeValueAsString(event);
+        System.out.println(json);
+        assertTrue(json.contains("\"payment_id\":271771960"));
     }
 }

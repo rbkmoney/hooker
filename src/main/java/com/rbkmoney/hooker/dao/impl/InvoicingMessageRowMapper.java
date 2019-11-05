@@ -37,7 +37,7 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
         message.setChangeId(rs.getInt(CHANGE_ID));
         message.setType(InvoicingMessageEnum.lookup(rs.getString(TYPE)));
         message.setPartyId(rs.getString(PARTY_ID));
-        message.setShopID(rs.getString(SHOP_ID));
+        message.setShopId(rs.getString(SHOP_ID));
         message.setEventType(EventType.valueOf(rs.getString(EVENT_TYPE)));
         message.setInvoiceId(rs.getString(INVOICE_ID));
         message.setInvoiceStatus(InvoiceStatusEnum.valueOf(rs.getString(INVOICE_STATUS)));

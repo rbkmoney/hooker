@@ -4,6 +4,7 @@ import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.swag_webhook_events.model.Customer;
 import org.junit.Before;
@@ -36,7 +37,7 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         if(!messagesCreated){
-            CustomerMessage message = buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "124", "4356", Customer.StatusEnum.READY);
+            CustomerMessage message = buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124", "4356", Customer.StatusEnum.READY);
             message.setSequenceId(1L);
             message.setChangeId(1);
             messageDao.create(message);
@@ -46,7 +47,7 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void testDuplication() {
-        CustomerMessage message = buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "124", "4356", Customer.StatusEnum.READY);
+        CustomerMessage message = buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124", "4356", Customer.StatusEnum.READY);
         message.setSequenceId(1L);
         message.setChangeId(1);
         messageDao.create(message);
@@ -55,8 +56,8 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void get() throws Exception {
-        CustomerMessage message = messageDao.getAny("124", AbstractCustomerEventHandler.CUSTOMER);
-        assertEquals(message.getCustomer().getShopID(), "4356");
+        CustomerMessage message = messageDao.getAny("124", CustomerMessageEnum.CUSTOMER);
+        assertEquals(message.getShopId(), "4356");
     }
 
     @Test

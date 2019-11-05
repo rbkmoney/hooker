@@ -25,7 +25,7 @@ public class BuildUtils {
         message.setPartyId(partyId);
         message.setEventType(eventType);
         message.setInvoiceId(invoiceId);
-        message.setShopID("123");
+        message.setShopId("123");
         message.setInvoiceStatus(invoiceStatus);
         if (message.isPayment() || message.isRefund()) {
             message.setPaymentId("123");
@@ -44,37 +44,18 @@ public class BuildUtils {
         return message;
     }
 
-    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, String type, String custId, String shopId, Customer.StatusEnum custStatus){
+    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, CustomerMessageEnum type, String custId, String shopId, Customer.StatusEnum custStatus){
         CustomerMessage customerMessage = new CustomerMessage();
         customerMessage.setEventId(eventId);
         customerMessage.setPartyId(partyId);
-        customerMessage.setOccuredAt("time");
+        customerMessage.setEventTime("time");
         customerMessage.setEventType(eventType);
         customerMessage.setType(type);
-        customerMessage.setCustomer(new Customer()
-                .id(custId)
-                .shopID(shopId)
-                .status(custStatus)
-                .contactInfo(new ContactInfo().phoneNumber("1234").email("aaa@mail.ru"))
-                .metadata(CustomerUtils.getJsonObject("{\"field1\":\"value1\",\"field2\":[123,123,123]}")));
+        customerMessage.setCustomerId(custId);
+        customerMessage.setShopId(shopId);
 
         if (customerMessage.isBinding()) {
-            CustomerBinding customerBinding = new CustomerBinding();
-            customerBinding.status(CustomerBinding.StatusEnum.PENDING);
-            customerMessage.setCustomerBinding(customerBinding
-                    .id("12456")
-                    .paymentResource(new PaymentResource()
-                            .paymentToolToken("shjfbergiwengriweno")
-                            .paymentSession("wrgnjwierngweirngi")
-                            .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
-                            .paymentToolDetails(new PaymentToolDetailsBankCard()
-                                    .bin("440088")
-                                    .lastDigits("1234")
-                                    .cardNumberMask("440088******1234")
-                                    .paymentSystem("visa")
-                                    .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.APPLEPAY)
-                                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
-            )));
+            customerMessage.setBindingId("12456");
         }
         return customerMessage;
     }

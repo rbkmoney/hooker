@@ -1,27 +1,23 @@
 package com.rbkmoney.hooker.converter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.swag_webhook_events.model.Invoice;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCartLine;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCartLineTaxMode;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.Invoice, Invoice> {
 
-    private final ObjectMapper objectMapper;
+    private final MetadataDeserializer deserializer;
 
     @Override
-    @SneakyThrows
     public Invoice convert(com.rbkmoney.damsel.domain.Invoice source) {
         return new Invoice()
                 .createdAt(OffsetDateTime.parse(source.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME))
@@ -29,7 +25,7 @@ public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.In
                 .dueDate(OffsetDateTime.parse(source.getDue(), DateTimeFormatter.ISO_DATE_TIME))
                 .amount(source.getCost().getAmount())
                 .currency(source.getCost().getCurrency().getSymbolicCode())
-                .metadata(source.isSetContext() ? objectMapper.readValue(source.getContext().getData(), HashMap.class) : null)
+                .metadata(source.isSetContext() ? deserializer.deserialize(source.getContext().getData()) : null)
                 .product(source.getDetails().getProduct())
                 .description(source.getDetails().getDescription())
                 .cart(source.getDetails().isSetCart() ?

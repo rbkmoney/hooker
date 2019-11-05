@@ -11,9 +11,6 @@ import com.rbkmoney.hooker.model.EventInfo;
  */
 public abstract class AbstractCustomerEventHandler implements Handler<CustomerChange, CustomerMessage> {
 
-    public static final String CUSTOMER = "customer";
-    public static final String BINDING = "binding";
-
     @Override
     public void handle(CustomerChange c, EventInfo eventInfo) throws DaoException{
         saveEvent(c, eventInfo);

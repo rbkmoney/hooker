@@ -8,11 +8,9 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventInfo;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.utils.CustomerUtils;
-import com.rbkmoney.swag_webhook_events.model.ContactInfo;
-import com.rbkmoney.swag_webhook_events.model.Customer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -39,21 +37,14 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
         com.rbkmoney.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
         customerMessage.setEventId(eventInfo.getEventId());
-        customerMessage.setOccuredAt(eventInfo.getEventCreatedAt());
+        customerMessage.setEventTime(eventInfo.getEventCreatedAt());
         customerMessage.setSequenceId(eventInfo.getSequenceId());
         customerMessage.setChangeId(eventInfo.getChangeId());
-        customerMessage.setType(CUSTOMER);
+        customerMessage.setType(CustomerMessageEnum.CUSTOMER);
         customerMessage.setPartyId(customerCreatedOrigin.getOwnerId());
         customerMessage.setEventType(eventType);
-        Customer customer = new Customer()
-                .id(customerCreatedOrigin.getCustomerId())
-                .shopID(customerCreatedOrigin.getShopId())
-                .status(Customer.StatusEnum.fromValue("unready"))
-                .contactInfo(new ContactInfo()
-                        .email(customerCreatedOrigin.getContactInfo().getEmail())
-                        .phoneNumber(customerCreatedOrigin.getContactInfo().getPhoneNumber()))
-                .metadata(new CustomerUtils().getResult(customerCreatedOrigin.getMetadata()));
-        customerMessage.setCustomer(customer);
+        customerMessage.setCustomerId(customerCreatedOrigin.getCustomerId());
+        customerMessage.setShopId(customerCreatedOrigin.getShopId());
         customerDao.create(customerMessage);
     }
 }
