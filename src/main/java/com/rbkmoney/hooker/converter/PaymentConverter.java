@@ -23,6 +23,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
     @Override
     public Payment convert(InvoicePayment source) {
         Payment target = new Payment()
+                .id(source.getId())
                 .createdAt(OffsetDateTime.parse(source.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME))
                 .status(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
                 .amount(source.getCost().getAmount())
@@ -57,8 +58,8 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                                     .email(payerOrigin.getContactInfo().getEmail())
                                     .phoneNumber(payerOrigin.getContactInfo().getPhoneNumber()))
                             .clientInfo(new ClientInfo()
-                                    .ip(resourceOrigin.getClientInfo().getIpAddress())
-                                    .fingerprint(resourceOrigin.getClientInfo().getFingerprint()))
+                                    .ip(resourceOrigin.isSetClientInfo() ? resourceOrigin.getClientInfo().getIpAddress() : null)
+                                    .fingerprint(resourceOrigin.isSetClientInfo() ? resourceOrigin.getClientInfo().getFingerprint() : null))
                             .paymentToolDetails(PaymentToolUtils.getPaymentToolDetails(paymentTool)));
         } else if (source.getPayer().isSetCustomer()) {
             com.rbkmoney.damsel.domain.CustomerPayer customerPayerOrigin = source.getPayer().getCustomer();

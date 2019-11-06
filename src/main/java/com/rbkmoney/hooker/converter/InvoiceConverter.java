@@ -20,6 +20,8 @@ public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.In
     @Override
     public Invoice convert(com.rbkmoney.damsel.domain.Invoice source) {
         return new Invoice()
+                .id(source.getId())
+                .shopID(source.getShopId())
                 .createdAt(OffsetDateTime.parse(source.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME))
                 .status(Invoice.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
                 .dueDate(OffsetDateTime.parse(source.getDue(), DateTimeFormatter.ISO_DATE_TIME))
@@ -27,6 +29,8 @@ public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.In
                 .currency(source.getCost().getCurrency().getSymbolicCode())
                 .metadata(source.isSetContext() ? deserializer.deserialize(source.getContext().getData()) : null)
                 .product(source.getDetails().getProduct())
+                .reason(source.getStatus().isSetCancelled() ? source.getStatus().getCancelled().getDetails() :
+                        source.getStatus().isSetFulfilled() ? source.getStatus().getFulfilled().getDetails() : null)
                 .description(source.getDetails().getDescription())
                 .cart(source.getDetails().isSetCart() ?
                         source.getDetails().getCart().getLines().stream().map(l ->

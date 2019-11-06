@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.converter;
 
+import com.rbkmoney.damsel.domain.DisposablePaymentResource;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.model.ClientInfo;
@@ -15,15 +16,16 @@ public class CustomerBindingConverter implements Converter<com.rbkmoney.damsel.p
 
     @Override
     public CustomerBinding convert(com.rbkmoney.damsel.payment_processing.CustomerBinding source) {
+        DisposablePaymentResource paymentResource = source.getPaymentResource();
         return new CustomerBinding()
                 .status(CustomerBinding.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
                 .error(source.getStatus().isSetFailed() ? ErrorUtils.getCustomerBindingError(source.getStatus().getFailed().getFailure()) : null)
                 .id(source.getId())
                 .paymentResource(new PaymentResource()
-                        .paymentSession(source.getPaymentResource().getPaymentSessionId())
+                        .paymentSession(paymentResource.getPaymentSessionId())
                         .clientInfo(new ClientInfo()
-                                .ip(source.getPaymentResource().getClientInfo().getIpAddress())
-                                .fingerprint(source.getPaymentResource().getClientInfo().getFingerprint()))
-                        .paymentToolDetails(PaymentToolUtils.getPaymentToolDetails(source.getPaymentResource().getPaymentTool())));
+                                .ip(paymentResource.isSetClientInfo() ? paymentResource.getClientInfo().getIpAddress() : null)
+                                .fingerprint(paymentResource.isSetClientInfo() ? paymentResource.getClientInfo().getFingerprint() : null))
+                        .paymentToolDetails(PaymentToolUtils.getPaymentToolDetails(paymentResource.getPaymentTool())));
     }
 }

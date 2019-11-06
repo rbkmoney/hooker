@@ -14,6 +14,7 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
     @Override
     public Refund convert(InvoicePaymentRefund source) {
         return new Refund()
+                .id(source.getId())
                 .createdAt(OffsetDateTime.parse(source.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME))
                 .reason(source.getReason())
                 .status(Refund.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
