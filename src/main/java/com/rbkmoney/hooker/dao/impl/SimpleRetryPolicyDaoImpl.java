@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
 import lombok.RequiredArgsConstructor;

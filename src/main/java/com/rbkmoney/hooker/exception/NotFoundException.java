@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.dao;
+package com.rbkmoney.hooker.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException() {

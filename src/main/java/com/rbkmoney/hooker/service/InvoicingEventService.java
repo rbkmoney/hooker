@@ -5,12 +5,14 @@ import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.hooker.converter.InvoiceConverter;
 import com.rbkmoney.hooker.converter.PaymentConverter;
 import com.rbkmoney.hooker.converter.RefundConverter;
+import com.rbkmoney.hooker.exception.NotFoundException;
+import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCreated;
 import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -26,14 +28,19 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
     private final PaymentConverter paymentConverter;
     private final RefundConverter refundConverter;
 
-    @SneakyThrows
     @Override
     public Event getByMessage(InvoicingMessage message) {
-        Invoice invoiceInfo = invoicingClient.get(userInfo, message.getInvoiceId(), new EventRange().setLimit(message.getSequenceId().intValue()));
-        return resolveEvent(message, invoiceInfo)
-                .eventID(message.getEventId().intValue())
-                .occuredAt(OffsetDateTime.parse(message.getEventTime(), DateTimeFormatter.ISO_DATE_TIME))
-                .topic(Event.TopicEnum.INVOICESTOPIC);
+        try {
+            Invoice invoiceInfo = invoicingClient.get(userInfo, message.getInvoiceId(), new EventRange().setLimit(message.getSequenceId().intValue()));
+            return resolveEvent(message, invoiceInfo)
+                    .eventID(message.getEventId().intValue())
+                    .occuredAt(OffsetDateTime.parse(message.getEventTime(), DateTimeFormatter.ISO_DATE_TIME))
+                    .topic(Event.TopicEnum.INVOICESTOPIC);
+        } catch (InvoiceNotFound e) {
+            throw new NotFoundException(e);
+        } catch (TException e) {
+            throw new RemoteHostException(e);
+        }
     }
 
     private Event resolveEvent(InvoicingMessage m, Invoice invoiceInfo) {

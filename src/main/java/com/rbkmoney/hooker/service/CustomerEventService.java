@@ -3,12 +3,16 @@ package com.rbkmoney.hooker.service;
 import com.rbkmoney.damsel.payment_processing.Customer;
 import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
 import com.rbkmoney.damsel.payment_processing.EventRange;
+import com.rbkmoney.damsel.payment_processing.InvoiceNotFound;
 import com.rbkmoney.hooker.converter.CustomerBindingConverter;
 import com.rbkmoney.hooker.converter.CustomerConverter;
+import com.rbkmoney.hooker.exception.NotFoundException;
+import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -22,14 +26,19 @@ public class CustomerEventService implements EventService<CustomerMessage> {
     private final CustomerConverter customerConverter;
     private final CustomerBindingConverter customerBindingConverter;
 
-    @SneakyThrows
     @Override
     public Event getByMessage(CustomerMessage message) {
-        Customer customer = customerClient.get(message.getCustomerId(), new EventRange().setLimit(message.getSequenceId().intValue()));
-        return resolveEvent(message, customer)
-                .eventID(message.getEventId().intValue())
-                .occuredAt(OffsetDateTime.parse(message.getEventTime(), DateTimeFormatter.ISO_DATE_TIME))
-                .topic(Event.TopicEnum.CUSTOMERSTOPIC);
+        try {
+            Customer customer = customerClient.get(message.getCustomerId(), new EventRange().setLimit(message.getSequenceId().intValue()));
+            return resolveEvent(message, customer)
+                    .eventID(message.getEventId().intValue())
+                    .occuredAt(OffsetDateTime.parse(message.getEventTime(), DateTimeFormatter.ISO_DATE_TIME))
+                    .topic(Event.TopicEnum.CUSTOMERSTOPIC);
+        } catch (InvoiceNotFound e) {
+            throw new NotFoundException(e);
+        } catch (TException e) {
+            throw new RemoteHostException(e);
+        }
     }
 
     private Event resolveEvent(CustomerMessage message, Customer customer) {

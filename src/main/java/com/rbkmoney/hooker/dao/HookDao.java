@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.dao;
 
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.model.Hook;
 
 import java.util.List;

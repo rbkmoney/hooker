@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
-import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.handler.Mapper;
 import com.rbkmoney.hooker.model.EventInfo;
 import com.rbkmoney.hooker.model.InvoicingMessage;

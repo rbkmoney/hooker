@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.model.EventType;

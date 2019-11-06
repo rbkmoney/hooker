@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.dao;
+package com.rbkmoney.hooker.exception;
 
 public class DaoException extends RuntimeException {
     public DaoException() {

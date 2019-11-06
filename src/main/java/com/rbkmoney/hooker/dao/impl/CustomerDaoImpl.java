@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.dao.impl;
 
 import com.rbkmoney.hooker.dao.CustomerDao;
-import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventType;

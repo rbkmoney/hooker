@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
-import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.CustomerMessageEnum;

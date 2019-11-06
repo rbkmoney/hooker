@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
+import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.model.*;
 import org.junit.Before;
 import org.junit.Ignore;

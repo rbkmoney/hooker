@@ -7,7 +7,7 @@ import com.rbkmoney.eventstock.client.EventAction;
 import com.rbkmoney.eventstock.client.EventHandler;
 import com.rbkmoney.geck.serializer.kit.json.JsonHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
-import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.EventInfo;

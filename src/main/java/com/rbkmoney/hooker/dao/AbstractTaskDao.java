@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.dao;
 
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.model.Task;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
