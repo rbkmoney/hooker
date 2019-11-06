@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.domain.FinalCashFlowPosting;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -9,11 +8,12 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.NotFoundException;
-import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.hooker.utils.PaymentToolUtils;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
+import com.rbkmoney.hooker.utils.CashFlowUtils;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class InvoicePaymentCashFlowChangedMapper extends NeedReadInvoiceEventMapper {
@@ -47,7 +47,7 @@ public class InvoicePaymentCashFlowChangedMapper extends NeedReadInvoiceEventMap
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        message.setPaymentFee(PaymentToolUtils.getFeeAmount(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentCashFlowChanged().getCashFlow()));
+        message.setPaymentFee(CashFlowUtils.getFeeAmount(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentCashFlowChanged().getCashFlow()));
     }
 
     @Override

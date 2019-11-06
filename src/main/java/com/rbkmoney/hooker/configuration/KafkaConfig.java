@@ -1,10 +1,10 @@
 package com.rbkmoney.hooker.configuration;
 
 import com.rbkmoney.damsel.payment_processing.EventPayload;
-import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
-import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.hooker.configuration.properties.KafkaSslProperties;
 import com.rbkmoney.hooker.serde.SinkEventDeserializer;
+import com.rbkmoney.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
 import com.rbkmoney.sink.common.parser.impl.PaymentEventPayloadMachineEventParser;
 import com.rbkmoney.sink.common.serialization.BinaryDeserializer;
@@ -24,8 +24,9 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.*;
-import org.springframework.retry.support.RetryTemplate;
+import org.springframework.kafka.listener.BatchErrorHandler;
+import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
+import org.springframework.kafka.listener.ContainerProperties;
 
 import java.io.File;
 import java.util.HashMap;

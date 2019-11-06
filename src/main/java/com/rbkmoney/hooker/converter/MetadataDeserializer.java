@@ -8,16 +8,17 @@ import lombok.RequiredArgsConstructor;
 import org.apache.thrift.TBase;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class MetadataDeserializer {
+
     private final ObjectMapper objectMapper;
 
     public Object deserialize(byte[] data) {
         try {
-            return objectMapper.readValue(data, HashMap.class);
+            return objectMapper.readValue(data, Map.class);
         } catch (Exception e) {
             return null;
         }

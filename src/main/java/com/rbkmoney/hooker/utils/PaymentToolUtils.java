@@ -2,13 +2,15 @@ package com.rbkmoney.hooker.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.BankCard;
+import com.rbkmoney.damsel.domain.DigitalWalletProvider;
+import com.rbkmoney.damsel.domain.MobilePhone;
+import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWalletWrapper;
-import com.rbkmoney.swag_webhook_events.model.CryptoCurrency;
 import com.rbkmoney.swag_webhook_events.model.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Base64;
 
 /**
  * Created by inalarsanukaev on 13.10.17.
@@ -77,22 +79,5 @@ public class PaymentToolUtils {
             throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
         return Base64.getUrlEncoder().encodeToString(rootNode.toString().getBytes(StandardCharsets.UTF_8));
-    }
-
-    public static Long getFeeAmount(List<FinalCashFlowPosting> finalCashFlowPostings) {
-        return finalCashFlowPostings.stream()
-                .filter(PaymentToolUtils::isSystemFee)
-                .map(finalCashFlowPosting -> finalCashFlowPosting.getVolume().getAmount())
-                .reduce(Long::sum)
-                .orElse(null);
-    }
-
-    private static boolean isSystemFee(FinalCashFlowPosting cashFlowPosting) {
-        CashFlowAccount source = cashFlowPosting.getSource().getAccountType();
-        CashFlowAccount destination = cashFlowPosting.getDestination().getAccountType();
-
-        return source.isSetMerchant()
-                && source.getMerchant() == MerchantCashFlowAccount.settlement
-                && destination.isSetSystem();
     }
 }

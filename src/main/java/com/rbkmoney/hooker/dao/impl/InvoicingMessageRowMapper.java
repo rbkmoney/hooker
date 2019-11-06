@@ -41,19 +41,15 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
         message.setEventType(EventType.valueOf(rs.getString(EVENT_TYPE)));
         message.setInvoiceId(rs.getString(INVOICE_ID));
         message.setInvoiceStatus(InvoiceStatusEnum.valueOf(rs.getString(INVOICE_STATUS)));
-        if (message.isPayment() || message.isRefund()) {
-            message.setPaymentId(rs.getString(PAYMENT_ID));
-            message.setPaymentStatus(PaymentStatusEnum.valueOf(rs.getString(PAYMENT_STATUS)));
-            message.setPaymentFee(rs.getLong(PAYMENT_FEE));
-        }
-        if (message.isRefund()) {
-            message.setRefundId(rs.getString(REFUND_ID));
-            message.setRefundStatus(RefundStatusEnum.valueOf(rs.getString(REFUND_STATUS)));
-            message.setRefundAmount(rs.getLong(REFUND_AMOUNT));
-            message.setRefundCurrency(rs.getString(REFUND_CURRENCY));
-        }
+        message.setPaymentId(rs.getString(PAYMENT_ID));
+        message.setPaymentStatus(rs.getString(PAYMENT_STATUS) != null ?
+                PaymentStatusEnum.valueOf(rs.getString(PAYMENT_STATUS)) : null);
+        message.setPaymentFee(rs.getLong(PAYMENT_FEE));
+        message.setRefundId(rs.getString(REFUND_ID));
+        message.setRefundStatus(rs.getString(REFUND_STATUS) != null ?
+                RefundStatusEnum.valueOf(rs.getString(REFUND_STATUS)) : null);
+        message.setRefundAmount(rs.getLong(REFUND_AMOUNT));
+        message.setRefundCurrency(rs.getString(REFUND_CURRENCY));
         return message;
     }
-
-
 }

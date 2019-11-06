@@ -7,6 +7,7 @@ import com.rbkmoney.woody.thrift.impl.http.event.HttpServiceEventLogListener;
 import com.rbkmoney.woody.thrift.impl.http.event.ServiceEventLogListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import java.io.IOException;

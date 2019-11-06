@@ -12,7 +12,6 @@ import com.rbkmoney.hooker.service.EventService;
 import com.rbkmoney.hooker.service.InvoicingEventService;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

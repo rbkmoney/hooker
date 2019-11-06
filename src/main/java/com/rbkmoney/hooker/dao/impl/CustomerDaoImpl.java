@@ -92,7 +92,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 .addValue(OCCURED_AT, message.getEventTime())
                 .addValue(SEQUENCE_ID, message.getSequenceId())
                 .addValue(CHANGE_ID, message.getChangeId())
-                .addValue(TYPE, message.getType())
+                .addValue(TYPE, message.getType().value())
                 .addValue(PARTY_ID, message.getPartyId())
                 .addValue(EVENT_TYPE, message.getEventType().name())
                 .addValue(CUSTOMER_ID, message.getCustomerId())

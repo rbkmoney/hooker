@@ -1,14 +1,12 @@
 package com.rbkmoney.hooker.converter;
 
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.DisposablePaymentResource;
+import com.rbkmoney.damsel.domain.InvoicePayment;
+import com.rbkmoney.damsel.domain.InvoicePaymentCaptured;
+import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.model.*;
-import com.rbkmoney.swag_webhook_events.model.ClientInfo;
-import com.rbkmoney.swag_webhook_events.model.ContactInfo;
-import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
-import com.rbkmoney.swag_webhook_events.model.PaymentResourcePayer;
-import com.rbkmoney.swag_webhook_events.model.RecurrentPayer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -50,8 +48,8 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                     .contactInfo(new PaymentContactInfo()
                             .email(payerOrigin.getContactInfo().getEmail())
                             .phoneNumber(payerOrigin.getContactInfo().getPhoneNumber()))
-                    .ip(resourceOrigin.getClientInfo().getIpAddress())
-                    .fingerprint(resourceOrigin.getClientInfo().getFingerprint())
+                    .ip(resourceOrigin.isSetClientInfo() ? resourceOrigin.getClientInfo().getIpAddress() : null)
+                    .fingerprint(resourceOrigin.isSetClientInfo() ? resourceOrigin.getClientInfo().getFingerprint() : null)
                     .payer(new PaymentResourcePayer()
                             .paymentSession(resourceOrigin.getPaymentSessionId())
                             .paymentToolToken(target.getPaymentToolToken())

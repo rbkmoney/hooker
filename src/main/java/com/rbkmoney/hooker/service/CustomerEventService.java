@@ -1,17 +1,12 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.damsel.payment_processing.Customer;
+import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
+import com.rbkmoney.damsel.payment_processing.EventRange;
 import com.rbkmoney.hooker.converter.CustomerBindingConverter;
 import com.rbkmoney.hooker.converter.CustomerConverter;
 import com.rbkmoney.hooker.model.CustomerMessage;
-import com.rbkmoney.swag_webhook_events.model.CustomerBindingFailed;
-import com.rbkmoney.swag_webhook_events.model.CustomerBindingStarted;
-import com.rbkmoney.swag_webhook_events.model.CustomerBindingSucceeded;
-import com.rbkmoney.swag_webhook_events.model.CustomerCreated;
-import com.rbkmoney.swag_webhook_events.model.CustomerDeleted;
-import com.rbkmoney.swag_webhook_events.model.CustomerReady;
-import com.rbkmoney.swag_webhook_events.model.Event;
+import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;

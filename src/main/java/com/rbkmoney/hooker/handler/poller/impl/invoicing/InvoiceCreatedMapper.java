@@ -1,9 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
 import com.rbkmoney.damsel.domain.Invoice;
-import com.rbkmoney.damsel.domain.InvoiceCart;
-import com.rbkmoney.damsel.domain.InvoiceLine;
-import com.rbkmoney.damsel.msgpack.Value;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -14,7 +11,6 @@ import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 @Component

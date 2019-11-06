@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.model.InvoicingMessageEnum;
 import com.rbkmoney.hooker.model.InvoicingMessageKey;
 
 public class KeyUtils {

@@ -4,7 +4,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.NotFoundException;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import com.rbkmoney.hooker.utils.KeyUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -31,16 +33,6 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
     private final Cache<InvoicingMessageKey, InvoicingMessage> invoicingCache;
 
     private static RowMapper<InvoicingMessage> messageRowMapper = new InvoicingMessageRowMapper();
-
-    private static void setNullPaymentParamValues(MapSqlParameterSource params) {
-        params.addValue(PAYMENT_ID, null)
-                .addValue(PAYMENT_STATUS, null)
-                .addValue(PAYMENT_FEE, null)
-                .addValue(REFUND_ID, null)
-                .addValue(REFUND_STATUS, null)
-                .addValue(REFUND_AMOUNT, null)
-                .addValue(REFUND_CURRENCY, null);
-    }
 
     public void saveBatch(List<InvoicingMessage> messages) throws DaoException {
         int[] batchMessagesResult = saveBatchMessages(messages);
@@ -66,34 +58,27 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                     ":refund_id, :refund_status, :refund_amount, :refund_currency) " +
                     "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING ";
 
-            MapSqlParameterSource[] sqlParameterSources = messages.stream().map(message -> {
-                MapSqlParameterSource params = new MapSqlParameterSource()
-                        .addValue(ID, message.getId())
-                        .addValue(NEW_EVENT_ID, message.getEventId())
-                        .addValue(EVENT_TIME, message.getEventTime())
-                        .addValue(SEQUENCE_ID, message.getSequenceId())
-                        .addValue(CHANGE_ID, message.getChangeId())
-                        .addValue(TYPE, message.getType().value())
-                        .addValue(PARTY_ID, message.getPartyId())
-                        .addValue(EVENT_TYPE, message.getEventType().toString())
-                        .addValue(INVOICE_ID, message.getInvoiceId())
-                        .addValue(SHOP_ID, message.getShopId())
-                        .addValue(INVOICE_STATUS, message.getInvoiceStatus().toString());
-                setNullPaymentParamValues(params);
-                if (message.isPayment() || message.isRefund()) {
-                    params.addValue(PAYMENT_ID, message.getPaymentId())
-                            .addValue(PAYMENT_STATUS, message.getPaymentStatus().toString())
-                            .addValue(PAYMENT_FEE, message.getPaymentFee());
-                }
-                if (message.isRefund()) {
-                    params.addValue(REFUND_ID, message.getRefundId())
-                            .addValue(REFUND_STATUS, message.getRefundStatus().toString())
+            MapSqlParameterSource[] sqlParameterSources = messages.stream()
+                    .map(message -> new MapSqlParameterSource()
+                            .addValue(ID, message.getId())
+                            .addValue(NEW_EVENT_ID, message.getEventId())
+                            .addValue(EVENT_TIME, message.getEventTime())
+                            .addValue(SEQUENCE_ID, message.getSequenceId())
+                            .addValue(CHANGE_ID, message.getChangeId())
+                            .addValue(TYPE, message.getType().value())
+                            .addValue(PARTY_ID, message.getPartyId())
+                            .addValue(EVENT_TYPE, message.getEventType().toString())
+                            .addValue(INVOICE_ID, message.getInvoiceId())
+                            .addValue(SHOP_ID, message.getShopId())
+                            .addValue(INVOICE_STATUS, message.getInvoiceStatus().toString())
+                            .addValue(PAYMENT_ID, message.getPaymentId())
+                            .addValue(PAYMENT_STATUS, message.getPaymentStatus() != null ? message.getPaymentStatus().toString() : null)
+                            .addValue(PAYMENT_FEE, message.getPaymentFee())
+                            .addValue(REFUND_ID, message.getRefundId())
+                            .addValue(REFUND_STATUS, message.getRefundStatus() != null ? message.getRefundStatus().toString() : null)
                             .addValue(REFUND_AMOUNT, message.getRefundAmount())
-                            .addValue(REFUND_CURRENCY, message.getRefundCurrency());
-                }
-                return params;
-            }).toArray(MapSqlParameterSource[]::new);
-
+                            .addValue(REFUND_CURRENCY, message.getRefundCurrency()))
+                    .toArray(MapSqlParameterSource[]::new);
             return jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {
             List<String> shortInfo = messages.stream()
