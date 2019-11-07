@@ -9,6 +9,7 @@ import com.rbkmoney.hooker.converter.CustomerConverter;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.utils.TimeUtils;
 import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -32,7 +33,7 @@ public class CustomerEventService implements EventService<CustomerMessage> {
             Customer customer = customerClient.get(message.getCustomerId(), new EventRange().setLimit(message.getSequenceId().intValue()));
             return resolveEvent(message, customer)
                     .eventID(message.getEventId().intValue())
-                    .occuredAt(OffsetDateTime.parse(message.getEventTime(), DateTimeFormatter.ISO_DATE_TIME))
+                    .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
                     .topic(Event.TopicEnum.CUSTOMERSTOPIC);
         } catch (InvoiceNotFound e) {
             throw new NotFoundException(e);

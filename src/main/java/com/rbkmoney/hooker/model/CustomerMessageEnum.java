@@ -1,5 +1,7 @@
 package com.rbkmoney.hooker.model;
 
+import java.util.Arrays;
+
 public enum CustomerMessageEnum {
     CUSTOMER("customer"),
     BINDING("binding");
@@ -15,11 +17,7 @@ public enum CustomerMessageEnum {
     }
 
     public static CustomerMessageEnum lookup(String v) {
-        for (CustomerMessageEnum e : values()) {
-            if (e.value().equals(v)) {
-                return e;
-            }
-        }
-        throw new IllegalArgumentException(v);
+        return Arrays.stream(values()).filter(value -> v.equals(value.value())).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown customer message type: " + v));
     }
 }

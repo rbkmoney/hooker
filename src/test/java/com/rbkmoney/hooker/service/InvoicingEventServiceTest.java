@@ -64,7 +64,6 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
         message.setPaymentStatus(PaymentStatusEnum.captured);
         Event event = service.getByMessage(message);
         String json = objectMapper.writeValueAsString(event);
-        System.out.println(json);
         assertTrue(json.contains("\"payment_id\":271771960"));
     }
 }

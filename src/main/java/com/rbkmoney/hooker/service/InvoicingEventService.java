@@ -8,6 +8,7 @@ import com.rbkmoney.hooker.converter.RefundConverter;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.utils.TimeUtils;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCreated;
 import com.rbkmoney.swag_webhook_events.model.*;
@@ -34,7 +35,7 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
             Invoice invoiceInfo = invoicingClient.get(userInfo, message.getInvoiceId(), new EventRange().setLimit(message.getSequenceId().intValue()));
             return resolveEvent(message, invoiceInfo)
                     .eventID(message.getEventId().intValue())
-                    .occuredAt(OffsetDateTime.parse(message.getEventTime(), DateTimeFormatter.ISO_DATE_TIME))
+                    .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
                     .topic(Event.TopicEnum.INVOICESTOPIC);
         } catch (InvoiceNotFound e) {
             throw new NotFoundException(e);
