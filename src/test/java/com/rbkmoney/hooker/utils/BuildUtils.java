@@ -1,8 +1,8 @@
 package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.damsel.base.Content;
-import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
-import com.rbkmoney.damsel.domain.InvoiceStatus;
+import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.payment_processing.InvoicePayment;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
@@ -50,12 +50,26 @@ public class BuildUtils {
         return message;
     }
 
+    public static com.rbkmoney.damsel.payment_processing.Customer buildCustomer(String customerId, String bindingId) throws IOException {
+        MockTBaseProcessor tBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
+        com.rbkmoney.damsel.payment_processing.Customer customer = tBaseProcessor.process(new com.rbkmoney.damsel.payment_processing.Customer(),
+                new TBaseHandler<>(com.rbkmoney.damsel.payment_processing.Customer.class))
+                .setId(customerId)
+                .setCreatedAt("2016-03-22T06:12:27Z")
+                .setBindings(Collections.singletonList(
+                        tBaseProcessor.process(new com.rbkmoney.damsel.payment_processing.CustomerBinding(),
+                                new TBaseHandler<>(com.rbkmoney.damsel.payment_processing.CustomerBinding.class))
+                                .setId(bindingId)));
+        customer.getBindings().get(0).getPaymentResource().setPaymentTool(PaymentTool.bank_card(tBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
+        return customer;
+    }
+
     public static com.rbkmoney.damsel.payment_processing.Invoice buildInvoice(String partyId, String invoiceId, String paymentId, String refundId,
                                                                               InvoiceStatus invoiceStatus, InvoicePaymentStatus paymentStatus) throws IOException {
         MockTBaseProcessor tBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
-        return new com.rbkmoney.damsel.payment_processing.Invoice()
-                .setInvoice(new MockTBaseProcessor(MockMode.RANDOM, 15, 1).process(new com.rbkmoney.damsel.domain.Invoice(),
-                        new TBaseHandler<>(com.rbkmoney.damsel.domain.Invoice.class))
+        com.rbkmoney.damsel.payment_processing.Invoice invoice = new com.rbkmoney.damsel.payment_processing.Invoice()
+                .setInvoice(tBaseProcessor.process(new Invoice(),
+                        new TBaseHandler<>(Invoice.class))
                         .setId(invoiceId)
                         .setOwnerId(partyId)
                         .setCreatedAt("2016-03-22T06:12:27Z")
@@ -69,14 +83,19 @@ public class BuildUtils {
                                 .setId(paymentId)
                                 .setOwnerId(partyId)
                                 .setStatus(paymentStatus))
-                        .setRefunds(Collections.singletonList(tBaseProcessor.process(new com.rbkmoney.damsel.domain.InvoicePaymentRefund(),
-                                new TBaseHandler<>(com.rbkmoney.damsel.domain.InvoicePaymentRefund.class))
+                        .setRefunds(Collections.singletonList(tBaseProcessor.process(new InvoicePaymentRefund(),
+                                new TBaseHandler<>(InvoicePaymentRefund.class))
                                 .setReason("keksik")
                                 .setCreatedAt("2016-03-22T06:12:27Z")
                                 .setId(refundId)))));
+        if (invoice.getPayments().get(0).getPayment().getPayer().isSetPaymentResource()) {
+            invoice.getPayments().get(0).getPayment().getPayer().getPaymentResource().getResource()
+                    .setPaymentTool(PaymentTool.bank_card(tBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
+        }
+        return invoice;
     }
 
-    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, CustomerMessageEnum type, String custId, String shopId, Customer.StatusEnum custStatus){
+    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, CustomerMessageEnum type, String custId, String shopId){
         CustomerMessage customerMessage = new CustomerMessage();
         customerMessage.setEventId(eventId);
         customerMessage.setPartyId(partyId);

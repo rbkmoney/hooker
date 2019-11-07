@@ -36,8 +36,13 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
         Payment target = converter.convert(source);
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
-        assertEquals(source.getCost().getAmount(), target.getAmount().longValue());
-        assertEquals(source.getCost().getCurrency().getSymbolicCode(), target.getCurrency());
+        if (source.getStatus().isSetCaptured() && source.getStatus().getCaptured().isSetCost()) {
+            assertEquals(source.getStatus().getCaptured().getCost().getAmount(), target.getAmount().longValue());
+            assertEquals(source.getStatus().getCaptured().getCost().getCurrency().getSymbolicCode(), target.getCurrency());
+        } else {
+            assertEquals(source.getCost().getAmount(), target.getAmount().longValue());
+            assertEquals(source.getCost().getCurrency().getSymbolicCode(), target.getCurrency());
+        }
         if (source.getPayer().isSetCustomer()) {
             assertTrue(target.getPayer() instanceof CustomerPayer);
             assertEquals(source.getPayer().getCustomer().getCustomerId(), ((CustomerPayer)target.getPayer()).getCustomerID());

@@ -6,10 +6,13 @@ import com.rbkmoney.damsel.domain.InvoicePaid;
 import com.rbkmoney.damsel.domain.InvoicePaymentPending;
 import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
 import com.rbkmoney.damsel.domain.InvoiceStatus;
+import com.rbkmoney.damsel.payment_processing.Customer;
+import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
 import com.rbkmoney.damsel.payment_processing.InvoicingSrv;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.BuildUtils;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingSucceeded;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.swag_webhook_events.model.RefundSucceeded;
 import org.junit.Before;
@@ -22,53 +25,47 @@ import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 
-public class InvoicingEventServiceTest extends AbstractIntegrationTest {
+public class CustomerEventServiceTest extends AbstractIntegrationTest {
 
     @MockBean
-    private InvoicingSrv.Iface invoicingClient;
+    private CustomerManagementSrv.Iface customerClient;
 
     @Autowired
-    private InvoicingEventService service;
+    private CustomerEventService service;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Before
     public void setUp() throws Exception {
-        Mockito.when(invoicingClient.get(any(), any(), any()))
-                .thenReturn(BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
-                        InvoiceStatus.paid(new InvoicePaid()), InvoicePaymentStatus.pending(new InvoicePaymentPending())));
+        Mockito.when(customerClient.get(any(), any()))
+                .thenReturn(BuildUtils.buildCustomer("customerId", "bindingId"));
     }
 
     @Test
-    public void testRefundSucceeded() {
-        InvoicingMessage message = random(InvoicingMessage.class);
-        message.setPaymentId("1");
-        message.setRefundId("1");
-        message.setType(InvoicingMessageEnum.REFUND);
+    public void testCustomerSucceded() {
+        CustomerMessage message = random(CustomerMessage.class);
+        message.setType(CustomerMessageEnum.BINDING);
         message.setEventTime("2016-03-22T06:12:27Z");
-        message.setEventType(EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED);
-        message.setRefundStatus(RefundStatusEnum.succeeded);
+        message.setEventType(EventType.CUSTOMER_BINDING_SUCCEEDED);
+        message.setBindingId("bindingId");
         Event event = service.getByMessage(message);
-        assertTrue(event instanceof RefundSucceeded);
-        RefundSucceeded refundSucceded = (RefundSucceeded) event;
+        assertTrue(event instanceof CustomerBindingSucceeded);
+        CustomerBindingSucceeded bindingSucceeded = (CustomerBindingSucceeded) event;
         assertEquals(message.getEventId().intValue(), event.getEventID().intValue());
-        assertEquals("invoiceId", refundSucceded.getInvoice().getId());
-        assertEquals("1", refundSucceded.getPayment().getId());
-        assertEquals("1", refundSucceded.getRefund().getId());
-        assertEquals("keksik", refundSucceded.getRefund().getReason());
+        assertEquals("customerId", bindingSucceeded.getCustomer().getId());
+        assertEquals("bindingId", bindingSucceeded.getBinding().getId());
     }
 
     @Test
     public void testJson() throws JsonProcessingException {
-        InvoicingMessage message = random(InvoicingMessage.class);
-        message.setPaymentId("1");
-        message.setType(InvoicingMessageEnum.PAYMENT);
+        CustomerMessage message = random(CustomerMessage.class);
+        message.setType(CustomerMessageEnum.BINDING);
         message.setEventTime("2016-03-22T06:12:27Z");
-        message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
-        message.setPaymentStatus(PaymentStatusEnum.captured);
+        message.setEventType(EventType.CUSTOMER_BINDING_FAILED);
+        message.setBindingId("bindingId");
         Event event = service.getByMessage(message);
         String json = objectMapper.writeValueAsString(event);
-        assertTrue(json.contains("\"payment_id\":271771960"));
+        assertTrue(json.contains("2016-03-22T06:12:27Z"));
     }
 }
