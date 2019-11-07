@@ -24,8 +24,6 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
     public static final String PAYMENT_FEE = "payment_fee";
     public static final String REFUND_ID = "refund_id";
     public static final String REFUND_STATUS = "refund_status";
-    public static final String REFUND_AMOUNT = "refund_amount";
-    public static final String REFUND_CURRENCY = "refund_currency";
 
     @Override
     public InvoicingMessage mapRow(ResultSet rs, int i) throws SQLException {
@@ -40,16 +38,14 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
         message.setShopId(rs.getString(SHOP_ID));
         message.setEventType(EventType.valueOf(rs.getString(EVENT_TYPE)));
         message.setInvoiceId(rs.getString(INVOICE_ID));
-        message.setInvoiceStatus(InvoiceStatusEnum.valueOf(rs.getString(INVOICE_STATUS)));
+        message.setInvoiceStatus(InvoiceStatusEnum.lookup(rs.getString(INVOICE_STATUS)));
         message.setPaymentId(rs.getString(PAYMENT_ID));
         message.setPaymentStatus(rs.getString(PAYMENT_STATUS) != null ?
-                PaymentStatusEnum.valueOf(rs.getString(PAYMENT_STATUS)) : null);
+                PaymentStatusEnum.lookup(rs.getString(PAYMENT_STATUS)) : null);
         message.setPaymentFee(rs.getLong(PAYMENT_FEE));
         message.setRefundId(rs.getString(REFUND_ID));
         message.setRefundStatus(rs.getString(REFUND_STATUS) != null ?
-                RefundStatusEnum.valueOf(rs.getString(REFUND_STATUS)) : null);
-        message.setRefundAmount(rs.getLong(REFUND_AMOUNT));
-        message.setRefundCurrency(rs.getString(REFUND_CURRENCY));
+                RefundStatusEnum.lookup(rs.getString(REFUND_STATUS)) : null);
         return message;
     }
 }

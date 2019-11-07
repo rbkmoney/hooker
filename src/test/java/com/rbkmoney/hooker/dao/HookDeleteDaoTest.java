@@ -38,7 +38,7 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
     public void testDelete() {
         Long hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
         Long hookId2 = hookDao.create(HookDaoImplTest.buildHook("partyId2", "fake2.url")).getId();
-        batchService.process(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.fulfilled, PaymentStatusEnum.captured)));
+        batchService.process(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.FULFILLED, PaymentStatusEnum.CAPTURED)));
         assertEquals(queueDao.getWithPolicies(taskDao.getScheduled().keySet()).size(), 1);
         hookDao.delete(hookId2);
         assertNotEquals(queueDao.getWithPolicies(taskDao.getScheduled().keySet()).size(), 0);

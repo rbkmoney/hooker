@@ -45,6 +45,6 @@ public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        message.setInvoiceStatus(InvoiceStatusEnum.valueOf(ic.getInvoiceStatusChanged().getStatus().getSetField().getFieldName()));
+        message.setInvoiceStatus(InvoiceStatusEnum.lookup(ic.getInvoiceStatusChanged().getStatus().getSetField().getFieldName()));
     }
 }

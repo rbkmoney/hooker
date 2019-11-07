@@ -47,7 +47,7 @@ public class InvoicePaymentRefundStatusChangedMapper extends NeedReadInvoiceEven
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        message.setRefundStatus(RefundStatusEnum.valueOf(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
+        message.setRefundStatus(RefundStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
                 .getPayload().getInvoicePaymentRefundStatusChanged().getStatus().getSetField().getFieldName()));
     }
 }

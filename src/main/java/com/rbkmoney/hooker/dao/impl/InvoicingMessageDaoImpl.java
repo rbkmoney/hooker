@@ -48,14 +48,10 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
 
             final String sql = "INSERT INTO hook.message" +
                     "(id, new_event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
-                    "invoice_id, shop_id, invoice_status, " +
-                    "payment_id, payment_status, payment_fee, " +
-                    "refund_id, refund_status, refund_amount, refund_currency) " +
+                    "invoice_id, shop_id, invoice_status, payment_id, payment_status, payment_fee, refund_id, refund_status) " +
                     "VALUES " +
                     "(:id, :new_event_id, :event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
-                    ":invoice_id, :shop_id, :invoice_status, " +
-                    ":payment_id, :payment_status, :payment_fee, " +
-                    ":refund_id, :refund_status, :refund_amount, :refund_currency) " +
+                    ":invoice_id, :shop_id, :invoice_status, :payment_id, :payment_status, :payment_fee, :refund_id, :refund_status) " +
                     "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING ";
 
             MapSqlParameterSource[] sqlParameterSources = messages.stream()
@@ -70,14 +66,12 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                             .addValue(EVENT_TYPE, message.getEventType().toString())
                             .addValue(INVOICE_ID, message.getInvoiceId())
                             .addValue(SHOP_ID, message.getShopId())
-                            .addValue(INVOICE_STATUS, message.getInvoiceStatus().toString())
+                            .addValue(INVOICE_STATUS, message.getInvoiceStatus().getValue())
                             .addValue(PAYMENT_ID, message.getPaymentId())
-                            .addValue(PAYMENT_STATUS, message.getPaymentStatus() != null ? message.getPaymentStatus().toString() : null)
+                            .addValue(PAYMENT_STATUS, message.getPaymentStatus() != null ? message.getPaymentStatus().getValue() : null)
                             .addValue(PAYMENT_FEE, message.getPaymentFee())
                             .addValue(REFUND_ID, message.getRefundId())
-                            .addValue(REFUND_STATUS, message.getRefundStatus() != null ? message.getRefundStatus().toString() : null)
-                            .addValue(REFUND_AMOUNT, message.getRefundAmount())
-                            .addValue(REFUND_CURRENCY, message.getRefundCurrency()))
+                            .addValue(REFUND_STATUS, message.getRefundStatus() != null ? message.getRefundStatus().getValue() : null))
                     .toArray(MapSqlParameterSource[]::new);
             return jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {

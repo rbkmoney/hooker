@@ -37,9 +37,9 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         if (!messagesCreated) {
             messageDao.saveBatch(Arrays.asList(
-                    buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1234", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured),
-                    buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1235", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured),
-                    buildMessage(InvoicingMessageEnum.PAYMENT.getValue(), "1236", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
+                    buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1234", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED),
+                    buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1235", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED),
+                    buildMessage(InvoicingMessageEnum.PAYMENT.getValue(), "1236", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED)));
             messagesCreated = true;
         }
     }
@@ -48,7 +48,7 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     public void get() throws Exception {
         InvoicingMessage message = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("1235").type(InvoicingMessageEnum.INVOICE).build());
         assertEquals(message.getInvoiceId(), "1235");
-        assertEquals(message.getInvoiceStatus(), InvoiceStatusEnum.paid);
+        assertEquals(message.getInvoiceStatus(), InvoiceStatusEnum.PAID);
 
         List<InvoicingMessage> messages = messageDao.getBy(Arrays.asList(message.getId()));
         assertEquals(1, messages.size());

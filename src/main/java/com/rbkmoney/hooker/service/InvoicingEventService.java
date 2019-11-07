@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.service;
 
+import com.rbkmoney.damsel.domain.InvoicePaymentRefund;
 import com.rbkmoney.damsel.payment_processing.Invoice;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.hooker.converter.InvoiceConverter;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
 
+import java.sql.Ref;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -58,10 +60,14 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
             case INVOICE_PAYMENT_STATUS_CHANGED:
                 return resolvePaymentStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_REFUND_STARTED:
+                com.rbkmoney.damsel.domain.InvoicePayment payment = extractPayment(m, invoiceInfo);
+                InvoicePaymentRefund refund = extractRefund(m, invoiceInfo);
+                Refund convertedRefund = refundConverter.convert(refund);
+                setCash(convertedRefund, payment, refund);
                 return new RefundCreated()
                         .invoice(invoiceConverter.convert(invoiceInfo.getInvoice()))
-                        .payment(paymentConverter.convert(extractPayment(m, invoiceInfo)).fee(m.getPaymentFee()))
-                        .refund(refundConverter.convert(extractRefund(m, invoiceInfo)).amount(m.getRefundAmount()).currency(m.getRefundCurrency()));
+                        .payment(paymentConverter.convert(payment).fee(m.getPaymentFee()))
+                        .refund(convertedRefund);
             case INVOICE_PAYMENT_REFUND_STATUS_CHANGED:
                 return resolveRefundStatusChanged(m, invoiceInfo);
             default:
@@ -93,10 +99,10 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
     private Event resolveInvoiceStatusChanged(InvoicingMessage message, Invoice invoiceInfo) {
         com.rbkmoney.swag_webhook_events.model.Invoice convertedInvoice = invoiceConverter.convert(invoiceInfo.getInvoice());
         switch (message.getInvoiceStatus()) {
-            case unpaid: return new InvoiceCreated().invoice(convertedInvoice);
-            case paid: return new InvoicePaid().invoice(convertedInvoice);
-            case cancelled: return new InvoiceCancelled().invoice(convertedInvoice);
-            case fulfilled: return new InvoiceFulfilled().invoice(convertedInvoice);
+            case UNPAID: return new InvoiceCreated().invoice(convertedInvoice);
+            case PAID: return new InvoicePaid().invoice(convertedInvoice);
+            case CANCELLED: return new InvoiceCancelled().invoice(convertedInvoice);
+            case FULFILLED: return new InvoiceFulfilled().invoice(convertedInvoice);
             default: throw new UnsupportedOperationException("Unknown invoice status " + message.getInvoiceStatus());
         }
     }
@@ -105,25 +111,33 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
         com.rbkmoney.swag_webhook_events.model.Invoice convertedInvoice = invoiceConverter.convert(invoiceInfo.getInvoice());
         Payment convertedPayment = paymentConverter.convert(extractPayment(message, invoiceInfo)).fee(message.getPaymentFee());
         switch (message.getPaymentStatus()) {
-            case pending: return new PaymentStarted().invoice(convertedInvoice).payment(convertedPayment);
-            case processed: return new PaymentProcessed().invoice(convertedInvoice).payment(convertedPayment);
-            case captured: return new PaymentCaptured().invoice(convertedInvoice).payment(convertedPayment);
-            case cancelled: return new PaymentCancelled().invoice(convertedInvoice).payment(convertedPayment);
-            case refunded: return new PaymentRefunded().invoice(convertedInvoice).payment(convertedPayment);
-            case failed: return new PaymentFailed().invoice(convertedInvoice).payment(convertedPayment);
+            case PENDING: return new PaymentStarted().invoice(convertedInvoice).payment(convertedPayment);
+            case PROCESSED: return new PaymentProcessed().invoice(convertedInvoice).payment(convertedPayment);
+            case CAPTURED: return new PaymentCaptured().invoice(convertedInvoice).payment(convertedPayment);
+            case CANCELLED: return new PaymentCancelled().invoice(convertedInvoice).payment(convertedPayment);
+            case REFUNDED: return new PaymentRefunded().invoice(convertedInvoice).payment(convertedPayment);
+            case FAILED: return new PaymentFailed().invoice(convertedInvoice).payment(convertedPayment);
             default: throw new UnsupportedOperationException("Unknown payment status " + message.getPaymentStatus());
         }
     }
 
     private Event resolveRefundStatusChanged(InvoicingMessage message, Invoice invoiceInfo) {
         com.rbkmoney.swag_webhook_events.model.Invoice convertedInvoice = invoiceConverter.convert(invoiceInfo.getInvoice());
-        Payment convertedPayment = paymentConverter.convert(extractPayment(message, invoiceInfo)).fee(message.getPaymentFee());
-        Refund convertedRefund = refundConverter.convert(extractRefund(message, invoiceInfo)).amount(message.getRefundAmount()).currency(message.getRefundCurrency());
+        com.rbkmoney.damsel.domain.InvoicePayment payment = extractPayment(message, invoiceInfo);
+        Payment convertedPayment = paymentConverter.convert(payment).fee(message.getPaymentFee());
+        InvoicePaymentRefund refund = extractRefund(message, invoiceInfo);
+        Refund convertedRefund = refundConverter.convert(refund);
+        setCash(convertedRefund, payment, refund);
         switch (message.getRefundStatus()) {
-            case pending: return new RefundCreated().invoice(convertedInvoice).payment(convertedPayment).refund(convertedRefund);
-            case succeeded: return new RefundSucceeded().invoice(convertedInvoice).payment(convertedPayment).refund(convertedRefund);
-            case failed: return new RefundFailed().invoice(convertedInvoice).payment(convertedPayment).refund(convertedRefund);
+            case PENDING: return new RefundCreated().invoice(convertedInvoice).payment(convertedPayment).refund(convertedRefund);
+            case SUCCEEDED: return new RefundSucceeded().invoice(convertedInvoice).payment(convertedPayment).refund(convertedRefund);
+            case FAILED: return new RefundFailed().invoice(convertedInvoice).payment(convertedPayment).refund(convertedRefund);
             default: throw new UnsupportedOperationException("Unknown refund status " + message.getRefundStatus());
         }
+    }
+
+    private void setCash(Refund convertedRefund, com.rbkmoney.damsel.domain.InvoicePayment payment, InvoicePaymentRefund refund){
+        convertedRefund.amount(refund.isSetCash() ? refund.getCash().getAmount() : payment.getCost().getAmount())
+                .currency(refund.isSetCash() ? refund.getCash().getCurrency().getSymbolicCode() : payment.getCost().getCurrency().getSymbolicCode());
     }
 }

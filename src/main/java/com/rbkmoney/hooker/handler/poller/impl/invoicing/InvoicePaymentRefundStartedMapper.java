@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.domain.FinalCashFlowPosting;
 import com.rbkmoney.damsel.domain.InvoicePaymentRefund;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundCreated;
@@ -11,8 +10,6 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMapper {
@@ -55,22 +52,6 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
                 .getPayload().getInvoicePaymentRefundCreated();
         InvoicePaymentRefund refundOrigin = refundCreated.getRefund();
         message.setRefundId(refundOrigin.getId());
-        message.setRefundStatus(RefundStatusEnum.valueOf(refundOrigin.getStatus().getSetField().getFieldName()));
-        List<FinalCashFlowPosting> cashFlow = refundCreated.getCashFlow();
-        if (refundOrigin.isSetCash()) {
-            message.setRefundAmount(refundOrigin.getCash().getAmount());
-            message.setRefundCurrency(refundOrigin.getCash().getCurrency().getSymbolicCode());
-        } else {
-            message.setRefundAmount(getAmount(cashFlow));
-            message.setRefundCurrency(cashFlow.get(0).getVolume().getCurrency().getSymbolicCode());
-        }
-    }
-
-    public static long getAmount(List<FinalCashFlowPosting> finalCashFlow) {
-        return finalCashFlow.stream()
-                .filter(c -> c.getSource().getAccountType().isSetMerchant() &&
-                        c.getDestination().getAccountType().isSetProvider())
-                .mapToLong(c -> c.getVolume().getAmount())
-                .sum();
+        message.setRefundStatus(RefundStatusEnum.lookup(refundOrigin.getStatus().getSetField().getFieldName()));
     }
 }

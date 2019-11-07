@@ -88,7 +88,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         InvoicingMessage statusChanged = invoicePaymentStatusChangedEventMapper.handle(icStatusChanged, eventInfoPaymentStatusChanged, storage);
         assertNotNull(statusChanged);
         assertEquals("partyId", statusChanged.getPartyId());
-        assertEquals(PaymentStatusEnum.processed, statusChanged.getPaymentStatus());
+        assertEquals(PaymentStatusEnum.PROCESSED, statusChanged.getPaymentStatus());
         assertNotEquals(statusChanged.getPaymentStatus(), paymentStarted.getPaymentStatus());
         storage.put(KeyUtils.key(statusChanged), statusChanged);
         messages.add(statusChanged);

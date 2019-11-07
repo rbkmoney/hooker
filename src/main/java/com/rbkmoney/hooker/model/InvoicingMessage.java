@@ -21,8 +21,6 @@ public class InvoicingMessage extends Message {
     private Long paymentFee;
     private String refundId;
     private RefundStatusEnum refundStatus;
-    private Long refundAmount;
-    private String refundCurrency;
 
     public boolean isInvoice() {
         return type == InvoicingMessageEnum.INVOICE;

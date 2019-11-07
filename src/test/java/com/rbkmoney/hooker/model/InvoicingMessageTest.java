@@ -11,7 +11,7 @@ public class InvoicingMessageTest {
     public void testCopy() {
         InvoicingMessage invoicingMessage = random(InvoicingMessage.class);
         InvoicingMessage copy = invoicingMessage.copy();
-        invoicingMessage.setRefundCurrency("EUR");
-        assertNotEquals("EUR", copy.getRefundCurrency());
+        invoicingMessage.setPaymentFee(123L);
+        assertNotEquals(123, copy.getPaymentFee().longValue());
     }
 }

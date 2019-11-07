@@ -40,7 +40,7 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
         InvoicePayment paymentOrigin = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
         message.setPaymentId(paymentOrigin.getId());
-        message.setPaymentStatus(PaymentStatusEnum.valueOf(paymentOrigin.getStatus().getSetField().getFieldName()));
+        message.setPaymentStatus(PaymentStatusEnum.lookup(paymentOrigin.getStatus().getSetField().getFieldName()));
     }
 
     @Override

@@ -48,7 +48,7 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
         message.setType(InvoicingMessageEnum.REFUND);
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setEventType(EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED);
-        message.setRefundStatus(RefundStatusEnum.succeeded);
+        message.setRefundStatus(RefundStatusEnum.SUCCEEDED);
         Event event = service.getByMessage(message);
         assertTrue(event instanceof RefundSucceeded);
         RefundSucceeded refundSucceded = (RefundSucceeded) event;
@@ -66,7 +66,7 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
         message.setType(InvoicingMessageEnum.PAYMENT);
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
-        message.setPaymentStatus(PaymentStatusEnum.captured);
+        message.setPaymentStatus(PaymentStatusEnum.CAPTURED);
         Event event = service.getByMessage(message);
         String json = objectMapper.writeValueAsString(event);
         assertTrue(json.contains("\"payment_id\":271771960"));

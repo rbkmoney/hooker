@@ -41,9 +41,7 @@ public class BuildUtils {
 
         if (message.isRefund()) {
             message.setRefundId("123");
-            message.setRefundAmount(115L);
-            message.setRefundCurrency("RUB");
-            message.setRefundStatus(RefundStatusEnum.succeeded);
+            message.setRefundStatus(RefundStatusEnum.SUCCEEDED);
         }
         message.setSequenceId(sequenceId);
         message.setChangeId(changeId);
