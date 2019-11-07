@@ -1,5 +1,7 @@
 package com.rbkmoney.hooker.converter;
 
+import com.rbkmoney.damsel.domain.BankCard;
+import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.damsel.payment_processing.CustomerBinding;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
@@ -19,8 +21,10 @@ public class CustomerBindingConverterTest extends AbstractIntegrationTest {
 
     @Test
     public void testConvert() throws IOException {
-        CustomerBinding source = new MockTBaseProcessor(MockMode.RANDOM, 15, 1)
+        MockTBaseProcessor mockTBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
+        CustomerBinding source = mockTBaseProcessor
                 .process(new CustomerBinding(), new TBaseHandler<>(CustomerBinding.class));
+        source.getPaymentResource().setPaymentTool(PaymentTool.bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
         com.rbkmoney.swag_webhook_events.model.CustomerBinding target = converter.convert(source);
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getPaymentResource().getPaymentSessionId(), target.getPaymentResource().getPaymentSession());

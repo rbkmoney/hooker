@@ -1,23 +1,23 @@
 package com.rbkmoney.hooker.service;
 
+import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.damsel.payment_processing.Customer;
-import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
-import com.rbkmoney.damsel.payment_processing.EventRange;
-import com.rbkmoney.damsel.payment_processing.InvoiceNotFound;
 import com.rbkmoney.hooker.converter.CustomerBindingConverter;
 import com.rbkmoney.hooker.converter.CustomerConverter;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.utils.TimeUtils;
-import com.rbkmoney.swag_webhook_events.model.*;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingFailed;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingStarted;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingSucceeded;
+import com.rbkmoney.swag_webhook_events.model.CustomerCreated;
+import com.rbkmoney.swag_webhook_events.model.CustomerDeleted;
+import com.rbkmoney.swag_webhook_events.model.CustomerReady;
+import com.rbkmoney.swag_webhook_events.model.Event;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
-
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +35,8 @@ public class CustomerEventService implements EventService<CustomerMessage> {
                     .eventID(message.getEventId().intValue())
                     .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
                     .topic(Event.TopicEnum.CUSTOMERSTOPIC);
-        } catch (InvoiceNotFound e) {
-            throw new NotFoundException(e);
+        } catch (CustomerNotFound e) {
+            throw new NotFoundException("Customer not found, invoiceId=" + message.getCustomerId());
         } catch (TException e) {
             throw new RemoteHostException(e);
         }
@@ -60,10 +60,12 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         }
     }
 
-    private com.rbkmoney.damsel.payment_processing.CustomerBinding extractBinding(CustomerMessage message, Customer customer){
+    private com.rbkmoney.damsel.payment_processing.CustomerBinding extractBinding(CustomerMessage message, Customer customer) {
         return customer.getBindings().stream()
                 .filter(b -> b.getId().equals(message.getBindingId()))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new NotFoundException(String.format("Customer binding not found, customerId=%s, bindingId=%s",
+                                message.getCustomerId(), message.getBindingId())));
     }
 }

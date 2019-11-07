@@ -38,7 +38,7 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
                     .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
                     .topic(Event.TopicEnum.INVOICESTOPIC);
         } catch (InvoiceNotFound e) {
-            throw new NotFoundException(e);
+            throw new NotFoundException("Invoice not found, invoiceId=" + message.getInvoiceId());
         } catch (TException e) {
             throw new RemoteHostException(e);
         }
@@ -75,14 +75,19 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
                 .findFirst().orElseThrow()
                 .getRefunds().stream()
                 .filter(r -> r.getId().equals(message.getRefundId()))
-                .findFirst().orElseThrow();
+                .findFirst()
+                .orElseThrow(() ->
+                        new NotFoundException(String.format("Refund not found, invoiceId=%s, paymentId=%s, refundId=%s",
+                                message.getInvoiceId(), message.getPaymentId(), message.getRefundId())));
     }
 
     private com.rbkmoney.damsel.domain.InvoicePayment extractPayment(InvoicingMessage message, Invoice invoiceInfo) {
         return invoiceInfo.getPayments().stream()
                 .map(InvoicePayment::getPayment)
                 .filter(p -> p.getId().equals(message.getPaymentId()))
-                .findFirst().orElseThrow();
+                .findFirst().orElseThrow(() ->
+                        new NotFoundException(String.format("Payment not found, invoiceId=%s, paymentId=%s",
+                                message.getInvoiceId(), message.getPaymentId())));
     }
 
     private Event resolveInvoiceStatusChanged(InvoicingMessage message, Invoice invoiceInfo) {
