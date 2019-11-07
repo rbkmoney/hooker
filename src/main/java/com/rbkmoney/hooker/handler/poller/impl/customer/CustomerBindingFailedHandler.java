@@ -17,7 +17,7 @@ public class CustomerBindingFailedHandler extends NeedReadCustomerEventHandler {
 
     private EventType eventType = EventType.CUSTOMER_BINDING_FAILED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public CustomerBindingFailedHandler(CustomerDaoImpl customerDao) {
         super(customerDao);

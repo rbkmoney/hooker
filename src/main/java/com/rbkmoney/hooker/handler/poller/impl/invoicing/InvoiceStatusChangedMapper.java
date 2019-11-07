@@ -14,7 +14,7 @@ public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_STATUS_CHANGED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public InvoiceStatusChangedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);

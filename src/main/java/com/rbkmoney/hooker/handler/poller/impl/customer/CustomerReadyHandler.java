@@ -17,7 +17,7 @@ public class CustomerReadyHandler extends NeedReadCustomerEventHandler {
 
     private EventType eventType = EventType.CUSTOMER_READY;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public CustomerReadyHandler(CustomerDaoImpl customerDao) {
         super(customerDao);

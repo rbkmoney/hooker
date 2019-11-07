@@ -65,7 +65,7 @@ public class CustomerDaoImpl implements CustomerDao {
         final String sql = "SELECT * FROM hook.customer_message " +
                 "WHERE customer_id =:customer_id AND type=CAST(:type as hook.customer_message_type) " +
                 "ORDER BY id DESC LIMIT 1";
-        MapSqlParameterSource params = new MapSqlParameterSource(CUSTOMER_ID, customerId).addValue(TYPE, type.value());
+        MapSqlParameterSource params = new MapSqlParameterSource(CUSTOMER_ID, customerId).addValue(TYPE, type.getValue());
         try {
             result = jdbcTemplate.queryForObject(sql, params, messageRowMapper);
         } catch (EmptyResultDataAccessException e) {
@@ -92,7 +92,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 .addValue(OCCURED_AT, message.getEventTime())
                 .addValue(SEQUENCE_ID, message.getSequenceId())
                 .addValue(CHANGE_ID, message.getChangeId())
-                .addValue(TYPE, message.getType().value())
+                .addValue(TYPE, message.getType().getValue())
                 .addValue(PARTY_ID, message.getPartyId())
                 .addValue(EVENT_TYPE, message.getEventType().name())
                 .addValue(CUSTOMER_ID, message.getCustomerId())

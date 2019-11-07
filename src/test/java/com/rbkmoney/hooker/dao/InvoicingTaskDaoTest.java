@@ -48,7 +48,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
+        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
         messageId = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("2345").type(InvoicingMessageEnum.INVOICE).build()).getId();
     }
 
@@ -70,7 +70,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSelectForUpdate() {
         for (int i = 0; i < 20; ++i) {
-            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.value(), ""+i, "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
+            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), ""+i, "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
         }
 
         Set<Long> scheduledOne = new HashSet<>();

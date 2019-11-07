@@ -1,8 +1,10 @@
 package com.rbkmoney.hooker.model;
 
-/**
- * Created by inal on 30.11.2016.
- */
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum EventType {
     INVOICE_CREATED("invoice_created"),
     INVOICE_STATUS_CHANGED("invoice_status_changed"),
@@ -19,15 +21,7 @@ public enum EventType {
     CUSTOMER_BINDING_SUCCEEDED("customer_binding_changed.payload.status_changed.status.succeeded"),
     CUSTOMER_BINDING_FAILED("customer_binding_changed.payload.status_changed.status.failed");
 
-    private String thriftFilterPathCoditionRule;
-
-    EventType(String thriftFilterPathCoditionRule) {
-        this.thriftFilterPathCoditionRule = thriftFilterPathCoditionRule;
-    }
-
-    public String getThriftFilterPathCoditionRule() {
-        return thriftFilterPathCoditionRule;
-    }
+    private String thriftPath;
 
     public boolean isInvoiceEvent(){
         return this.name().startsWith("INVOICE");

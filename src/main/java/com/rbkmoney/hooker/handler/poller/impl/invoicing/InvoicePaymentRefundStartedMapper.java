@@ -19,7 +19,7 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
 
     private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STARTED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public InvoicePaymentRefundStartedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);

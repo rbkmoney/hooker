@@ -20,7 +20,7 @@ public class InvoicePaymentCashFlowChangedMapper extends NeedReadInvoiceEventMap
 
     private final EventType eventType = EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED;
 
-    private final Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private final Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public InvoicePaymentCashFlowChangedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);

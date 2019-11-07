@@ -15,7 +15,7 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_PAYMENT_STARTED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public InvoicePaymentStartedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);

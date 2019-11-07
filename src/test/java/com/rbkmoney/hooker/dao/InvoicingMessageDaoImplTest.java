@@ -37,9 +37,9 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         if (!messagesCreated) {
             messageDao.saveBatch(Arrays.asList(
-                    buildMessage(InvoicingMessageEnum.INVOICE.value(), "1234", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured),
-                    buildMessage(InvoicingMessageEnum.INVOICE.value(), "1235", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured),
-                    buildMessage(InvoicingMessageEnum.PAYMENT.value(), "1236", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
+                    buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1234", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured),
+                    buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1235", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured),
+                    buildMessage(InvoicingMessageEnum.PAYMENT.getValue(), "1236", "56678", EventType.INVOICE_CREATED, InvoiceStatusEnum.paid, PaymentStatusEnum.captured)));
             messagesCreated = true;
         }
     }

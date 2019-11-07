@@ -17,7 +17,7 @@ public class CustomerBindingSucceededHandler extends NeedReadCustomerEventHandle
 
     private EventType eventType = EventType.CUSTOMER_BINDING_SUCCEEDED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public CustomerBindingSucceededHandler(CustomerDaoImpl customerDao) {
         super(customerDao);

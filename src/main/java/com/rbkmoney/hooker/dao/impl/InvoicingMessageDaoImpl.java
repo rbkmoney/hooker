@@ -65,7 +65,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                             .addValue(EVENT_TIME, message.getEventTime())
                             .addValue(SEQUENCE_ID, message.getSequenceId())
                             .addValue(CHANGE_ID, message.getChangeId())
-                            .addValue(TYPE, message.getType().value())
+                            .addValue(TYPE, message.getType().getValue())
                             .addValue(PARTY_ID, message.getPartyId())
                             .addValue(EVENT_TYPE, message.getEventType().toString())
                             .addValue(INVOICE_ID, message.getInvoiceId())
@@ -101,7 +101,7 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
         MapSqlParameterSource params = new MapSqlParameterSource(INVOICE_ID, key.getInvoiceId())
                 .addValue(PAYMENT_ID, key.getPaymentId())
                 .addValue(REFUND_ID, key.getRefundId())
-                .addValue(TYPE, key.getType().value());
+                .addValue(TYPE, key.getType().getValue());
         try {
             return jdbcTemplate.queryForObject(sql, params, messageRowMapper);
         } catch (EmptyResultDataAccessException e) {

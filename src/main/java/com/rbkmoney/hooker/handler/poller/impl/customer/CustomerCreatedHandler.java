@@ -23,7 +23,7 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
 
     private EventType eventType = EventType.CUSTOMER_CREATED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     private final CustomerDaoImpl customerDao;
 

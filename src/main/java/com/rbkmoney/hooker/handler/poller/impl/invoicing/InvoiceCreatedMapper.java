@@ -18,7 +18,7 @@ public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_CREATED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     @Override
     @Transactional
