@@ -26,8 +26,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
-    @Value("${message.sender.number}")
-    private int connectionPoolSize;
+    @Value("${message.scheduler.threadPoolSize}")
+    private int threadPoolSize;
+    @Value("${message.scheduler.limit}")
+    private int scheduledLimit;
     @Value("${merchant.callback.timeout}")
     private int httpTimeout;
 
@@ -60,7 +62,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     }
 
     private void processLoop() {
-        Map<Long, List<Task>> scheduledTasks = taskDao.getScheduled();
+        Map<Long, List<Task>> scheduledTasks = taskDao.getScheduled(scheduledLimit);
         log.debug("scheduledTasks {}", scheduledTasks);
 
         if (scheduledTasks.entrySet().isEmpty()) {
@@ -76,7 +78,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
         for (Long queueId : queueIds) {
             List<M> messagesForQueue = scheduledTasks.get(queueId).stream().map(t -> messagesMap.get(t.getMessageId())).collect(Collectors.toList());
             MessageSender messageSender = getMessageSender(new MessageSender.QueueStatus(queuesMap.get(queueId)),
-                    messagesForQueue, signer, new PostSender(connectionPoolSize, httpTimeout));
+                    messagesForQueue, signer, new PostSender(threadPoolSize, httpTimeout));
             messageSenders.add(messageSender);
         }
 
