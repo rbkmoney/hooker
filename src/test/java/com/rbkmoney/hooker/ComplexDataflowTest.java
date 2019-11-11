@@ -132,7 +132,7 @@ public class ComplexDataflowTest extends AbstractIntegrationTest {
 
         Thread.currentThread().sleep(500);
 
-        assertTrue(taskDao.getScheduled().isEmpty());
+        assertTrue(taskDao.getScheduled(50).isEmpty());
         assertEquals(1, jdbcTemplate.queryForList("select * from hook.scheduled_task").size());
         assertEquals(6, jdbcTemplate.queryForList("select * from hook.simple_retry_policy").size());
 

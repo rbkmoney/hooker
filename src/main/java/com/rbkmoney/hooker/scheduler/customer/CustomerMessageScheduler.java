@@ -27,7 +27,7 @@ public class CustomerMessageScheduler extends MessageScheduler<CustomerMessage, 
             @Autowired CustomerTaskDao taskDao,
             @Autowired CustomerQueueDao queueDao,
             @Autowired CustomerDao customerDao,
-            @Value("${message.sender.number}") int numberOfWorkers) {
+            @Value("${message.scheduler.threadPoolSize}") int numberOfWorkers) {
         super(taskDao, queueDao, customerDao, numberOfWorkers);
     }
 

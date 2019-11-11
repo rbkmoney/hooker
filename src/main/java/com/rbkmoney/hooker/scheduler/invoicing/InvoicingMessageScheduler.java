@@ -22,7 +22,7 @@ public class InvoicingMessageScheduler extends MessageScheduler<InvoicingMessage
             @Autowired InvoicingTaskDao taskDao,
             @Autowired InvoicingQueueDao queueDao,
             @Autowired InvoicingMessageDao customerDao,
-            @Value("${message.sender.number}") int numberOfWorkers) {
+            @Value("${message.scheduler.threadPoolSize}") int numberOfWorkers) {
         super(taskDao, queueDao, customerDao, numberOfWorkers);
     }
 
