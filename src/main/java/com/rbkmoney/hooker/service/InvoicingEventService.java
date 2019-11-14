@@ -33,7 +33,7 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
     @Override
     public Event getByMessage(InvoicingMessage message) {
         try {
-            var invoiceInfo = invoicingClient.get(userInfo, message.getInvoiceId(), getEventRange(message));
+            var invoiceInfo = invoicingClient.get(userInfo, message.getInvoiceId(), getEventRange(message.getSequenceId().intValue()));
             return resolveEvent(message, invoiceInfo)
                     .eventID(message.getEventId().intValue())
                     .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
@@ -45,8 +45,8 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
         }
     }
 
-    private EventRange getEventRange(InvoicingMessage message) {
-        return new EventRange().setLimit(message.getSequenceId().intValue());
+    private EventRange getEventRange(Integer limit) {
+        return new EventRange().setLimit(limit);
     }
 
     private Event resolveEvent(InvoicingMessage m, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {

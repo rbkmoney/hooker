@@ -19,7 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 public class InvoicingEventServiceTest extends AbstractIntegrationTest {
@@ -57,6 +58,7 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
         assertEquals("1", refundSucceded.getPayment().getId());
         assertEquals("1", refundSucceded.getRefund().getId());
         assertEquals("keksik", refundSucceded.getRefund().getReason());
+        assertEquals("chicken-teriyaki", refundSucceded.getRefund().getRrn());
     }
 
     @Test
