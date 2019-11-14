@@ -12,9 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-
 @Component
 @RequiredArgsConstructor
 public class PaymentConverter implements Converter<InvoicePayment, Payment> {

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * Created by jeckep on 13.04.17.
  */
 public class HookConverter {
-    public static Webhook convert(Hook hook){
+    public static Webhook convert(Hook hook) {
         return new Webhook(
                 hook.getId(),
                 hook.getPartyId(),
@@ -21,7 +21,7 @@ public class HookConverter {
                 hook.isEnabled());
     }
 
-    public static Hook convert(WebhookParams webhookParams){
+    public static Hook convert(WebhookParams webhookParams) {
         Hook hook = new Hook();
         hook.setPartyId(webhookParams.getPartyId());
         hook.setTopic(EventFilterUtils.getTopic(webhookParams.getEventFilter()));
@@ -31,7 +31,7 @@ public class HookConverter {
         return hook;
     }
 
-    public static List<Webhook> convert(List<Hook> hooks){
+    public static List<Webhook> convert(List<Hook> hooks) {
         return hooks.stream().map(h -> convert(h)).collect(Collectors.toList());
     }
 

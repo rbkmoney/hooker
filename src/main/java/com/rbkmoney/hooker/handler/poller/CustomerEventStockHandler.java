@@ -61,7 +61,7 @@ public class CustomerEventStockHandler implements EventHandler<StockEvent> {
                             return EventAction.RETRY;
                         }
                     } catch (Exception e) {
-                        log.error("Error when poller handling with id {}",  id, e);
+                        log.error("Error when poller handling with id {}", id, e);
                     }
                     break;
                 }

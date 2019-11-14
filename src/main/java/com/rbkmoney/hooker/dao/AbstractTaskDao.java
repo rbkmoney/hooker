@@ -64,7 +64,7 @@ public abstract class AbstractTaskDao implements TaskDao {
         try {
             List<Task> tasks = jdbcTemplate.query(sql,
                     new MapSqlParameterSource("message_type", getMessageTopic())
-                    .addValue("curr_time", System.currentTimeMillis()),
+                            .addValue("curr_time", System.currentTimeMillis()),
                     taskRowMapper);
             return splitByQueue(tasks);
         } catch (NestedRuntimeException e) {

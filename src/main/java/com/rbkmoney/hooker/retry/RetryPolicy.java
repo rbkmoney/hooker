@@ -5,6 +5,8 @@ package com.rbkmoney.hooker.retry;
  */
 public interface RetryPolicy<T> {
     boolean shouldDisable(T record);
+
     RetryPolicyType getType();
+
     void updateFailed(T record);
 }

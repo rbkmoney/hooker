@@ -132,7 +132,7 @@ public class CustomerDaoImpl implements CustomerDao {
             List<CustomerMessage> messagesFromDb = jdbcTemplate.query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
             log.debug("messagesFromDb {}", messagesFromDb);
             return messagesFromDb;
-        }  catch (NestedRuntimeException e) {
+        } catch (NestedRuntimeException e) {
             throw new DaoException("CustomerMessageDaoImpl.getByIds error", e);
         }
     }

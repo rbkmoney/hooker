@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.retry.impl.simple.SimpleRetryPolicyRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.NestedRuntimeException;
@@ -27,7 +27,7 @@ public class SimpleRetryPolicyDaoImpl implements SimpleRetryPolicyDao {
                     .addValue("fail_count", record.getFailCount())
                     .addValue("next_fire_time_ms", record.getNextFireTime()));
         } catch (NestedRuntimeException e) {
-            throw new DaoException("Fail to update simple_retry_policy for record=" +  record.getQueueId(), e);
+            throw new DaoException("Fail to update simple_retry_policy for record=" + record.getQueueId(), e);
         }
     }
 }

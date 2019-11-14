@@ -11,6 +11,8 @@ public interface Handler<C, M extends Message> {
     default boolean accept(C change) {
         return getFilter().match(change);
     }
+
     void handle(C change, EventInfo eventInfo);
+
     Filter getFilter();
 }

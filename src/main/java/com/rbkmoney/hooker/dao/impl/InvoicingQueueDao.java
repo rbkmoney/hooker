@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.QueueDao;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingQueue;
 import com.rbkmoney.hooker.retry.RetryPolicyType;

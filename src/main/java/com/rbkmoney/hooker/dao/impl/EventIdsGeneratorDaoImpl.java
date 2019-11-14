@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.IdsGeneratorDao;
+import com.rbkmoney.hooker.exception.DaoException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;

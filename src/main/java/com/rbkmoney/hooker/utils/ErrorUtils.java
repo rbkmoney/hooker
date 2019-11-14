@@ -50,7 +50,7 @@ public class ErrorUtils {
         return null;
     }
 
-    public static CustomerBindingError getCustomerBindingError(OperationFailure failure){
+    public static CustomerBindingError getCustomerBindingError(OperationFailure failure) {
         String errCode = null;
         String errMess = null;
         if (failure.isSetFailure()) {

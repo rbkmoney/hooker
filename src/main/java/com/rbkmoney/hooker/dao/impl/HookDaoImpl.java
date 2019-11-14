@@ -1,8 +1,8 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
@@ -177,7 +177,7 @@ public class HookDaoImpl implements HookDao {
     public void delete(long id) throws DaoException {
         final String sql =
                 " DELETE FROM hook.scheduled_task st USING hook.invoicing_queue q WHERE st.queue_id = q.id AND q.hook_id=:id; " +
-                " UPDATE hook.webhook SET enabled = FALSE where id=:id;";
+                        " UPDATE hook.webhook SET enabled = FALSE where id=:id;";
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
         } catch (NestedRuntimeException e) {
@@ -201,7 +201,7 @@ public class HookDaoImpl implements HookDao {
             jdbcTemplate.update(sql, params, keyHolder);
             pubKey = (String) keyHolder.getKeys().get("pub_key");
         } catch (NestedRuntimeException | NullPointerException | ClassCastException e) {
-            log.warn("Fail to createOrGetPubKey security keys for party {} ", partyId,  e);
+            log.warn("Fail to createOrGetPubKey security keys for party {} ", partyId, e);
             throw new DaoException(e);
         }
         return pubKey;

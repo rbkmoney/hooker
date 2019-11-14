@@ -10,16 +10,16 @@ import java.sql.SQLException;
  */
 public enum RetryPolicyType {
     /*
-    * Первая и самая простая политика переотправки.
-    * Если хук не отвечает или отвечает с ошибкой,
-    * пробуем 4 раза с интервалами 30сек, 5мин, 15мин, 1час опять послать
-    * неотправленное сообщение в этот хук. При этом очередь сообщений для хука копится.
-    * После первой удачной отправки, после неудачной, счетчик неудачных попыток сбрасывается.
-    * */
+     * Первая и самая простая политика переотправки.
+     * Если хук не отвечает или отвечает с ошибкой,
+     * пробуем 4 раза с интервалами 30сек, 5мин, 15мин, 1час опять послать
+     * неотправленное сообщение в этот хук. При этом очередь сообщений для хука копится.
+     * После первой удачной отправки, после неудачной, счетчик неудачных попыток сбрасывается.
+     * */
 
     SIMPLE {
         @Override
-        public RetryPolicyRecord build(ResultSet rs) throws SQLException{
+        public RetryPolicyRecord build(ResultSet rs) throws SQLException {
             SimpleRetryPolicyRecord record = new SimpleRetryPolicyRecord();
             record.setQueueId(rs.getLong("id"));
             record.setMessageType(rs.getString("message_type"));
@@ -29,7 +29,7 @@ public enum RetryPolicyType {
             return record;
         }
 
-        public SimpleRetryPolicyRecord cast(RetryPolicyRecord record){
+        public SimpleRetryPolicyRecord cast(RetryPolicyRecord record) {
             return (SimpleRetryPolicyRecord) record;
         }
     };

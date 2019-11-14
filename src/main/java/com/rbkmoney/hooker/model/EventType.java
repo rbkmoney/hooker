@@ -23,11 +23,11 @@ public enum EventType {
 
     private String thriftPath;
 
-    public boolean isInvoiceEvent(){
+    public boolean isInvoiceEvent() {
         return this.name().startsWith("INVOICE");
     }
 
-    public boolean isCustomerEvent(){
+    public boolean isCustomerEvent() {
         return this.name().startsWith("CUSTOMER");
     }
 }

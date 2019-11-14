@@ -1,10 +1,10 @@
 package com.rbkmoney.hooker.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.dao.TaskDao;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.model.Message;
 import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.model.Task;
@@ -139,7 +139,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     }
 
     @PreDestroy
-    public void preDestroy(){
+    public void preDestroy() {
         executorService.shutdownNow();
         try {
             if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {

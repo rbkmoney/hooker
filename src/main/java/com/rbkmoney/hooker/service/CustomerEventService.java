@@ -1,20 +1,16 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.damsel.payment_processing.Customer;
+import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
+import com.rbkmoney.damsel.payment_processing.CustomerNotFound;
+import com.rbkmoney.damsel.payment_processing.EventRange;
 import com.rbkmoney.hooker.converter.CustomerBindingConverter;
 import com.rbkmoney.hooker.converter.CustomerConverter;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.utils.TimeUtils;
-import com.rbkmoney.swag_webhook_events.model.CustomerBindingFailed;
-import com.rbkmoney.swag_webhook_events.model.CustomerBindingStarted;
-import com.rbkmoney.swag_webhook_events.model.CustomerBindingSucceeded;
-import com.rbkmoney.swag_webhook_events.model.CustomerCreated;
-import com.rbkmoney.swag_webhook_events.model.CustomerDeleted;
-import com.rbkmoney.swag_webhook_events.model.CustomerReady;
-import com.rbkmoney.swag_webhook_events.model.Event;
+import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
@@ -44,19 +40,26 @@ public class CustomerEventService implements EventService<CustomerMessage> {
 
     private Event resolveEvent(CustomerMessage message, Customer customer) {
         switch (message.getEventType()) {
-            case CUSTOMER_CREATED: return new CustomerCreated().customer(customerConverter.convert(customer));
-            case CUSTOMER_DELETED: return new CustomerDeleted().customer(customerConverter.convert(customer));
-            case CUSTOMER_READY: return new CustomerReady().customer(customerConverter.convert(customer));
-            case CUSTOMER_BINDING_STARTED: return new CustomerBindingStarted()
-                    .customer(customerConverter.convert(customer))
-                    .binding(customerBindingConverter.convert(extractBinding(message, customer)));
-            case CUSTOMER_BINDING_SUCCEEDED: return new CustomerBindingSucceeded()
-                    .customer(customerConverter.convert(customer))
-                    .binding(customerBindingConverter.convert(extractBinding(message, customer)));
-            case CUSTOMER_BINDING_FAILED: return new CustomerBindingFailed()
-                    .customer(customerConverter.convert(customer))
-                    .binding(customerBindingConverter.convert(extractBinding(message, customer)));
-            default: throw new UnsupportedOperationException("Unknown event type " + message.getEventType());
+            case CUSTOMER_CREATED:
+                return new CustomerCreated().customer(customerConverter.convert(customer));
+            case CUSTOMER_DELETED:
+                return new CustomerDeleted().customer(customerConverter.convert(customer));
+            case CUSTOMER_READY:
+                return new CustomerReady().customer(customerConverter.convert(customer));
+            case CUSTOMER_BINDING_STARTED:
+                return new CustomerBindingStarted()
+                        .customer(customerConverter.convert(customer))
+                        .binding(customerBindingConverter.convert(extractBinding(message, customer)));
+            case CUSTOMER_BINDING_SUCCEEDED:
+                return new CustomerBindingSucceeded()
+                        .customer(customerConverter.convert(customer))
+                        .binding(customerBindingConverter.convert(extractBinding(message, customer)));
+            case CUSTOMER_BINDING_FAILED:
+                return new CustomerBindingFailed()
+                        .customer(customerConverter.convert(customer))
+                        .binding(customerBindingConverter.convert(extractBinding(message, customer)));
+            default:
+                throw new UnsupportedOperationException("Unknown event type " + message.getEventType());
         }
     }
 

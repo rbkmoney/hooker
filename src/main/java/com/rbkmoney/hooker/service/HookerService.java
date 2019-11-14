@@ -47,11 +47,11 @@ public class HookerService implements WebhookManagerSrv.Iface {
     }
 
     @Override
-    public void delete(long id) throws WebhookNotFound{
+    public void delete(long id) throws WebhookNotFound {
         try {
             hookDao.delete(id);
             log.info("Webhook deleted: {}", id);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Fail to delete webhook: {}", id, e);
             throw new WebhookNotFound();
         }

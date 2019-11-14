@@ -16,7 +16,9 @@ import java.util.Set;
  */
 public class EventFilterUtils {
     public static EventFilter getEventFilter(Collection<WebhookAdditionalFilter> webhookAdditionalFilters) {
-        if (webhookAdditionalFilters == null || webhookAdditionalFilters.isEmpty()) {return null;}
+        if (webhookAdditionalFilters == null || webhookAdditionalFilters.isEmpty()) {
+            return null;
+        }
         EventFilter eventFilter = new EventFilter();
         EventType firstEventType = webhookAdditionalFilters.iterator().next().getEventType();
         if (firstEventType.isInvoiceEvent()) {
@@ -95,7 +97,7 @@ public class EventFilterUtils {
                         throw new UnsupportedOperationException("Unknown event code " + eventTypeCode + "; must be one of these: " + Arrays.toString(EventType.values()));
                 }
             }
-        } else if (firstEventType.isCustomerEvent()){
+        } else if (firstEventType.isCustomerEvent()) {
             CustomerEventFilter customerEventFilter = new CustomerEventFilter();
             Set<CustomerEventType> customerEventTypes = new HashSet<>();
             customerEventFilter.setTypes(customerEventTypes);
@@ -126,16 +128,16 @@ public class EventFilterUtils {
                         customerEventTypes.add(CustomerEventType.binding(CustomerBindingEvent.failed(new CustomerBindingFailed())));
                         break;
                     default:
-                        throw new UnsupportedOperationException("Unknown event code "+eventTypeCode+"; must be one of these: "+Arrays.toString(EventType.values()));
+                        throw new UnsupportedOperationException("Unknown event code " + eventTypeCode + "; must be one of these: " + Arrays.toString(EventType.values()));
                 }
             }
         } else {
-            throw new UnsupportedOperationException("Unknown event code "+firstEventType+"; must be one of these: "+Arrays.toString(EventType.values()));
+            throw new UnsupportedOperationException("Unknown event code " + firstEventType + "; must be one of these: " + Arrays.toString(EventType.values()));
         }
         return eventFilter;
     }
 
-    public static Set<WebhookAdditionalFilter> getWebhookAdditionalFilter(EventFilter eventFilter){
+    public static Set<WebhookAdditionalFilter> getWebhookAdditionalFilter(EventFilter eventFilter) {
         Set<WebhookAdditionalFilter> eventTypeCodeSet = new HashSet<>();
         if (eventFilter.isSetInvoice()) {
             Set<InvoiceEventType> invoiceEventTypes = eventFilter.getInvoice().getTypes();
@@ -210,6 +212,6 @@ public class EventFilterUtils {
         if (eventFilter.isSetCustomer()) {
             return Event.TopicEnum.CUSTOMERSTOPIC.getValue();
         }
-        throw new UnsupportedOperationException("Unknown topic; must be one of these: "+Arrays.toString(Event.TopicEnum.values()));
+        throw new UnsupportedOperationException("Unknown topic; must be one of these: " + Arrays.toString(Event.TopicEnum.values()));
     }
 }

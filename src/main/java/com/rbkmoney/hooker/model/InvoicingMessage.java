@@ -34,7 +34,7 @@ public class InvoicingMessage extends Message {
         return type == InvoicingMessageEnum.REFUND;
     }
 
-    public InvoicingMessage copy(){
+    public InvoicingMessage copy() {
         InvoicingMessage copied = new InvoicingMessage();
         BeanUtils.copyProperties(this, copied);
         return copied;

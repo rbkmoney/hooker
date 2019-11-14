@@ -23,7 +23,7 @@ public class BatchService {
     private final InvoicingTaskDao invoicingTaskDao;
     private final MessageIdsGeneratorDaoImpl messageIdsGeneratorDao;
 
-    public void process(List<InvoicingMessage> messages){
+    public void process(List<InvoicingMessage> messages) {
         log.info("Start processing of batch, size={}", messages.size());
         List<Long> ids = messageIdsGeneratorDao.get(messages.size());
         List<Long> eventIds = messageIdsGeneratorDao.get(messages.size());

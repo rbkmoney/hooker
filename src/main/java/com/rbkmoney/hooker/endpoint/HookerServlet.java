@@ -28,8 +28,8 @@ public class HookerServlet extends GenericServlet {
         thriftServlet = new THServiceBuilder()
                 .withEventListener(
                         new CompositeServiceEventListener<>(
-                            new ServiceEventLogListener(),
-                            new HttpServiceEventLogListener()
+                                new ServiceEventLogListener(),
+                                new HttpServiceEventLogListener()
                         )
                 )
                 .build(WebhookManagerSrv.Iface.class, requestHandler);

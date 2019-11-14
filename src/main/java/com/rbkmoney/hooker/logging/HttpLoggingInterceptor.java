@@ -155,8 +155,8 @@ public final class HttpLoggingInterceptor implements Interceptor {
             for (int i = 0, count = headers.size(); i < count; i++) {
                 String name = headers.name(i);
                 // Skip headers from the request body as they are explicitly logged above.
-                    if (!"Authorization".equalsIgnoreCase(name)) {
-                        message.append(name).append(": ").append(headers.value(i)).append('\n');
+                if (!"Authorization".equalsIgnoreCase(name)) {
+                    message.append(name).append(": ").append(headers.value(i)).append('\n');
                 }
             }
 

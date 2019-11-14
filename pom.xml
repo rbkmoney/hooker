@@ -26,7 +26,7 @@
         <postgresql.jdbc.version>42.2.5</postgresql.jdbc.version>
         <dockerfile.base.service.tag>bc95d0d6dc13c693acd2b274531a7d604b877bf3</dockerfile.base.service.tag>
         <dockerfile.registry>${env.REGISTRY}</dockerfile.registry>
-        <damsel.version>1.354-86029b4</damsel.version>
+        <damsel.version>1.359-5de500f</damsel.version>
         <shared.resources.version>0.3.6</shared.resources.version>
 
         <db.host.name>localhost</db.host.name>
@@ -165,7 +165,7 @@
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>swag-webhook-events</artifactId>
-            <version>1.77-81d9055-client</version>
+            <version>1.79-6d915e8-client-old</version>
         </dependency>
         <dependency>
             <groupId>com.rbkmoney.logback</groupId>

@@ -10,5 +10,6 @@ import java.util.List;
  */
 public interface QueueDao<Q extends Queue> {
     List<Q> getWithPolicies(Collection<Long> ids);
+
     void disable(long id);
 }

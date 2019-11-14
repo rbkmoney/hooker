@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 @Getter
 @AllArgsConstructor
-public enum  InvoiceStatusEnum {
+public enum InvoiceStatusEnum {
     UNPAID("unpaid"),
     PAID("paid"),
     CANCELLED("cancelled"),
