@@ -101,8 +101,7 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
         swagPayment.fee(m.getPaymentFee());
         if (!damselPayment.getSessions().isEmpty()
                 && damselPayment.getSessions().get(0).isSetTransactionInfo()
-                && damselPayment.getSessions().get(0).getTransactionInfo().isSetAdditionalInfo()
-                && damselPayment.getSessions().get(0).getTransactionInfo().getAdditionalInfo().isSetRrn()) {
+                && damselPayment.getSessions().get(0).getTransactionInfo().isSetAdditionalInfo()) {
             swagPayment.rrn(damselPayment.getSessions().get(0).getTransactionInfo().getAdditionalInfo().getRrn());
         }
         return swagPayment;
