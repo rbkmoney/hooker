@@ -6,6 +6,7 @@ import com.rbkmoney.hooker.model.FeeType;
 import com.rbkmoney.hooker.utils.CashFlowUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
 import com.rbkmoney.swag_webhook_events.model.Refund;
+import com.rbkmoney.swag_webhook_events.model.RefundError;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +23,14 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
                 .createdAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()))
                 .reason(source.getReason())
                 .status(Refund.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
-                .error(source.getStatus().isSetFailed() ? getRefundError(source.getStatus().getFailed().getFailure()) : null)
+                .error(getError(source))
                 .amount(getAmount(sourceWrapper))
                 .currency(getCurrency(sourceWrapper))
                 .rrn(getRrn(sourceWrapper));
+    }
+
+    private RefundError getError(com.rbkmoney.damsel.domain.InvoicePaymentRefund source) {
+        return source.getStatus().isSetFailed() ? getRefundError(source.getStatus().getFailed().getFailure()) : null;
     }
 
     private Long getAmount(InvoicePaymentRefund sourceWrapper) {

@@ -32,7 +32,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                 .amount(source.getCost().getAmount())
                 .currency(source.getCost().getCurrency().getSymbolicCode())
                 .metadata(getMetadata(source))
-                .fee(getPaymentFee(sourceWrapper))
+                .fee(getFee(sourceWrapper))
                 .rrn(getRrn(sourceWrapper));
 
         if (source.getStatus().isSetFailed()) {
@@ -54,6 +54,10 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
     private Object getMetadata(com.rbkmoney.damsel.domain.InvoicePayment source) {
         return source.isSetContext() ? deserializer.deserialize(source.getContext().getData()) : null;
+    }
+
+    private Long getFee(InvoicePayment sourceWrapper) {
+        return sourceWrapper.isSetCashFlow() ? CashFlowUtils.getFees(sourceWrapper.getCashFlow()).getOrDefault(FeeType.FEE, 0L) : 0L;
     }
 
     private String getRrn(InvoicePayment sourceWrapper) {
@@ -130,13 +134,5 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
     private AdditionalTransactionInfo getAdditionalInfo(InvoicePayment sourceWrapper) {
         return sourceWrapper.getSessions().get(0).getTransactionInfo().getAdditionalInfo();
-    }
-
-    private Long getPaymentFee(InvoicePayment sourceWrapper) {
-        Long fee = 0L;
-        if (sourceWrapper.isSetCashFlow()) {
-            fee = CashFlowUtils.getFees(sourceWrapper.getCashFlow()).getOrDefault(FeeType.FEE, 0L);
-        }
-        return fee;
     }
 }
