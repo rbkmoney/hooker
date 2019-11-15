@@ -46,10 +46,9 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
     }
 
     private boolean isSetAdditionalInfo(InvoicePaymentRefund damselRefund) {
-        return !damselRefund.getSessions().isEmpty()
+        return (!damselRefund.getSessions().isEmpty())
                 && damselRefund.getSessions().get(0).isSetTransactionInfo()
-                && damselRefund.getSessions().get(0).getTransactionInfo().isSetAdditionalInfo()
-                && damselRefund.getSessions().get(0).getTransactionInfo().getAdditionalInfo().isSetRrn();
+                && damselRefund.getSessions().get(0).getTransactionInfo().isSetAdditionalInfo();
     }
 
     private AdditionalTransactionInfo getAdditionalInfo(InvoicePaymentRefund damselRefund) {

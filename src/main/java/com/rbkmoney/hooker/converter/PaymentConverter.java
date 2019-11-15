@@ -127,7 +127,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
     }
 
     private boolean isSetAdditionalInfo(InvoicePayment sourceWrapper) {
-        return !sourceWrapper.getSessions().isEmpty()
+        return (!sourceWrapper.getSessions().isEmpty())
                 && sourceWrapper.getSessions().get(0).isSetTransactionInfo()
                 && sourceWrapper.getSessions().get(0).getTransactionInfo().isSetAdditionalInfo();
     }
