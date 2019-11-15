@@ -1,9 +1,12 @@
 package com.rbkmoney.hooker.converter;
 
+import com.rbkmoney.damsel.domain.AdditionalTransactionInfo;
 import com.rbkmoney.damsel.domain.DisposablePaymentResource;
-import com.rbkmoney.damsel.domain.InvoicePayment;
 import com.rbkmoney.damsel.domain.InvoicePaymentCaptured;
 import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.damsel.payment_processing.InvoicePayment;
+import com.rbkmoney.hooker.model.FeeType;
+import com.rbkmoney.hooker.utils.CashFlowUtils;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
@@ -19,14 +22,18 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
     private final MetadataDeserializer deserializer;
 
     @Override
-    public Payment convert(InvoicePayment source) {
+    public Payment convert(InvoicePayment sourceWrapper) {
+        var source = sourceWrapper.getPayment();
+
         Payment target = new Payment()
                 .id(source.getId())
                 .createdAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()))
                 .status(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
                 .amount(source.getCost().getAmount())
                 .currency(source.getCost().getCurrency().getSymbolicCode())
-                .metadata(source.isSetContext() ? deserializer.deserialize(source.getContext().getData()) : null);
+                .metadata(getMetadata(source))
+                .fee(getPaymentFee(sourceWrapper))
+                .rrn(getRrn(sourceWrapper));
 
         if (source.getStatus().isSetFailed()) {
             setErrorDetails(source, target);
@@ -41,14 +48,23 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
         } else if (source.getPayer().isSetRecurrent()) {
             setRecurrentPaymentTool(source, target);
         }
+
         return target;
     }
 
-    private void setErrorDetails(InvoicePayment source, Payment target) {
+    private Object getMetadata(com.rbkmoney.damsel.domain.InvoicePayment source) {
+        return source.isSetContext() ? deserializer.deserialize(source.getContext().getData()) : null;
+    }
+
+    private String getRrn(InvoicePayment sourceWrapper) {
+        return isSetAdditionalInfo(sourceWrapper) ? getAdditionalInfo(sourceWrapper).getRrn() : null;
+    }
+
+    private void setErrorDetails(com.rbkmoney.damsel.domain.InvoicePayment source, Payment target) {
         target.setError(ErrorUtils.getPaymentError(source.getStatus().getFailed().getFailure()));
     }
 
-    private void setCapturedParams(InvoicePayment source, Payment target) {
+    private void setCapturedParams(com.rbkmoney.damsel.domain.InvoicePayment source, Payment target) {
         InvoicePaymentCaptured invoicePaymentCaptured = source.getStatus().getCaptured();
         if (invoicePaymentCaptured.isSetCost()) {
             target.setAmount(invoicePaymentCaptured.getCost().getAmount());
@@ -56,7 +72,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
         }
     }
 
-    private void setResourcePaymentTool(InvoicePayment source, Payment target) {
+    private void setResourcePaymentTool(com.rbkmoney.damsel.domain.InvoicePayment source, Payment target) {
         com.rbkmoney.damsel.domain.PaymentResourcePayer payerOrigin = source.getPayer().getPaymentResource();
         DisposablePaymentResource resourceOrigin = payerOrigin.getResource();
         PaymentTool paymentTool = resourceOrigin.getPaymentTool();
@@ -79,7 +95,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                         .paymentToolDetails(PaymentToolUtils.getPaymentToolDetails(paymentTool)));
     }
 
-    private void setRecurrentPaymentTool(InvoicePayment source, Payment target) {
+    private void setRecurrentPaymentTool(com.rbkmoney.damsel.domain.InvoicePayment source, Payment target) {
         com.rbkmoney.damsel.domain.RecurrentPayer recurrentParentOrigin = source.getPayer().getRecurrent();
         target.contactInfo(new PaymentContactInfo()
                 .email(recurrentParentOrigin.getContactInfo().getEmail())
@@ -96,7 +112,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                         .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber()));
     }
 
-    private void setCustomerPaymentTool(InvoicePayment source, Payment target) {
+    private void setCustomerPaymentTool(com.rbkmoney.damsel.domain.InvoicePayment source, Payment target) {
         com.rbkmoney.damsel.domain.CustomerPayer customerPayerOrigin = source.getPayer().getCustomer();
         target.paymentToolToken(PaymentToolUtils.getPaymentToolToken(customerPayerOrigin.getPaymentTool()))
                 .contactInfo(new PaymentContactInfo()
@@ -104,5 +120,23 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                         .phoneNumber(customerPayerOrigin.getContactInfo().getPhoneNumber()))
                 .payer(new CustomerPayer()
                         .customerID(source.getPayer().getCustomer().getCustomerId()));
+    }
+
+    private boolean isSetAdditionalInfo(InvoicePayment sourceWrapper) {
+        return !sourceWrapper.getSessions().isEmpty()
+                && sourceWrapper.getSessions().get(0).isSetTransactionInfo()
+                && sourceWrapper.getSessions().get(0).getTransactionInfo().isSetAdditionalInfo();
+    }
+
+    private AdditionalTransactionInfo getAdditionalInfo(InvoicePayment sourceWrapper) {
+        return sourceWrapper.getSessions().get(0).getTransactionInfo().getAdditionalInfo();
+    }
+
+    private Long getPaymentFee(InvoicePayment sourceWrapper) {
+        Long fee = 0L;
+        if (sourceWrapper.isSetCashFlow()) {
+            fee = CashFlowUtils.getFees(sourceWrapper.getCashFlow()).getOrDefault(FeeType.FEE, 0L);
+        }
+        return fee;
     }
 }

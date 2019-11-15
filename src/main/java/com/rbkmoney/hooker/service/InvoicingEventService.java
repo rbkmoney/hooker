@@ -1,15 +1,12 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.damsel.domain.AdditionalTransactionInfo;
 import com.rbkmoney.damsel.payment_processing.*;
 import com.rbkmoney.hooker.converter.InvoiceConverter;
 import com.rbkmoney.hooker.converter.PaymentConverter;
 import com.rbkmoney.hooker.converter.RefundConverter;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.exception.RemoteHostException;
-import com.rbkmoney.hooker.model.FeeType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
-import com.rbkmoney.hooker.utils.CashFlowUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.swag_webhook_events.model.Invoice;
@@ -96,12 +93,7 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
     private Payment getSwagPayment(InvoicingMessage m, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
         var damselPayment = extractPayment(m, invoiceInfo);
 
-        Payment swagPayment = paymentConverter.convert(damselPayment.getPayment());
-        swagPayment.fee(getPaymentFee(damselPayment));
-        if (isSetAdditionalInfo(damselPayment)) {
-            swagPayment.rrn(getAdditionalInfo(damselPayment).getRrn());
-        }
-        return swagPayment;
+        return paymentConverter.convert(damselPayment);
     }
 
     private InvoicePayment extractPayment(InvoicingMessage message, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
@@ -136,43 +128,11 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
         }
     }
 
-    private boolean isSetAdditionalInfo(InvoicePayment damselPayment) {
-        return !damselPayment.getSessions().isEmpty()
-                && damselPayment.getSessions().get(0).isSetTransactionInfo()
-                && damselPayment.getSessions().get(0).getTransactionInfo().isSetAdditionalInfo();
-    }
-
-    private AdditionalTransactionInfo getAdditionalInfo(InvoicePayment damselPayment) {
-        return damselPayment.getSessions().get(0).getTransactionInfo().getAdditionalInfo();
-    }
-
-    private long getPaymentAmount(InvoicePayment damselPayment) {
-        return damselPayment.getPayment().getCost().getAmount();
-    }
-
-    private Long getPaymentFee(InvoicePayment damselPayment) {
-        Long fee = 0L;
-        if (damselPayment.isSetCashFlow()) {
-            fee = CashFlowUtils.getFees(damselPayment.getCashFlow()).getOrDefault(FeeType.FEE, 0L);
-        }
-        return fee;
-    }
-
-    private String getPaymentCurrency(InvoicePayment damselPayment) {
-        return damselPayment.getPayment().getCost().getCurrency().getSymbolicCode();
-    }
-
     private Refund getSwagRefund(InvoicingMessage m, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
         var damselPayment = extractPayment(m, invoiceInfo);
         var damselRefund = extractRefund(m, damselPayment);
 
-        Refund swagRefund = refundConverter.convert(damselRefund.getRefund());
-        if (isSetAdditionalInfo(damselRefund)) {
-            swagRefund.rrn(getAdditionalInfo(damselRefund).getRrn());
-        }
-        swagRefund.amount(getRefundAmount(damselPayment, damselRefund));
-        swagRefund.currency(getRefundCurrency(damselPayment, damselRefund));
-        return swagRefund;
+        return refundConverter.convert(damselRefund);
     }
 
     private com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund extractRefund(InvoicingMessage m, InvoicePayment damselPayment) {
@@ -203,36 +163,5 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
             default:
                 throw new UnsupportedOperationException("Unknown refund status " + message.getRefundStatus());
         }
-    }
-
-    private boolean isSetAdditionalInfo(InvoicePaymentRefund damselRefund) {
-        return !damselRefund.getSessions().isEmpty()
-                && damselRefund.getSessions().get(0).isSetTransactionInfo()
-                && damselRefund.getSessions().get(0).getTransactionInfo().isSetAdditionalInfo()
-                && damselRefund.getSessions().get(0).getTransactionInfo().getAdditionalInfo().isSetRrn();
-    }
-
-    private AdditionalTransactionInfo getAdditionalInfo(InvoicePaymentRefund damselRefund) {
-        return damselRefund.getSessions().get(0).getTransactionInfo().getAdditionalInfo();
-    }
-
-    private Long getRefundAmount(InvoicePayment damselPayment, com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund damselRefund) {
-        return damselRefund.getRefund().isSetCash()
-                ? getRefundAmount(damselRefund)
-                : getPaymentAmount(damselPayment);
-    }
-
-    private long getRefundAmount(InvoicePaymentRefund damselRefund) {
-        return damselRefund.getRefund().getCash().getAmount();
-    }
-
-    private String getRefundCurrency(InvoicePayment damselPayment, com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund damselRefund) {
-        return damselRefund.getRefund().isSetCash()
-                ? getRefundCurrency(damselRefund)
-                : getPaymentCurrency(damselPayment);
-    }
-
-    private String getRefundCurrency(InvoicePaymentRefund damselRefund) {
-        return damselRefund.getRefund().getCash().getCurrency().getSymbolicCode();
     }
 }
