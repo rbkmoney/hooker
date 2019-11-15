@@ -21,7 +21,6 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
     public static final String INVOICE_STATUS = "invoice_status";
     public static final String PAYMENT_ID = "payment_id";
     public static final String PAYMENT_STATUS = "payment_status";
-    public static final String PAYMENT_FEE = "payment_fee";
     public static final String REFUND_ID = "refund_id";
     public static final String REFUND_STATUS = "refund_status";
 
@@ -42,7 +41,6 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
         message.setPaymentId(rs.getString(PAYMENT_ID));
         message.setPaymentStatus(rs.getString(PAYMENT_STATUS) != null ?
                 PaymentStatusEnum.lookup(rs.getString(PAYMENT_STATUS)) : null);
-        message.setPaymentFee(rs.getLong(PAYMENT_FEE));
         message.setRefundId(rs.getString(REFUND_ID));
         message.setRefundStatus(rs.getString(REFUND_STATUS) != null ?
                 RefundStatusEnum.lookup(rs.getString(REFUND_STATUS)) : null);

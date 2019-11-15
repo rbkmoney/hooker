@@ -36,7 +36,6 @@ public class BuildUtils {
         if (message.isPayment() || message.isRefund()) {
             message.setPaymentId("123");
             message.setPaymentStatus(paymentStatus);
-            message.setPaymentFee(1L);
         }
 
         if (message.isRefund()) {
