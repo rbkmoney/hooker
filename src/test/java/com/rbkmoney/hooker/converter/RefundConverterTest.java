@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static java.util.List.of;
+import static org.junit.Assert.assertEquals;
 
 public class RefundConverterTest extends AbstractIntegrationTest {
 
@@ -23,7 +24,7 @@ public class RefundConverterTest extends AbstractIntegrationTest {
         InvoicePaymentRefund source = new MockTBaseProcessor(MockMode.RANDOM, 15, 1)
                 .process(new InvoicePaymentRefund(), new TBaseHandler<>(InvoicePaymentRefund.class));
         source.setCreatedAt("2016-03-22T06:12:27Z");
-        Refund target = converter.convert(source);
+        Refund target = converter.convert(new com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund(source, of()));
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         assertEquals(source.getReason(), target.getReason());

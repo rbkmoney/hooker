@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static java.util.List.of;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PaymentConverterTest extends AbstractIntegrationTest {
 
@@ -33,7 +35,7 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
             source.getPayer().getPaymentResource().getResource()
                     .setPaymentTool(PaymentTool.bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
         }
-        Payment target = converter.convert(source);
+        Payment target = converter.convert(new com.rbkmoney.damsel.payment_processing.InvoicePayment(source, of(), of(), of(), of()));
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         if (source.getStatus().isSetCaptured() && source.getStatus().getCaptured().isSetCost()) {
@@ -45,8 +47,9 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
         }
         if (source.getPayer().isSetCustomer()) {
             assertTrue(target.getPayer() instanceof CustomerPayer);
-            assertEquals(source.getPayer().getCustomer().getCustomerId(), ((CustomerPayer)target.getPayer()).getCustomerID());
-        } if (source.getPayer().isSetPaymentResource()) {
+            assertEquals(source.getPayer().getCustomer().getCustomerId(), ((CustomerPayer) target.getPayer()).getCustomerID());
+        }
+        if (source.getPayer().isSetPaymentResource()) {
             assertTrue(target.getPayer() instanceof PaymentResourcePayer);
             assertEquals(source.getPayer().getPaymentResource().getContactInfo().getEmail(), ((PaymentResourcePayer) target.getPayer()).getContactInfo().getEmail());
             assertEquals(source.getPayer().getPaymentResource().getContactInfo().getPhoneNumber(), ((PaymentResourcePayer) target.getPayer()).getContactInfo().getPhoneNumber());
@@ -54,7 +57,7 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
         } else if (source.getPayer().isSetRecurrent()) {
             assertTrue(target.getPayer() instanceof RecurrentPayer);
             assertEquals(source.getPayer().getRecurrent().getRecurrentParent().getInvoiceId(),
-                    ((RecurrentPayer)target.getPayer()).getRecurrentParentPayment().getInvoiceID());
+                    ((RecurrentPayer) target.getPayer()).getRecurrentParentPayment().getInvoiceID());
         }
     }
 }
