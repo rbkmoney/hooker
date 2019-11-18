@@ -14,6 +14,7 @@ import static com.rbkmoney.hooker.utils.ErrorUtils.getRefundError;
 
 @Component
 public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> {
+
     @Override
     public Refund convert(InvoicePaymentRefund sourceWrapper) {
         var source = sourceWrapper.getRefund();
@@ -34,11 +35,23 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
     }
 
     private Long getAmount(InvoicePaymentRefund sourceWrapper) {
-        return sourceWrapper.isSetCashFlow() ? CashFlowUtils.getFees(sourceWrapper.getCashFlow()).getOrDefault(FeeType.AMOUNT, null) : null;
+        if (sourceWrapper.getRefund().isSetCash()) {
+            return sourceWrapper.getRefund().getCash().getAmount();
+        }
+        if (sourceWrapper.isSetCashFlow()) {
+            return CashFlowUtils.getFees(sourceWrapper.getCashFlow()).getOrDefault(FeeType.AMOUNT, null);
+        }
+        return null;
     }
 
     private String getCurrency(InvoicePaymentRefund sourceWrapper) {
-        return sourceWrapper.isSetCashFlow() ? CashFlowUtils.getCurrency(sourceWrapper.getCashFlow()).getOrDefault(FeeType.AMOUNT, null) : null;
+        if (sourceWrapper.getRefund().isSetCash()) {
+            return sourceWrapper.getRefund().getCash().getCurrency().getSymbolicCode();
+        }
+        if (sourceWrapper.isSetCashFlow()) {
+            return CashFlowUtils.getCurrency(sourceWrapper.getCashFlow()).getOrDefault(FeeType.AMOUNT, null);
+        }
+        return null;
     }
 
     private String getRrn(InvoicePaymentRefund sourceWrapper) {

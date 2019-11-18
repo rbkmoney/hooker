@@ -132,7 +132,12 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
         var damselPayment = extractPayment(m, invoiceInfo);
         var damselRefund = extractRefund(m, damselPayment);
 
-        return refundConverter.convert(damselRefund);
+        Refund swagRefund = refundConverter.convert(damselRefund);
+        if (swagRefund.getAmount() == null) {
+            swagRefund.setAmount(damselPayment.getPayment().getCost().getAmount());
+            swagRefund.setCurrency(damselPayment.getPayment().getCost().getCurrency().getSymbolicCode());
+        }
+        return swagRefund;
     }
 
     private com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund extractRefund(InvoicingMessage m, InvoicePayment damselPayment) {
