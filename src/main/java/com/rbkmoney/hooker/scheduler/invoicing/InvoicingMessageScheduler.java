@@ -21,7 +21,7 @@ import java.util.List;
 public class InvoicingMessageScheduler extends MessageScheduler<InvoicingMessage, InvoicingQueue> {
 
     public InvoicingMessageScheduler(InvoicingTaskDao taskDao, InvoicingQueueDao queueDao, InvoicingMessageDao messageDao,
-                                     InvoicingEventService eventService, @Value("${message.sender.number}") int numberOfWorkers) {
+                                     InvoicingEventService eventService, @Value("${message.scheduler.threadPoolSize}") int numberOfWorkers) {
         super(taskDao, queueDao, messageDao, eventService, numberOfWorkers);
     }
 

@@ -73,8 +73,10 @@ db:
     tr_timeout: 300000
 
 message:
-  scheduler.delay: 1000
-  sender.number: 10
+  scheduler:
+    delay: 1000
+    threadPoolSize: 10
+    limit: 50
 
 management:
   security:

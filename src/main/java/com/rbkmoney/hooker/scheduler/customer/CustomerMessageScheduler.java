@@ -21,7 +21,7 @@ import java.util.List;
 public class CustomerMessageScheduler extends MessageScheduler<CustomerMessage, CustomerQueue> {
 
     public CustomerMessageScheduler(CustomerTaskDao taskDao, CustomerQueueDao queueDao, CustomerDao customerDao,
-                                    CustomerEventService eventService, @Value("${message.sender.number}") int numberOfWorkers) {
+                                    CustomerEventService eventService, @Value("${message.scheduler.threadPoolSize}") int numberOfWorkers) {
         super(taskDao, queueDao, customerDao, eventService, numberOfWorkers);
     }
 

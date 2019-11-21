@@ -53,18 +53,19 @@ public abstract class AbstractTaskDao implements TaskDao {
     }
 
     @Override
-    public Map<Long, List<Task>> getScheduled() throws DaoException {
+    public Map<Long, List<Task>> getScheduled(int limit) throws DaoException {
         final String sql = "SELECT st.message_id, st.queue_id " +
                 "FROM hook.scheduled_task st " +
                 "JOIN hook.simple_retry_policy srp ON st.queue_id=srp.queue_id " +
                 "AND st.message_type=srp.message_type " +
                 "WHERE st.message_type = CAST(:message_type as hook.message_topic) " +
                 "AND COALESCE(srp.next_fire_time_ms, 0) < :curr_time " +
-                "ORDER BY st.message_id ASC LIMIT 10000 FOR UPDATE SKIP LOCKED";
+                "ORDER BY st.message_id ASC LIMIT :limit FOR UPDATE SKIP LOCKED";
         try {
             List<Task> tasks = jdbcTemplate.query(sql,
                     new MapSqlParameterSource("message_type", getMessageTopic())
-                            .addValue("curr_time", System.currentTimeMillis()),
+                            .addValue("curr_time", System.currentTimeMillis())
+                            .addValue("limit", limit),
                     taskRowMapper);
             return splitByQueue(tasks);
         } catch (NestedRuntimeException e) {

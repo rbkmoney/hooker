@@ -12,6 +12,7 @@ import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -22,6 +23,9 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class HookDeleteDaoTest extends AbstractIntegrationTest {
+    @Value("${message.scheduler.limit}")
+    private int limit;
+
     @Autowired
     InvoicingTaskDao taskDao;
 
@@ -39,11 +43,11 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
         Long hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
         Long hookId2 = hookDao.create(HookDaoImplTest.buildHook("partyId2", "fake2.url")).getId();
         batchService.process(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.FULFILLED, PaymentStatusEnum.CAPTURED)));
-        assertEquals(queueDao.getWithPolicies(taskDao.getScheduled().keySet()).size(), 1);
+        assertEquals(queueDao.getWithPolicies(taskDao.getScheduled(limit).keySet()).size(), 1);
         hookDao.delete(hookId2);
-        assertNotEquals(queueDao.getWithPolicies(taskDao.getScheduled().keySet()).size(), 0);
+        assertNotEquals(queueDao.getWithPolicies(taskDao.getScheduled(limit).keySet()).size(), 0);
         hookDao.delete(hookId);
-        assertTrue(taskDao.getScheduled().keySet().isEmpty());
+        assertTrue(taskDao.getScheduled(limit).keySet().isEmpty());
         assertFalse(hookDao.getHookById(hookId).isEnabled());
         assertFalse(hookDao.getHookById(hookId2).isEnabled());
     }

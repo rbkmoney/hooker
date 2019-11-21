@@ -18,12 +18,16 @@ import com.rbkmoney.hooker.utils.KeyUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 
 import static org.junit.Assert.*;
 
 public class BatchProcessingTest extends AbstractIntegrationTest {
+
+    @Value("${message.scheduler.limit}")
+    private int limit;
 
     @Autowired
     private HandlerManager handlerManager;
@@ -122,7 +126,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         assertNotEquals(messageDao.getBy(Collections.singletonList(messageId - 1)).get(0).getPaymentStatus(),
                 messageDao.getBy(Collections.singletonList(messageId)).get(0).getPaymentStatus());
 
-        assertEquals(1, taskDao.getScheduled().size());
+        assertEquals(1, taskDao.getScheduled(limit).size());
         assertEquals(1, invoicingQueueDao.getWithPolicies(Collections.singletonList(1L)).size());
 
         //test duplication

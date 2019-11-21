@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -27,6 +28,9 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
+    @Value("${message.scheduler.limit}")
+    private int limit;
+
     @Autowired
     InvoicingTaskDao taskDao;
 
@@ -61,10 +65,10 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     public void createDeleteGet() {
         queueDao.saveBatchWithPolicies(Collections.singletonList(messageId));
         taskDao.save(Collections.singletonList(messageId));
-        Map<Long, List<Task>> scheduled = taskDao.getScheduled();
+        Map<Long, List<Task>> scheduled = taskDao.getScheduled(limit);
         assertEquals(1, scheduled.size());
         taskDao.remove(scheduled.keySet().iterator().next(), messageId);
-        assertEquals(0, taskDao.getScheduled().size());
+        assertEquals(0, taskDao.getScheduled(limit).size());
     }
 
     @Test
@@ -75,7 +79,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
         Set<Long> scheduledOne = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
-            scheduledOne.addAll(taskDao.getScheduled().values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
+            scheduledOne.addAll(taskDao.getScheduled(limit).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
             System.out.println("scheduledOne: " + scheduledOne);
             try {
                 Thread.sleep(500);
@@ -93,7 +97,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
         Set<Long> scheduledTwo = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
-            scheduledTwo.addAll(taskDao.getScheduled().values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
+            scheduledTwo.addAll(taskDao.getScheduled(limit).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
             System.out.println("scheduledTwo :" + scheduledTwo);
             return 1;
         })).start();
