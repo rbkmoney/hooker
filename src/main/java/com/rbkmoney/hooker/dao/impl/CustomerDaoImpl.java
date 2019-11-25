@@ -54,6 +54,7 @@ public class CustomerDaoImpl implements CustomerDao {
         message.setChangeId(rs.getInt(CHANGE_ID));
         message.setType(CustomerMessageEnum.lookup(rs.getString(TYPE)));
         message.setEventType(EventType.valueOf(rs.getString(EVENT_TYPE)));
+        message.setCustomerId(rs.getString(CUSTOMER_ID));
         message.setShopId(rs.getString(CUSTOMER_SHOP_ID));
         message.setBindingId(rs.getString(BINDING_ID));
         return message;
