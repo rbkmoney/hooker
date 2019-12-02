@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class InvoicingEventService implements EventService<InvoicingMessage> {
 
-    private final UserInfo userInfo = new UserInfo("admin", UserType.internal_user(new InternalUser()));
+    private final UserInfo userInfo = new UserInfo("hooker", UserType.service_user(new ServiceUser()));
     private final InvoicingSrv.Iface invoicingClient;
     private final InvoiceConverter invoiceConverter;
     private final PaymentConverter paymentConverter;
@@ -39,10 +39,6 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
         } catch (TException e) {
             throw new RemoteHostException(e);
         }
-    }
-
-    private EventRange getEventRange(Integer limit) {
-        return new EventRange().setLimit(limit);
     }
 
     private Event resolveEvent(InvoicingMessage m, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
