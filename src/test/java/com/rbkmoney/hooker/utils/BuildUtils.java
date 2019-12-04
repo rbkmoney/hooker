@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.json.Value;
 import com.rbkmoney.damsel.payment_processing.InvoicePayment;
 import com.rbkmoney.damsel.payment_processing.InvoiceRefundSession;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
@@ -53,6 +54,7 @@ public class BuildUtils {
                 new TBaseHandler<>(com.rbkmoney.damsel.payment_processing.Customer.class))
                 .setId(customerId)
                 .setCreatedAt("2016-03-22T06:12:27Z")
+                .setMetadata(Value.obj(new HashMap<>()))
                 .setBindings(Collections.singletonList(
                         tBaseProcessor.process(new com.rbkmoney.damsel.payment_processing.CustomerBinding(),
                                 new TBaseHandler<>(com.rbkmoney.damsel.payment_processing.CustomerBinding.class))
