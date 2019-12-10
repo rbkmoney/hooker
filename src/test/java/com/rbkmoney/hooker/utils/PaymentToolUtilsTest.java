@@ -7,8 +7,8 @@ import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsCryptoWallet;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsPaymentTerminal;
 import org.junit.Test;
-
 
 import java.io.IOException;
 
@@ -23,6 +23,25 @@ public class PaymentToolUtilsTest {
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsCryptoWallet);
         assertNull(paymentToolDetails.getDetailsType());
         assertEquals(com.rbkmoney.swag_webhook_events.model.CryptoCurrency.BITCOIN.getValue(), ((PaymentToolDetailsCryptoWallet)paymentToolDetails).getCryptoCurrency().getValue());
+    }
+
+    @Test
+    public void testGetPaymentToolDetailsPaymentTerminal() {
+        PaymentTool paymentTool = PaymentTool.payment_terminal(new PaymentTerminal()
+                .setTerminalType(TerminalPaymentProvider.alipay)
+        );
+        PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
+        assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
+        assertNull(paymentToolDetails.getDetailsType());
+        assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.ALIPAY.getValue(), ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
+
+        paymentTool = PaymentTool.payment_terminal(new PaymentTerminal()
+                .setTerminalType(TerminalPaymentProvider.wechat)
+        );
+        paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
+        assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
+        assertNull(paymentToolDetails.getDetailsType());
+        assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.WECHAT.getValue(), ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
     }
 
     @Test
