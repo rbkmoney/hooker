@@ -6,7 +6,7 @@ import com.rbkmoney.damsel.domain.BankCard;
 import com.rbkmoney.damsel.domain.DigitalWalletProvider;
 import com.rbkmoney.damsel.domain.MobilePhone;
 import com.rbkmoney.damsel.domain.PaymentTool;
-import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWalletWrapper;
+import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWallet;
 import com.rbkmoney.swag_webhook_events.model.*;
 
 import java.nio.charset.StandardCharsets;
@@ -33,7 +33,7 @@ public class PaymentToolUtils {
                     .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(paymentTool.getPaymentTerminal().getTerminalType().name()));
         } else if (paymentTool.isSetDigitalWallet()) {
             if (paymentTool.getDigitalWallet().getProvider() == DigitalWalletProvider.qiwi) {
-                return new PaymentToolDetailsDigitalWalletWrapper(new DigitalWalletDetailsQIWI()
+                return new PaymentToolDetailsDigitalWallet(new DigitalWalletDetailsQIWI()
                         .phoneNumberMask(paymentTool.getDigitalWallet().getId()));
             } else {
                 throw new UnsupportedOperationException("Unknown digital wallet type");

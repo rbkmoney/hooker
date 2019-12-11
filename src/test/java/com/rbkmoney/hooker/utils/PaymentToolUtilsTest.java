@@ -1,5 +1,8 @@
 package com.rbkmoney.hooker.utils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
@@ -23,6 +26,14 @@ public class PaymentToolUtilsTest {
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsCryptoWallet);
         assertNull(paymentToolDetails.getDetailsType());
         assertEquals(com.rbkmoney.swag_webhook_events.model.CryptoCurrency.BITCOIN.getValue(), ((PaymentToolDetailsCryptoWallet)paymentToolDetails).getCryptoCurrency().getValue());
+    }
+
+    @Test
+    public void testDigitalWalletJson() throws JsonProcessingException {
+        PaymentTool paymentTool = PaymentTool.digital_wallet(new DigitalWallet(DigitalWalletProvider.qiwi, "kke"));
+        PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
+        String json = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY).writeValueAsString(paymentToolDetails);
+        assertEquals("{\"detailsType\":\"PaymentToolDetailsDigitalWallet\",\"digitalWalletDetails\":{\"digitalWalletDetailsType\":\"DigitalWalletDetailsQIWI\",\"phoneNumberMask\":\"kke\"}}", json);
     }
 
     @Test
