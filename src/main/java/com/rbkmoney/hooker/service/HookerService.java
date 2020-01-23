@@ -40,6 +40,7 @@ public class HookerService implements WebhookManagerSrv.Iface {
     @Override
     public Webhook create(WebhookParams webhookParams) throws TException {
         if (hooksLimitService.isLimitExceeded(webhookParams)) {
+            log.info("Hooks limit exceeded for webhookParams={}", webhookParams);
             throw new LimitExceeded();
         }
         Hook hook = hookDao.create(HookConverter.convert(webhookParams));
