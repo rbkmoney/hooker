@@ -71,7 +71,7 @@ public class CustomerQueueDao implements QueueDao<CustomerQueue> {
                 " select q.id, q.hook_id, q.customer_id, wh.party_id, wh.url, k.pub_key, k.priv_key, wh.enabled, wh.retry_policy, srp.fail_count, srp.last_fail_time, srp.next_fire_time_ms, srp.message_type " +
                         " from hook.customer_queue q " +
                         " join hook.webhook wh on wh.id = q.hook_id and wh.enabled and wh.topic=CAST(:message_type as hook.message_topic)" +
-                        " join hook.party_key k on k.party_id = wh.party_id " +
+                        " join hook.party_data k on k.party_id = wh.party_id " +
                         " left join hook.simple_retry_policy srp on q.id = srp.queue_id and srp.message_type=CAST(:message_type as hook.message_topic)" +
                         " where q.id in (:ids) and q.enabled";
         final MapSqlParameterSource params = new MapSqlParameterSource("ids", ids)

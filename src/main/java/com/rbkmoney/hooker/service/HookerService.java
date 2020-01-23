@@ -1,9 +1,6 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.damsel.webhooker.Webhook;
-import com.rbkmoney.damsel.webhooker.WebhookManagerSrv;
-import com.rbkmoney.damsel.webhooker.WebhookNotFound;
-import com.rbkmoney.damsel.webhooker.WebhookParams;
+import com.rbkmoney.damsel.webhooker.*;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.HookConverter;
@@ -23,6 +20,7 @@ import java.util.List;
 public class HookerService implements WebhookManagerSrv.Iface {
 
     private final HookDao hookDao;
+    private final HooksLimitService hooksLimitService;
 
     @Override
     public List<Webhook> getList(String s) throws TException {
@@ -41,6 +39,9 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public Webhook create(WebhookParams webhookParams) throws TException {
+        if (hooksLimitService.isLimitExceeded(webhookParams)) {
+            throw new LimitExceeded();
+        }
         Hook hook = hookDao.create(HookConverter.convert(webhookParams));
         log.info("Webhook created: {}", hook);
         return HookConverter.convert(hook);

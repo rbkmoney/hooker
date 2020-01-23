@@ -56,6 +56,10 @@ cache:
 # connection timeout
 merchant.callback.timeout: 10
 
+limit:
+  perShop: 10
+  perParty: 5
+
 spring.datasource:
   type: com.zaxxer.hikari.HikariDataSource
   driver-class-name: org.postgresql.Driver

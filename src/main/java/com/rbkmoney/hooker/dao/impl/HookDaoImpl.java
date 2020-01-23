@@ -5,11 +5,14 @@ import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
+import com.rbkmoney.hooker.model.PartyMetadata;
+import com.rbkmoney.hooker.model.PartyMetadataRowMapper;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.NestedRuntimeException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -31,6 +34,7 @@ public class HookDaoImpl implements HookDao {
 
     private final Signer signer;
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final PartyMetadataRowMapper partyMetadataRowMapper;
 
     @Override
     public List<Hook> getPartyHooks(String partyId) throws DaoException {
@@ -38,7 +42,7 @@ public class HookDaoImpl implements HookDao {
         final String sql =
                 " select w.*, k.pub_key, wte.* " +
                         " from hook.webhook w " +
-                        " join hook.party_key k " +
+                        " join hook.party_data k " +
                         " on w.party_id = k.party_id " +
                         " join hook.webhook_to_events wte " +
                         " on wte.hook_id = w.id " +
@@ -55,6 +59,66 @@ public class HookDaoImpl implements HookDao {
             return result;
         } catch (NestedRuntimeException e) {
             String message = "Couldn't getPartyHooks for partyId " + partyId;
+            log.warn(message, e);
+            throw new DaoException(message);
+        }
+    }
+
+    @Override
+    public PartyMetadata getPartyMetadata(String partyId) throws DaoException {
+        String sql = "select metadata from hook.party_data where party_id=:party_id";
+        MapSqlParameterSource params = new MapSqlParameterSource("party_id", partyId);
+        try {
+            return jdbcTemplate.queryForObject(sql, params, partyMetadataRowMapper);
+        } catch (NestedRuntimeException e) {
+            String message = "Couldn't getPartyMetadata for partyId " + partyId;
+            log.warn(message, e);
+            throw new DaoException(message);
+        }
+    }
+
+    @Override
+    public int getShopHooksCount(String partyId, String shopId) throws DaoException {
+        String sql = " with we as (" +
+                " select wte.hook_id, wte.invoice_shop_id " +
+                " from hook.webhook_to_events wte " +
+                " join hook.webhook wh on wte.hook_id = wh.id " +
+                " where wh.party_id =:party_id and wte.invoice_shop_id =:shop_id and wh.enabled " +
+                " group by hook_id, invoice_shop_id) " +
+                " select count(1) as cnt from hook.webhook w " +
+                " join we on w.id = we.hook_id " +
+                " group by w.party_id, we.invoice_shop_id ";
+        MapSqlParameterSource params = new MapSqlParameterSource("party_id", partyId)
+                .addValue("shop_id", shopId);
+        try {
+            return jdbcTemplate.queryForObject(sql, params, Integer.class);
+        } catch (EmptyResultDataAccessException e) {
+            return 0;
+        } catch (NestedRuntimeException e) {
+            String message = String.format("Couldn't getHooksCount for partyId=%s, shopId=%s", partyId, shopId);
+            log.warn(message, e);
+            throw new DaoException(message);
+        }
+    }
+
+    @Override
+    public int getPartyHooksCount(String partyId) throws DaoException {
+        String sql = " with we as (" +
+                " select wte.hook_id " +
+                " from hook.webhook_to_events wte " +
+                " join hook.webhook wh on wte.hook_id = wh.id " +
+                " where wh.party_id =:party_id and wte.invoice_shop_id is null and wh.enabled " +
+                " group by hook_id) " +
+                " select count(1) as cnt from hook.webhook w " +
+                " join we on w.id = we.hook_id " +
+                " group by w.party_id ";
+        MapSqlParameterSource params = new MapSqlParameterSource("party_id", partyId);
+        try {
+            return jdbcTemplate.queryForObject(sql, params, Integer.class);
+        } catch (EmptyResultDataAccessException e) {
+            return 0;
+        } catch (NestedRuntimeException e) {
+            String message = String.format("Couldn't getPartyHooksCount for partyId=%s", partyId);
             log.warn(message, e);
             throw new DaoException(message);
         }
@@ -94,7 +158,7 @@ public class HookDaoImpl implements HookDao {
     public Hook getHookById(long id) throws DaoException {
         final String sql = "select w.*, k.pub_key, wte.* " +
                 "from hook.webhook w " +
-                "join hook.party_key k " +
+                "join hook.party_data k " +
                 "on w.party_id = k.party_id " +
                 "join hook.webhook_to_events wte " +
                 "on wte.hook_id = w.id " +
@@ -186,7 +250,7 @@ public class HookDaoImpl implements HookDao {
     }
 
     private String createOrGetPubKey(String partyId) throws DaoException {
-        final String sql = "INSERT INTO hook.party_key(party_id, priv_key, pub_key) " +
+        final String sql = "INSERT INTO hook.party_data(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +
                 "ON CONFLICT(party_id) DO UPDATE SET party_id=:party_id RETURNING pub_key";
 
@@ -207,7 +271,6 @@ public class HookDaoImpl implements HookDao {
         return pubKey;
     }
 
-
     private static RowMapper<AllHookTablesRow> allHookTablesRowRowMapper =
             (rs, i) -> new AllHookTablesRow(rs.getLong("id"),
                     rs.getString("party_id"),
@@ -220,6 +283,4 @@ public class HookDaoImpl implements HookDao {
                             rs.getString("invoice_status"),
                             rs.getString("invoice_payment_status"),
                             rs.getString("invoice_payment_refund_status")));
-
-
 }

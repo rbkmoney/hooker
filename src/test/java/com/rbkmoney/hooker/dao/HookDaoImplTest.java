@@ -5,6 +5,8 @@ import com.rbkmoney.damsel.webhooker.WebhookParams;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
+import com.rbkmoney.hooker.model.HooksLimit;
+import com.rbkmoney.hooker.model.PartyMetadata;
 import com.rbkmoney.hooker.utils.EventFilterUtils;
 import com.rbkmoney.hooker.utils.HookConverter;
 import com.rbkmoney.swag_webhook_events.model.Event;
@@ -15,15 +17,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Created by inalarsanukaev on 08.04.17.
@@ -33,7 +37,10 @@ import static org.junit.Assert.assertEquals;
 public class HookDaoImplTest extends AbstractIntegrationTest {
 
     @Autowired
-    HookDao hookDao;
+    private NamedParameterJdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private HookDao hookDao;
 
     List<Long> ids = new ArrayList<>();
 
@@ -100,8 +107,33 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
     public void getWebhookById() throws Exception {
         List<Hook> list = hookDao.getPartyHooks("123");
         for (Hook w : list) {
-            Assert.assertNotNull(hookDao.getHookById(w.getId()));
+            assertNotNull(hookDao.getHookById(w.getId()));
         }
+    }
+
+    @Test
+    public void getPartyMetadataTest() {
+        assertNull(hookDao.getPartyMetadata("123"));
+        jdbcTemplate.update("update hook.party_data set metadata =:metadata where party_id=:party_id",
+                new MapSqlParameterSource("party_id", "123")
+                        .addValue("metadata", "{\"hooksLimit\":{\"perShop\":{\"1\":22},\"perParty\":15}}"));
+        PartyMetadata partyMetadata = hookDao.getPartyMetadata("123");
+        assertNotNull(partyMetadata);
+        assertEquals(15, partyMetadata.getPartyLimit(10).intValue());
+        assertEquals(22, partyMetadata.getShopLimit("1", 10).intValue());
+        assertEquals(10, partyMetadata.getShopLimit("kkekeke", 10).intValue());
+    }
+
+    @Test
+    public void getShopHooksCountTest(){
+        assertEquals(1, hookDao.getShopHooksCount("123", "1"));
+        assertEquals(0, hookDao.getShopHooksCount("kekekekekeke", "1"));
+    }
+
+    @Test
+    public void getPartyHooksCountTest(){
+        assertEquals(2, hookDao.getPartyHooksCount("123"));
+        assertEquals(0, hookDao.getPartyHooksCount("keke"));
     }
 
     public static Hook buildHook(String partyId, String url){
