@@ -70,6 +70,8 @@ public class HookDaoImpl implements HookDao {
         MapSqlParameterSource params = new MapSqlParameterSource("party_id", partyId);
         try {
             return jdbcTemplate.queryForObject(sql, params, partyMetadataRowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         } catch (NestedRuntimeException e) {
             String message = "Couldn't getPartyMetadata for partyId " + partyId;
             log.warn(message, e);
