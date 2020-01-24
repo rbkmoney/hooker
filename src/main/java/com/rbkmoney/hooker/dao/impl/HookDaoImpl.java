@@ -80,14 +80,14 @@ public class HookDaoImpl implements HookDao {
     @Override
     public int getShopHooksCount(String partyId, String shopId) throws DaoException {
         String sql = " with we as (" +
-                " select wte.hook_id, wte.invoice_shop_id " +
+                " select wh.id " +
                 " from hook.webhook_to_events wte " +
                 " join hook.webhook wh on wte.hook_id = wh.id " +
-                " where wh.party_id =:party_id and wte.invoice_shop_id =:shop_id and wh.enabled " +
-                " group by hook_id, invoice_shop_id) " +
-                " select count(1) as cnt from hook.webhook w " +
-                " join we on w.id = we.hook_id " +
-                " group by w.party_id, we.invoice_shop_id ";
+                " where wh.party_id =:party_id " +
+                "   and wte.invoice_shop_id =:shop_id " +
+                "   and wh.enabled " +
+                " group by hook_id) " +
+                " select count(1) as cnt from we";
         MapSqlParameterSource params = new MapSqlParameterSource("party_id", partyId)
                 .addValue("shop_id", shopId);
         try {
@@ -107,11 +107,11 @@ public class HookDaoImpl implements HookDao {
                 " select wte.hook_id " +
                 " from hook.webhook_to_events wte " +
                 " join hook.webhook wh on wte.hook_id = wh.id " +
-                " where wh.party_id =:party_id and wte.invoice_shop_id is null and wh.enabled " +
+                " where wh.party_id =:party_id " +
+                "   and wte.invoice_shop_id is null " +
+                "   and wh.enabled " +
                 " group by hook_id) " +
-                " select count(1) as cnt from hook.webhook w " +
-                " join we on w.id = we.hook_id " +
-                " group by w.party_id ";
+                " select count(1) as cnt from we ";
         MapSqlParameterSource params = new MapSqlParameterSource("party_id", partyId);
         try {
             return jdbcTemplate.queryForObject(sql, params, Integer.class);
