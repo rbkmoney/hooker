@@ -80,7 +80,7 @@ public class HookDaoImpl implements HookDao {
     @Override
     public int getShopHooksCount(String partyId, String shopId) throws DaoException {
         String sql = " with we as (" +
-                " select wh.id " +
+                " select wte.hook_id " +
                 " from hook.webhook_to_events wte " +
                 " join hook.webhook wh on wte.hook_id = wh.id " +
                 " where wh.party_id =:party_id " +
