@@ -2,11 +2,8 @@ package com.rbkmoney.hooker.kafka;
 
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.hooker.AbstractKafkaIntegrationTest;
-import com.rbkmoney.hooker.listener.CustomerEventKafkaListener;
-import com.rbkmoney.hooker.listener.CustomerMachineEventHandler;
+import com.rbkmoney.hooker.listener.*;
 import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
-import com.rbkmoney.hooker.listener.InvoicingEventKafkaListener;
-import com.rbkmoney.hooker.listener.InvoicingMachineEventHandler;
 import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.kafka.common.serialization.ThriftSerializer;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
@@ -33,7 +30,6 @@ import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 
 @Slf4j
-@TestPropertySource(properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration")
 @ContextConfiguration(classes = {
         KafkaAutoConfiguration.class,
         InvoicingEventKafkaListener.class,
@@ -44,13 +40,13 @@ import static org.mockito.ArgumentMatchers.any;
 public class KafkaMachineEventListenerKafkaTest extends AbstractKafkaIntegrationTest {
 
     @org.springframework.beans.factory.annotation.Value("${kafka.topics.invoice.id}")
-    public String invoiceTopic;
+    private String invoiceTopic;
 
     @org.springframework.beans.factory.annotation.Value("${kafka.topics.customer.id}")
-    public String customerTopic;
+    private String customerTopic;
 
     @MockBean
-    HandlerManager handlerManager;
+    private HandlerManager handlerManager;
 
     @MockBean
     private MachineEventParser<EventPayload> eventParser;
@@ -64,7 +60,7 @@ public class KafkaMachineEventListenerKafkaTest extends AbstractKafkaIntegration
 
         writeToTopic(sinkEvent, invoiceTopic);
 
-        Mockito.verify(eventParser, Mockito.timeout(5000L).times(1)).parse(any());
+        Mockito.verify(eventParser, Mockito.timeout(10000L).times(1)).parse(any());
     }
 
     @Test
@@ -76,7 +72,7 @@ public class KafkaMachineEventListenerKafkaTest extends AbstractKafkaIntegration
 
         writeToTopic(sinkEvent, customerTopic);
 
-        Mockito.verify(eventParser, Mockito.timeout(5000L).times(1)).parse(any());
+        Mockito.verify(eventParser, Mockito.timeout(10000L).times(1)).parse(any());
     }
 
     private void writeToTopic(SinkEvent sinkEvent, String topicName) {

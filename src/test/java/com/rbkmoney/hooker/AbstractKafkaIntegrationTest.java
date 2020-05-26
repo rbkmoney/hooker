@@ -55,7 +55,7 @@ public abstract class   AbstractKafkaIntegrationTest {
                     "kafka.consumer.auto-offset-reset=earliest",
                     "kafka.consumer.client-id=test",
                     "kafka.client-id=test",
-                    "kafka.topics.invoicing=test-topic",
+                    "kafka.topics.invoicing.enabled=true",
                     "kafka.topics.customer.enabled=true")
                     .applyTo(configurableApplicationContext);
             Flyway flyway = Flyway.configure()
