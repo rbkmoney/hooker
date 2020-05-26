@@ -1,15 +1,13 @@
 package com.rbkmoney.hooker.listener;
 
-import com.rbkmoney.kafka.common.util.LogUtil;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Arrays;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,12 +17,12 @@ public class CustomerEventKafkaListener {
 
     @KafkaListener(topics = "${kafka.topics.customer.id}",
             containerFactory = "customerListenerContainerFactory")
-    public void listen(List<ConsumerRecord<String, SinkEvent>> messages, Acknowledgment ack) {
-        log.info("Got machineEvent from customer topic. Batch size: {}", messages.size());
-        customerMachineEventHandler.handle(messages.stream()
-                .map(m -> m.value().getEvent())
-                .collect(Collectors.toList()), ack);
-        log.info("Batch from customer topic has been committed (size={}, values={})", messages.size(),
-                LogUtil.toSummaryStringWithSinkEventValues(messages));
+    public void listen(SinkEvent sinkEvent, Acknowledgment ack) {
+        MachineEvent machineEvent = sinkEvent.getEvent();
+        log.info("Got machineEvent from customer topic (source id={}, event id={})",
+                machineEvent.getSourceId(), machineEvent.getEventId());
+        customerMachineEventHandler.handle(Arrays.asList(machineEvent), ack);
+        log.info("Machine event from customer topic has been committed (source id={}, event id={})",
+                machineEvent.getSourceId(), machineEvent.getEventId());
     }
 }

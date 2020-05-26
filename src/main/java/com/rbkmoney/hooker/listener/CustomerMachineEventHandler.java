@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.geck.serializer.kit.json.JsonHandler;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseProcessor;
-import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.handler.Handler;
 import com.rbkmoney.hooker.handler.poller.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.EventInfo;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -26,9 +24,6 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
 
     private final MachineEventParser<EventPayload> parser;
     private final List<AbstractCustomerEventHandler> pollingEventHandlers;
-
-    private static final int INITIAL_VALUE = 3;
-    private final AtomicInteger count = new AtomicInteger(INITIAL_VALUE);
 
     @Override
     @Transactional
@@ -43,7 +38,6 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
             for (int i = 0; i < changes.size(); ++i) {
                 preparePollingHandlers(changes.get(i), machineEvent, i);
             }
-            count.set(INITIAL_VALUE);
         }
         ack.acknowledge();
     }
@@ -68,18 +62,6 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
                     i
             );
             pollingEventHandler.handle(cc, eventInfo);
-        } catch (DaoException e) {
-            log.error("DaoException when poller handling with eventId {}", id, e);
-            if (count.decrementAndGet() > 0) {
-                log.warn("Retry handle with eventId {}", id);
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e1) {
-                    log.warn("Waiting for retry is interrupted");
-                    Thread.currentThread().interrupt();
-                }
-
-            }
         } catch (Exception e) {
             log.error("Error when poller handling with id {}", id, e);
         }

@@ -27,6 +27,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.BatchErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 
 import java.io.File;
 import java.util.HashMap;
@@ -97,27 +98,27 @@ public class KafkaConfig {
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> kafkaListenerContainerFactory(
             ConsumerFactory<String, MachineEvent> consumerFactory
     ) {
-        return createContainerFactory(consumerFactory, invoicingConcurrency);
-    }
-
-    @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> customerListenerContainerFactory(
-            ConsumerFactory<String, MachineEvent> consumerFactory
-    ) {
-        return createContainerFactory(consumerFactory, customerConcurrency);
-    }
-
-    private KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> createContainerFactory(
-            ConsumerFactory<String, MachineEvent> consumerFactory,
-            int concurrency
-    ) {
         ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true);
         factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         factory.setBatchErrorHandler(kafkaErrorHandler());
-        factory.setConcurrency(concurrency);
+        factory.setConcurrency(invoicingConcurrency);
+        return factory;
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> customerListenerContainerFactory(
+            ConsumerFactory<String, MachineEvent> consumerFactory
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+        factory.setBatchListener(false);
+        factory.getContainerProperties().setAckOnError(false);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setErrorHandler(new SeekToCurrentErrorHandler());
+        factory.setConcurrency(customerConcurrency);
         return factory;
     }
 
