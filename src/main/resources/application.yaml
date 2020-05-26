@@ -2,7 +2,7 @@ server.port: @server.port@
 
 spring:
   application:
-    name: @name@
+    name: hooker
     description: @description@
   flyway.schemas: hook
 
@@ -19,7 +19,6 @@ kafka:
     key-store-type: PKCS12
     trust-store-type: PKCS12
   consumer:
-    concurrency: 8
     group-id: "HookerListener"
     enable-auto-commit: false
     auto-offset-reset: earliest
@@ -28,18 +27,17 @@ kafka:
     invoice:
       id: mg-invoice-100-2
       enabled: false
+      concurrency: 8
+    customer:
+      id: mg-events-customer
+      enabled: false
+      concurrency: 1
 
 info:
   version: @version@
   responsible: Inal Arsanukaev
   stage: dev
   damsel.version: @damsel.version@
-
-bm.pooling:
-  url: http://localhost:8022/repo
-  maxPoolSize: 1
-  delay: 5000
-  maxQuerySize: 500
 
 service:
   invoicing:

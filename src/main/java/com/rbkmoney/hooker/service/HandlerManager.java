@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.service;
 
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventMapper;
+import com.rbkmoney.hooker.handler.poller.invoicing.AbstractInvoiceEventMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

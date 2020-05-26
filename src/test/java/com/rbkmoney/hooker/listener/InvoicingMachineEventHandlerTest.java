@@ -4,7 +4,7 @@ import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.exception.ParseException;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventMapper;
+import com.rbkmoney.hooker.handler.poller.invoicing.AbstractInvoiceEventMapper;
 import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
@@ -21,7 +21,7 @@ import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 
-public class MachineEventHandlerImplTest {
+public class InvoicingMachineEventHandlerTest {
 
     @Mock
     private HandlerManager handlerManager;
@@ -32,14 +32,14 @@ public class MachineEventHandlerImplTest {
     @Mock
     private Acknowledgment ack;
 
-    private MachineEventHandlerImpl machineEventHandler;
+    private InvoicingMachineEventHandler machineEventHandler;
 
     private BatchService batchService;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        machineEventHandler = new MachineEventHandlerImpl(handlerManager, eventParser, batchService);
+        machineEventHandler = new InvoicingMachineEventHandler(handlerManager, eventParser, batchService);
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.handler.poller.impl.invoicing;
+package com.rbkmoney.hooker.handler.poller.invoicing;
 
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;

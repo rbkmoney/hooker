@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.handler.poller.impl.customer;
+package com.rbkmoney.hooker.handler.poller.customer;
 
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;

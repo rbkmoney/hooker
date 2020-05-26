@@ -11,7 +11,7 @@ import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventMapper;
+import com.rbkmoney.hooker.handler.poller.invoicing.AbstractInvoiceEventMapper;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.hooker.utils.KeyUtils;

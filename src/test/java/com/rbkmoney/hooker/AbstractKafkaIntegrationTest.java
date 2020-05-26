@@ -24,7 +24,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @ContextConfiguration(classes = HookerApplication.class, initializers = AbstractKafkaIntegrationTest.Initializer.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Slf4j
-public abstract class AbstractKafkaIntegrationTest {
+public abstract class   AbstractKafkaIntegrationTest {
     public static final String SOURCE_ID = "source_id";
     public static final String SOURCE_NS = "source_ns";
 
@@ -55,7 +55,8 @@ public abstract class AbstractKafkaIntegrationTest {
                     "kafka.consumer.auto-offset-reset=earliest",
                     "kafka.consumer.client-id=test",
                     "kafka.client-id=test",
-                    "kafka.topics.invoicing=test-topic")
+                    "kafka.topics.invoicing=test-topic",
+                    "kafka.topics.customer.enabled=true")
                     .applyTo(configurableApplicationContext);
             Flyway flyway = Flyway.configure()
                     .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())

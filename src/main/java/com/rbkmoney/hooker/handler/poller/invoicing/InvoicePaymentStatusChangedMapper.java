@@ -1,6 +1,5 @@
-package com.rbkmoney.hooker.handler.poller.impl.invoicing;
+package com.rbkmoney.hooker.handler.poller.invoicing;
 
-import com.rbkmoney.damsel.domain.InvoicePayment;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -11,19 +10,28 @@ import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
+public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
-    private EventType eventType = EventType.INVOICE_PAYMENT_STARTED;
+    private EventType eventType = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public InvoicePaymentStartedMapper(InvoicingMessageDao messageDao) {
+    public InvoicePaymentStatusChangedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
     }
 
     @Override
     public Filter getFilter() {
         return filter;
+    }
+
+    @Override
+    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
+        return InvoicingMessageKey.builder()
+                .invoiceId(invoiceId)
+                .paymentId(ic.getInvoicePaymentChange().getId())
+                .type(InvoicingMessageEnum.PAYMENT)
+                .build();
     }
 
     @Override
@@ -38,16 +46,7 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePayment paymentOrigin = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
-        message.setPaymentId(paymentOrigin.getId());
-        message.setPaymentStatus(PaymentStatusEnum.lookup(paymentOrigin.getStatus().getSetField().getFieldName()));
-    }
-
-    @Override
-    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
-        return InvoicingMessageKey.builder()
-                .invoiceId(invoiceId)
-                .type(InvoicingMessageEnum.INVOICE)
-                .build();
+        message.setPaymentStatus(PaymentStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentStatusChanged().getStatus().getSetField().getFieldName()));
     }
 }

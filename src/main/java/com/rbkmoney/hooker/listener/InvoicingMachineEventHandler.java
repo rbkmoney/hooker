@@ -24,7 +24,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MachineEventHandlerImpl implements MachineEventHandler {
+public class InvoicingMachineEventHandler implements MachineEventHandler {
 
     private final HandlerManager handlerManager;
     private final MachineEventParser<EventPayload> parser;

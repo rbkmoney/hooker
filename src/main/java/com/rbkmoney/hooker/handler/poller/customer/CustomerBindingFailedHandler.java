@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.handler.poller.impl.customer;
+package com.rbkmoney.hooker.handler.poller.customer;
 
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
  * Created by inalarsanukaev on 12.10.17.
  */
 @Component
-public class CustomerReadyHandler extends NeedReadCustomerEventHandler {
+public class CustomerBindingFailedHandler extends NeedReadCustomerEventHandler {
 
-    private EventType eventType = EventType.CUSTOMER_READY;
+    private EventType eventType = EventType.CUSTOMER_BINDING_FAILED;
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public CustomerReadyHandler(CustomerDaoImpl customerDao) {
+    public CustomerBindingFailedHandler(CustomerDaoImpl customerDao) {
         super(customerDao);
     }
 
@@ -30,7 +30,7 @@ public class CustomerReadyHandler extends NeedReadCustomerEventHandler {
 
     @Override
     protected CustomerMessageEnum getMessageType() {
-        return CustomerMessageEnum.CUSTOMER;
+        return CustomerMessageEnum.BINDING;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.handler.poller.impl.invoicing;
+package com.rbkmoney.hooker.handler.poller.invoicing;
 
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
@@ -10,13 +10,13 @@ import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMapper {
+public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
-    private EventType eventType = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
+    private EventType eventType = EventType.INVOICE_STATUS_CHANGED;
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public InvoicePaymentStatusChangedMapper(InvoicingMessageDao messageDao) {
+    public InvoiceStatusChangedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
     }
 
@@ -29,14 +29,13 @@ public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMappe
     protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
         return InvoicingMessageKey.builder()
                 .invoiceId(invoiceId)
-                .paymentId(ic.getInvoicePaymentChange().getId())
-                .type(InvoicingMessageEnum.PAYMENT)
+                .type(InvoicingMessageEnum.INVOICE)
                 .build();
     }
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.PAYMENT;
+        return InvoicingMessageEnum.INVOICE;
     }
 
     @Override
@@ -46,7 +45,6 @@ public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMappe
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        message.setPaymentStatus(PaymentStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload()
-                .getInvoicePaymentStatusChanged().getStatus().getSetField().getFieldName()));
+        message.setInvoiceStatus(InvoiceStatusEnum.lookup(ic.getInvoiceStatusChanged().getStatus().getSetField().getFieldName()));
     }
 }

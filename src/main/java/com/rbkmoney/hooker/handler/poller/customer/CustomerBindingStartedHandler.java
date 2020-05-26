@@ -1,4 +1,4 @@
-package com.rbkmoney.hooker.handler.poller.impl.customer;
+package com.rbkmoney.hooker.handler.poller.customer;
 
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.geck.filter.Filter;

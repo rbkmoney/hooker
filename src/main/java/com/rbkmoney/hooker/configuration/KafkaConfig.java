@@ -51,8 +51,10 @@ public class KafkaConfig {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
-    @Value("${kafka.consumer.concurrency}")
-    private int concurrency;
+    @Value("${kafka.topics.invoice.concurrency}")
+    private int invoicingConcurrency;
+    @Value("${kafka.topics.customer.concurrency}")
+    private int customerConcurrency;
 
     private final KafkaSslProperties kafkaSslProperties;
 
@@ -95,6 +97,20 @@ public class KafkaConfig {
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> kafkaListenerContainerFactory(
             ConsumerFactory<String, MachineEvent> consumerFactory
     ) {
+        return createContainerFactory(consumerFactory, invoicingConcurrency);
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> customerListenerContainerFactory(
+            ConsumerFactory<String, MachineEvent> consumerFactory
+    ) {
+        return createContainerFactory(consumerFactory, customerConcurrency);
+    }
+
+    private KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> createContainerFactory(
+            ConsumerFactory<String, MachineEvent> consumerFactory,
+            int concurrency
+    ) {
         ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true);
@@ -115,7 +131,9 @@ public class KafkaConfig {
     }
 
     @Bean
-    public MachineEventParser<EventPayload> paymentEventPayloadMachineEventParser(BinaryDeserializer<EventPayload> paymentEventPayloadDeserializer) {
+    public MachineEventParser<EventPayload> paymentEventPayloadMachineEventParser(
+            BinaryDeserializer<EventPayload> paymentEventPayloadDeserializer
+    ) {
         return new PaymentEventPayloadMachineEventParser(paymentEventPayloadDeserializer);
     }
 

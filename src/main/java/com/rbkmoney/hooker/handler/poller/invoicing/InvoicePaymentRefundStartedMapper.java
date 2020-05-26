@@ -1,6 +1,8 @@
-package com.rbkmoney.hooker.handler.poller.impl.invoicing;
+package com.rbkmoney.hooker.handler.poller.invoicing;
 
+import com.rbkmoney.damsel.domain.InvoicePaymentRefund;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
+import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundCreated;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
@@ -10,13 +12,13 @@ import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
+public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMapper {
 
-    private EventType eventType = EventType.INVOICE_STATUS_CHANGED;
+    private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STARTED;
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public InvoiceStatusChangedMapper(InvoicingMessageDao messageDao) {
+    public InvoicePaymentRefundStartedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
     }
 
@@ -29,13 +31,14 @@ public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
     protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
         return InvoicingMessageKey.builder()
                 .invoiceId(invoiceId)
-                .type(InvoicingMessageEnum.INVOICE)
+                .paymentId(ic.getInvoicePaymentChange().getId())
+                .type(InvoicingMessageEnum.PAYMENT)
                 .build();
     }
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.INVOICE;
+        return InvoicingMessageEnum.REFUND;
     }
 
     @Override
@@ -45,6 +48,10 @@ public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        message.setInvoiceStatus(InvoiceStatusEnum.lookup(ic.getInvoiceStatusChanged().getStatus().getSetField().getFieldName()));
+        InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
+                .getPayload().getInvoicePaymentRefundCreated();
+        InvoicePaymentRefund refundOrigin = refundCreated.getRefund();
+        message.setRefundId(refundOrigin.getId());
+        message.setRefundStatus(RefundStatusEnum.lookup(refundOrigin.getStatus().getSetField().getFieldName()));
     }
 }
