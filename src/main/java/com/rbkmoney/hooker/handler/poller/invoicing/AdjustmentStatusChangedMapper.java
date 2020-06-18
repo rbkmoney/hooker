@@ -33,15 +33,10 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     public boolean accept(InvoiceChange change) {
-        if (change.isSetInvoicePaymentChange()
+        return change.isSetInvoicePaymentChange()
                 && change.getInvoicePaymentChange().getPayload().isSetInvoicePaymentAdjustmentChange()
-                && change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getPayload().isSetInvoicePaymentAdjustmentStatusChanged()) {
-            InvoicePaymentAdjustmentStatus status =
-                    change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getPayload()
-                            .getInvoicePaymentAdjustmentStatusChanged().getStatus();
-            return status.isSetCaptured() || status.isSetCancelled();
-        }
-        return false;
+                && change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getPayload().isSetInvoicePaymentAdjustmentStatusChanged()
+                && change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getPayload().getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCaptured();
     }
 
     @Override
