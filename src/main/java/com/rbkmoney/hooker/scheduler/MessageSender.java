@@ -33,7 +33,7 @@ public abstract class MessageSender<M extends Message> implements Callable<Messa
         try {
             for (M message : messages) {
                 currentMessage = message;
-                Event event = eventService.getByMessage(message);
+                Event event = eventService.getEventByMessage(message);
                 final String messageJson = objectMapper.writeValueAsString(event);
                 final String signature = signer.sign(messageJson, queueStatus.getQueue().getHook().getPrivKey());
                 int statusCode = postSender.doPost(queueStatus.getQueue().getHook().getUrl(), message.getId(), messageJson, signature);

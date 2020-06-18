@@ -2,19 +2,12 @@ package com.rbkmoney.hooker.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.damsel.domain.InvoicePaid;
-import com.rbkmoney.damsel.domain.InvoicePaymentPending;
-import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
-import com.rbkmoney.damsel.domain.InvoiceStatus;
-import com.rbkmoney.damsel.payment_processing.Customer;
 import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
-import com.rbkmoney.damsel.payment_processing.InvoicingSrv;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.swag_webhook_events.model.CustomerBindingSucceeded;
 import com.rbkmoney.swag_webhook_events.model.Event;
-import com.rbkmoney.swag_webhook_events.model.RefundSucceeded;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -49,7 +42,7 @@ public class CustomerEventServiceTest extends AbstractIntegrationTest {
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setEventType(EventType.CUSTOMER_BINDING_SUCCEEDED);
         message.setBindingId("bindingId");
-        Event event = service.getByMessage(message);
+        Event event = service.getEventByMessage(message);
         assertTrue(event instanceof CustomerBindingSucceeded);
         CustomerBindingSucceeded bindingSucceeded = (CustomerBindingSucceeded) event;
         assertEquals(message.getEventId().intValue(), event.getEventID().intValue());
@@ -64,7 +57,7 @@ public class CustomerEventServiceTest extends AbstractIntegrationTest {
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setEventType(EventType.CUSTOMER_BINDING_FAILED);
         message.setBindingId("bindingId");
-        Event event = service.getByMessage(message);
+        Event event = service.getEventByMessage(message);
         String json = objectMapper.writeValueAsString(event);
         assertTrue(json.contains("2016-03-22T06:12:27Z"));
     }

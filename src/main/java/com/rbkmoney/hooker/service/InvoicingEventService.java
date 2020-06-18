@@ -27,17 +27,21 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
     private final RefundConverter refundConverter;
 
     @Override
-    public Event getByMessage(InvoicingMessage message) {
+    public Event getEventByMessage(InvoicingMessage message) {
+        return resolveEvent(message, getInvoiceByMessage(message))
+                .eventID(message.getEventId().intValue())
+                .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
+                .topic(Event.TopicEnum.INVOICESTOPIC);
+    }
+
+    @Override
+    public com.rbkmoney.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
         try {
-            var invoiceInfo = invoicingClient.get(
+            return invoicingClient.get(
                     HellgateUtils.USER_INFO,
                     message.getInvoiceId(),
                     HellgateUtils.getEventRange(message.getSequenceId().intValue())
             );
-            return resolveEvent(message, invoiceInfo)
-                    .eventID(message.getEventId().intValue())
-                    .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
-                    .topic(Event.TopicEnum.INVOICESTOPIC);
         } catch (InvoiceNotFound e) {
             throw new NotFoundException("Invoice not found, invoiceId=" + message.getInvoiceId());
         } catch (TException e) {

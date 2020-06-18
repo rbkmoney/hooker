@@ -2,22 +2,19 @@ package com.rbkmoney.hooker.handler.poller.invoicing;
 
 import com.rbkmoney.damsel.payment_processing.Invoice;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
-import com.rbkmoney.damsel.payment_processing.InvoicingSrv;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.hooker.utils.HellgateUtils;
-import org.apache.thrift.TException;
+import com.rbkmoney.hooker.service.EventService;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
-    private final InvoicingSrv.Iface invoicingClient;
+    private final EventService<InvoicingMessage> invoicingEventService;
 
     private static final EventType EVENT_TYPE = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
 
@@ -28,10 +25,11 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
     private static final Filter FILTER = new PathConditionFilter(
             new PathConditionRule(ADJUSTMENT_STATUS_CHANGED_PATH, new IsNullCondition().not())
     );
+
     public AdjustmentStatusChangedMapper(InvoicingMessageDao messageDao,
-                                         InvoicingSrv.Iface invoicingClient) {
+                                         EventService<InvoicingMessage> invoicingEventService) {
         super(messageDao);
-        this.invoicingClient = invoicingClient;
+        this.invoicingEventService = invoicingEventService;
     }
 
     @Override
@@ -60,23 +58,15 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        try {
-            Invoice invoiceInfo = invoicingClient.get(
-                    HellgateUtils.USER_INFO,
-                    message.getInvoiceId(),
-                    HellgateUtils.getEventRange(message.getSequenceId().intValue())
-            );
-            invoiceInfo.getPayments().stream()
-                    .filter(payment -> message.getPaymentId().equalsIgnoreCase(payment.getPayment().getId()))
-                    .findFirst()
-                    .map(payment -> payment.getPayment().getStatus())
-                    .ifPresent(
-                            paymentStatus -> message.setPaymentStatus(
-                                    PaymentStatusEnum.lookup(paymentStatus.getSetField().getFieldName())
-                            )
-                    );
-        } catch (TException e) {
-            throw new RemoteHostException(e);
-        }
+        Invoice invoiceInfo = invoicingEventService.getInvoiceByMessage(message);
+        invoiceInfo.getPayments().stream()
+                .filter(payment -> message.getPaymentId().equalsIgnoreCase(payment.getPayment().getId()))
+                .findFirst()
+                .map(payment -> payment.getPayment().getStatus())
+                .ifPresent(
+                        paymentStatus -> message.setPaymentStatus(
+                                PaymentStatusEnum.lookup(paymentStatus.getSetField().getFieldName())
+                        )
+                );
     }
 }
