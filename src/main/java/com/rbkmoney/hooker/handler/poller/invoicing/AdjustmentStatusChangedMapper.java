@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.handler.poller.invoicing;
 
-import com.rbkmoney.damsel.domain.InvoicePaymentAdjustmentStatus;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -15,11 +14,12 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
 
-    private static final String ADJUSTMENT_StATUS_CHANGED_PATH = "invoice_payment_change.payload." +
-            "invoice_payment_adjustment_change.payload.invoice_payment_adjustment_status_changed";
+    private static final String ADJUSTMENT_STATUS_CHANGED_PATH = "invoice_payment_change.payload." +
+            "invoice_payment_adjustment_change.payload.invoice_payment_adjustment_status_changed." +
+            "status.captured";
 
     private Filter filter = new PathConditionFilter(
-            new PathConditionRule(ADJUSTMENT_StATUS_CHANGED_PATH, new IsNullCondition().not())
+            new PathConditionRule(ADJUSTMENT_STATUS_CHANGED_PATH, new IsNullCondition().not())
     );
 
     public AdjustmentStatusChangedMapper(InvoicingMessageDao messageDao) {
@@ -29,14 +29,6 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
     @Override
     public Filter getFilter() {
         return filter;
-    }
-
-    @Override
-    public boolean accept(InvoiceChange change) {
-        return change.isSetInvoicePaymentChange()
-                && change.getInvoicePaymentChange().getPayload().isSetInvoicePaymentAdjustmentChange()
-                && change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getPayload().isSetInvoicePaymentAdjustmentStatusChanged()
-                && change.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getPayload().getInvoicePaymentAdjustmentStatusChanged().getStatus().isSetCaptured();
     }
 
     @Override
