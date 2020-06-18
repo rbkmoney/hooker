@@ -1,7 +1,7 @@
 package com.rbkmoney.hooker.handler.poller.invoicing;
 
-import com.rbkmoney.damsel.payment_processing.Invoice;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
+import com.rbkmoney.damsel.payment_processing.InvoicePayment;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
@@ -58,15 +58,9 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        Invoice invoiceInfo = invoicingEventService.getInvoiceByMessage(message);
-        invoiceInfo.getPayments().stream()
-                .filter(payment -> message.getPaymentId().equalsIgnoreCase(payment.getPayment().getId()))
-                .findFirst()
-                .map(payment -> payment.getPayment().getStatus())
-                .ifPresent(
-                        paymentStatus -> message.setPaymentStatus(
-                                PaymentStatusEnum.lookup(paymentStatus.getSetField().getFieldName())
-                        )
-                );
+        InvoicePayment invoicePayment = invoicingEventService.getPaymentByMessage(message);
+        message.setPaymentStatus(
+                PaymentStatusEnum.lookup(invoicePayment.getPayment().getStatus().getSetField().getFieldName())
+        );
     }
 }

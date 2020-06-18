@@ -35,7 +35,11 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
     }
 
     @Override
-    public com.rbkmoney.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
+    public InvoicePayment getPaymentByMessage(InvoicingMessage message) {
+        return extractPayment(message, getInvoiceByMessage(message));
+    }
+
+    private com.rbkmoney.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
         try {
             return invoicingClient.get(
                     HellgateUtils.USER_INFO,
