@@ -11,6 +11,7 @@ import com.rbkmoney.hooker.converter.CustomerConverter;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.utils.HellgateUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
 import com.rbkmoney.swag_webhook_events.model.*;
 import com.rbkmoney.woody.api.flow.WFlow;
@@ -34,7 +35,7 @@ public class CustomerEventService implements EventService<CustomerMessage> {
             Customer customer = wFlow.createServiceFork(() -> {
                         addWoodyContext();
                         return customerClient.get(message.getCustomerId(),
-                                getEventRange(message.getSequenceId().intValue()));
+                                HellgateUtils.getEventRange(message.getSequenceId().intValue()));
                     }
             ).call();
 
