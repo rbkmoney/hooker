@@ -8,13 +8,13 @@ import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
-import com.rbkmoney.hooker.service.EventService;
+import com.rbkmoney.hooker.service.HellgateInvoicingService;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
-    private final EventService<InvoicingMessage> invoicingEventService;
+    private final HellgateInvoicingService<InvoicingMessage> invoicingEventService;
 
     private static final EventType EVENT_TYPE = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
 
@@ -27,7 +27,7 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
     );
 
     public AdjustmentStatusChangedMapper(InvoicingMessageDao messageDao,
-                                         EventService<InvoicingMessage> invoicingEventService) {
+                                         HellgateInvoicingService<InvoicingMessage> invoicingEventService) {
         super(messageDao);
         this.invoicingEventService = invoicingEventService;
     }

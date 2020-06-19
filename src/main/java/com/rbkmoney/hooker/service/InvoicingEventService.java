@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class InvoicingEventService implements EventService<InvoicingMessage> {
+public class InvoicingEventService implements EventService<InvoicingMessage>, HellgateInvoicingService<InvoicingMessage> {
 
     private final InvoicingSrv.Iface invoicingClient;
     private final InvoiceConverter invoiceConverter;
@@ -39,7 +39,8 @@ public class InvoicingEventService implements EventService<InvoicingMessage> {
         return extractPayment(message, getInvoiceByMessage(message));
     }
 
-    private com.rbkmoney.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
+    @Override
+    public com.rbkmoney.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
         try {
             return invoicingClient.get(
                     HellgateUtils.USER_INFO,
