@@ -101,10 +101,10 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
                             }
                         } catch (DaoException e) {
                             log.error("DaoException error when remove sent messages. It's not a big deal, but some messages can be re-sent: {}",
-                                    status.get().getMessagesDone());
+                                    status.get().getMessagesDone(), e);
                         }
                     } catch (ExecutionException e) {
-                        log.error("Unexpected error when get queue");
+                        log.error("Unexpected error when get queue", e);
                     }
                 }
             }
