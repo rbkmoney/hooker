@@ -149,4 +149,17 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
 
         return hook;
     }
+
+    public static Hook buildCustomerHook(String partyId, String url){
+        Hook hook = new Hook();
+        hook.setPartyId(partyId);
+        hook.setUrl(url);
+        hook.setTopic(Event.TopicEnum.CUSTOMERSTOPIC.getValue());
+
+        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
+        hook.setFilters(webhookAdditionalFilters);
+
+        return hook;
+    }
 }

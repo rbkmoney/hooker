@@ -1,12 +1,8 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
-import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
-import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
-import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.InvoiceStatusEnum;
-import com.rbkmoney.hooker.model.InvoicingMessageEnum;
-import com.rbkmoney.hooker.model.PaymentStatusEnum;
+import com.rbkmoney.hooker.dao.impl.*;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.Test;
@@ -18,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collections;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.buildCustomerMessage;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
@@ -30,10 +27,19 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
     InvoicingTaskDao taskDao;
 
     @Autowired
+    CustomerTaskDao customerTaskDao;
+
+    @Autowired
     InvoicingQueueDao queueDao;
 
     @Autowired
+    CustomerQueueDao customerQueueDao;
+
+    @Autowired
     HookDao hookDao;
+
+    @Autowired
+    CustomerDaoImpl customerDaoImpl;
 
     @Autowired
     BatchService batchService;
@@ -50,5 +56,15 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
         assertTrue(taskDao.getScheduled(limit).keySet().isEmpty());
         assertFalse(hookDao.getHookById(hookId).isEnabled());
         assertFalse(hookDao.getHookById(hookId2).isEnabled());
+    }
+
+    @Test
+    public void testDeleteCustomerHooks() {
+        Long hookId = hookDao.create(HookDaoImplTest.buildCustomerHook("partyId", "fake.url")).getId();
+        customerDaoImpl.create(BuildUtils.buildCustomerMessage(1L, "partyId", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124", "4356"));
+        assertEquals(customerQueueDao.getWithPolicies(customerTaskDao.getScheduled(limit).keySet()).size(), 1);
+        hookDao.delete(hookId);
+        assertTrue(customerTaskDao.getScheduled(limit).keySet().isEmpty());
+        assertFalse(hookDao.getHookById(hookId).isEnabled());
     }
 }
