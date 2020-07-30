@@ -13,6 +13,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -25,8 +28,6 @@ import static org.junit.Assert.*;
  * Created by jeckep on 17.04.17.
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Value("${message.scheduler.limit}")
     private int limit;
@@ -36,6 +37,9 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
     @Autowired
     InvoicingQueueDao queueDao;
+
+    @Autowired
+    NamedParameterJdbcTemplate jdbcTemplate;
 
     @Autowired
     HookDao hookDao;
@@ -58,7 +62,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
     @After
     public void after() throws Exception {
-        hookDao.delete(hookId);
+        jdbcTemplate.update("truncate hook.scheduled_task, hook.invoicing_queue, hook.message, hook.webhook_to_events, hook.webhook", new HashMap<>());
     }
 
     @Test
@@ -69,6 +73,13 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
         assertEquals(1, scheduled.size());
         taskDao.remove(scheduled.keySet().iterator().next(), messageId);
         assertEquals(0, taskDao.getScheduled(limit).size());
+    }
+
+    @Test
+    public void testSaveWithHookIdAndInvoiceId(){
+        queueDao.saveBatchWithPolicies(Collections.singletonList(messageId));
+        int count = taskDao.save(hookId, "2345");
+        assertEquals(1, count);
     }
 
     @Test

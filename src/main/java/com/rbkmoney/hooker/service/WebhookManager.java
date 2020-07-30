@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class HookerService implements WebhookManagerSrv.Iface {
+public class WebhookManager implements WebhookManagerSrv.Iface {
 
     private final HookDao hookDao;
     private final HooksLimitService hooksLimitService;

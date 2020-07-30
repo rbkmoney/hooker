@@ -23,8 +23,8 @@ public class PaymentToolUtils {
         if (paymentTool.isSetBankCard()) {
             return new PaymentToolDetailsBankCard()
                     .bin(paymentTool.getBankCard().getBin())
-                    .lastDigits(paymentTool.getBankCard().getMaskedPan())
-                    .cardNumberMask(paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getMaskedPan())
+                    .lastDigits(paymentTool.getBankCard().getLastDigits())
+                    .cardNumberMask(paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
                     .tokenProvider(paymentTool.getBankCard().isSetTokenProvider() ?
                             PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(paymentTool.getBankCard().getTokenProvider().name()) : null)
                     .paymentSystem(paymentTool.getBankCard().getPaymentSystem().name());
@@ -57,7 +57,7 @@ public class PaymentToolUtils {
             rootNode.put("token", pCard.getToken());
             rootNode.put("payment_system", pCard.getPaymentSystem().toString());
             rootNode.put("bin", pCard.getBin());
-            rootNode.put("masked_pan", pCard.getMaskedPan());
+            rootNode.put("masked_pan", pCard.getLastDigits());
             if (pCard.isSetTokenProvider()) {
                 rootNode.put("token_provider", pCard.getTokenProvider().name());
             }

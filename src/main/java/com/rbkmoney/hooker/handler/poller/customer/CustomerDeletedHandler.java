@@ -5,6 +5,8 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
+import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
+import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventType;
 import org.springframework.stereotype.Component;
@@ -19,8 +21,10 @@ public class CustomerDeletedHandler extends NeedReadCustomerEventHandler {
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public CustomerDeletedHandler(CustomerDaoImpl customerDao) {
-        super(customerDao);
+    public CustomerDeletedHandler(CustomerDaoImpl customerDao,
+                                  CustomerQueueDao customerQueueDao,
+                                  CustomerTaskDao customerTaskDao) {
+        super(customerDao, customerQueueDao, customerTaskDao);
     }
 
     @Override

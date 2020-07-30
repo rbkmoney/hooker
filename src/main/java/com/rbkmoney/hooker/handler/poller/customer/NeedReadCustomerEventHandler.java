@@ -2,6 +2,8 @@ package com.rbkmoney.hooker.handler.poller.customer;
 
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
+import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
+import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.CustomerMessageEnum;
@@ -16,6 +18,10 @@ import lombok.RequiredArgsConstructor;
 public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEventHandler {
 
     protected final CustomerDaoImpl customerDao;
+
+    private final CustomerQueueDao customerQueueDao;
+
+    private final CustomerTaskDao customerTaskDao;
 
     @Override
     protected void saveEvent(CustomerChange cc, EventInfo eventInfo) throws DaoException {
@@ -32,7 +38,12 @@ public abstract class NeedReadCustomerEventHandler extends AbstractCustomerEvent
         message.setChangeId(eventInfo.getChangeId());
         modifyMessage(cc, message);
 
-        customerDao.create(message);
+        Long messageId = customerDao.create(message);
+        if (messageId != null) {
+            message.setId(messageId);
+            customerQueueDao.createWithPolicy(messageId);
+            customerTaskDao.create(messageId);
+        }
     }
 
     protected CustomerMessage getCustomerMessage(String customerId) {

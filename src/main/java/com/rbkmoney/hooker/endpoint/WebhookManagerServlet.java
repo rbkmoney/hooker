@@ -15,7 +15,7 @@ import java.io.IOException;
 @WebServlet("/hook")
 @Slf4j
 @RequiredArgsConstructor
-public class HookerServlet extends GenericServlet {
+public class WebhookManagerServlet extends GenericServlet {
 
     private Servlet thriftServlet;
 
@@ -37,7 +37,7 @@ public class HookerServlet extends GenericServlet {
 
     @Override
     public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-        log.info("Start new request to servlet.");
+        log.info("Start new request to WebhookManagerServlet.");
         thriftServlet.service(req, res);
     }
 }

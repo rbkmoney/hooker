@@ -6,6 +6,8 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
+import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
+import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventType;
@@ -22,8 +24,10 @@ public class CustomerBindingStartedHandler extends NeedReadCustomerEventHandler 
 
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public CustomerBindingStartedHandler(CustomerDaoImpl customerDao) {
-        super(customerDao);
+    public CustomerBindingStartedHandler(CustomerDaoImpl customerDao,
+                                         CustomerQueueDao customerQueueDao,
+                                         CustomerTaskDao customerTaskDao) {
+        super(customerDao, customerQueueDao, customerTaskDao);
     }
 
     @Override

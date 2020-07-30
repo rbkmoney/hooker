@@ -43,4 +43,33 @@ public class CustomerTaskDao extends AbstractTaskDao {
             throw new DaoException(e);
         }
     }
+
+    public int create(long hookId, String customerId) throws DaoException {
+        final String sql =
+                " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
+                        " select m.id, q.id, w.topic" +
+                        " from hook.customer_message m" +
+                        " join hook.webhook w on m.party_id = w.party_id " +
+                        "                    and w.id = :hook_id "+
+                        "                    and w.enabled " +
+                        "                    and w.topic=CAST(:message_type as hook.message_topic)" +
+                        " join hook.webhook_to_events wte on wte.hook_id = w.id" +
+                        " join hook.customer_queue q on q.hook_id=w.id " +
+                        "                           and q.enabled " +
+                        "                           and q.customer_id=m.customer_id" +
+                        " where m.customer_id = :customer_id " +
+                        " and m.event_type = wte.event_type " +
+                        " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
+                        " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
+        try {
+            int updateCount = jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId)
+                    .addValue("customer_id", customerId)
+                    .addValue("message_type", getMessageTopic()));
+            log.info("Created tasks count={} for hookId={}, customerId={}", updateCount, hookId, customerId);
+            return updateCount;
+        } catch (NestedRuntimeException e) {
+            log.error("Fail to create tasks for messages.", e);
+            throw new DaoException(e);
+        }
+    }
 }

@@ -6,11 +6,10 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
+import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
+import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.exception.DaoException;
-import com.rbkmoney.hooker.model.CustomerMessage;
-import com.rbkmoney.hooker.model.CustomerMessageEnum;
-import com.rbkmoney.hooker.model.EventInfo;
-import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +25,10 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
     private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     private final CustomerDaoImpl customerDao;
+
+    private final CustomerQueueDao customerQueueDao;
+
+    private final CustomerTaskDao customerTaskDao;
 
     @Override
     public Filter getFilter() {
@@ -45,6 +48,11 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
         customerMessage.setEventType(eventType);
         customerMessage.setCustomerId(customerCreatedOrigin.getCustomerId());
         customerMessage.setShopId(customerCreatedOrigin.getShopId());
-        customerDao.create(customerMessage);
+        Long messageId = customerDao.create(customerMessage);
+        if (messageId != null) {
+            customerMessage.setId(messageId);
+            customerQueueDao.createWithPolicy(messageId);
+            customerTaskDao.create(messageId);
+        }
     }
 }

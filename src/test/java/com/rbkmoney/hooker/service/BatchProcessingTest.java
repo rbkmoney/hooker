@@ -151,7 +151,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
                                                                                 .setToken("token")
                                                                                 .setPaymentSystem(BankCardPaymentSystem.amex)
                                                                                 .setBin("bin")
-                                                                                .setMaskedPan("masked")))
+                                                                                .setLastDigits("masked")))
                                                                         .setClientInfo(new ClientInfo()))
                                                                 .setContactInfo(new ContactInfo())))
                                                 .setCost(new Cash()

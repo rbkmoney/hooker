@@ -26,7 +26,7 @@
         <postgresql.jdbc.version>42.2.5</postgresql.jdbc.version>
         <dockerfile.base.service.tag>bc95d0d6dc13c693acd2b274531a7d604b877bf3</dockerfile.base.service.tag>
         <dockerfile.registry>${env.REGISTRY}</dockerfile.registry>
-        <damsel.version>1.380-d98b965</damsel.version>
+        <damsel.version>1.441-93bff52</damsel.version>
         <shared.resources.version>0.3.6</shared.resources.version>
 
         <db.host.name>localhost</db.host.name>

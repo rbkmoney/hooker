@@ -29,8 +29,6 @@ import java.util.List;
 public class CustomerDaoImpl implements CustomerDao {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final CustomerQueueDao queueDao;
-    private final CustomerTaskDao taskDao;
 
     public static final String ID = "id";
     public static final String EVENT_ID = "event_id";
@@ -78,7 +76,7 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Transactional
-    public void create(CustomerMessage message) throws DaoException {
+    public Long create(CustomerMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.customer_message " +
                 "(event_id, occured_at, sequence_id, change_id, type, " +
                 "party_id, event_type, customer_id, customer_shop_id, binding_id) " +
@@ -104,11 +102,10 @@ public class CustomerDaoImpl implements CustomerDao {
             jdbcTemplate.update(sql, params, keyHolder);
             Number holderKey = keyHolder.getKey();
             if (holderKey != null) {
-                message.setId(holderKey.longValue());
                 log.info("CustomerMessage {} saved to db.", message);
-                queueDao.createWithPolicy(message.getId());
-                taskDao.create(message.getId());
+                return holderKey.longValue();
             }
+            return null;
         } catch (NestedRuntimeException e) {
             throw new DaoException("Couldn't create customerMessage with customerId " + message.getCustomerId(), e);
         }

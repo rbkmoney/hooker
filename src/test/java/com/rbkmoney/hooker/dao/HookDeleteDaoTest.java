@@ -61,7 +61,9 @@ public class HookDeleteDaoTest extends AbstractIntegrationTest {
     @Test
     public void testDeleteCustomerHooks() {
         Long hookId = hookDao.create(HookDaoImplTest.buildCustomerHook("partyId", "fake.url")).getId();
-        customerDaoImpl.create(BuildUtils.buildCustomerMessage(1L, "partyId", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124", "4356"));
+        Long messageId = customerDaoImpl.create(buildCustomerMessage(1L, "partyId", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124", "4356"));
+        customerQueueDao.createWithPolicy(messageId);
+        customerTaskDao.create(messageId);
         assertEquals(customerQueueDao.getWithPolicies(customerTaskDao.getScheduled(limit).keySet()).size(), 1);
         hookDao.delete(hookId);
         assertTrue(customerTaskDao.getScheduled(limit).keySet().isEmpty());
