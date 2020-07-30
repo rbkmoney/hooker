@@ -14,5 +14,5 @@ build('hooker', 'java-maven') {
         def registry = 'dr2.rbkmoney.com'
         def registryCredsId = 'jenkins_harbor'
 
-        javaServicePipeline(serviceName, useJava11, mvnArgs, registry, registryCredsId)
+        javaServicePipeline(serviceName, useJava11, mvnArgs)
 }
