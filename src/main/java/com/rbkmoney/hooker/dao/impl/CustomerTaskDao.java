@@ -35,9 +35,8 @@ public class CustomerTaskDao extends AbstractTaskDao {
                         " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
                         " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
         try {
-            int updateCount = jdbcTemplate.update(sql, new MapSqlParameterSource("message_id", messageId)
+            jdbcTemplate.update(sql, new MapSqlParameterSource("message_id", messageId)
                     .addValue("message_type", getMessageTopic()));
-            log.info("Created tasks count={} for messageId={}", updateCount, messageId);
         } catch (NestedRuntimeException e) {
             log.error("Fail to create tasks for messages.", e);
             throw new DaoException(e);
@@ -62,11 +61,9 @@ public class CustomerTaskDao extends AbstractTaskDao {
                         " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
                         " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
         try {
-            int updateCount = jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId)
+            return jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId)
                     .addValue("customer_id", customerId)
                     .addValue("message_type", getMessageTopic()));
-            log.info("Created tasks count={} for hookId={}, customerId={}", updateCount, hookId, customerId);
-            return updateCount;
         } catch (NestedRuntimeException e) {
             log.error("Fail to create tasks for messages.", e);
             throw new DaoException(e);
