@@ -6,6 +6,7 @@ spring:
     description: @description@
   flyway:
     schemas: hook
+    table: schema_version
 
 kafka:
   bootstrap-servers: kenny-kafka1.bst1.rbkmoney.net:9092

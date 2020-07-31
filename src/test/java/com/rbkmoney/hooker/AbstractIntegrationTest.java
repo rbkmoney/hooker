@@ -42,11 +42,6 @@ public abstract class AbstractIntegrationTest {
                     "flyway.password=" + postgres.getPassword()
             )
                     .applyTo(configurableApplicationContext);
-            Flyway flyway = Flyway.configure()
-                    .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
-                    .schemas("hook")
-                    .load();
-            flyway.migrate();
         }
     }
     @Value("${local.server.port}")
