@@ -58,11 +58,6 @@ public abstract class   AbstractKafkaIntegrationTest {
                     "kafka.topics.invoicing.enabled=true",
                     "kafka.topics.customer.enabled=true")
                     .applyTo(configurableApplicationContext);
-            Flyway flyway = Flyway.configure()
-                    .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
-                    .schemas("hook")
-                    .load();
-            flyway.migrate();
         }
     }
     @Value("${local.server.port}")
