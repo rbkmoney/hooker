@@ -21,6 +21,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -29,8 +30,8 @@ import static org.junit.Assert.*;
  */
 
 public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
-    @Value("${message.scheduler.limit}")
-    private int limit;
+
+    private int limit = 10;
 
     @Autowired
     InvoicingTaskDao taskDao;
@@ -84,9 +85,14 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
     @Test
     public void testSelectForUpdate() {
-        for (int i = 0; i < 20; ++i) {
-            messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), ""+i, "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED)));
-        }
+
+        List<InvoicingMessage> messages = IntStream.range(0, 20).mapToObj(i -> BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "" + i, "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED))
+                .collect(Collectors.toList());
+
+        messageDao.saveBatch(messages);
+        List<Long> messageIds = messages.stream().map(Message::getId).collect(Collectors.toList());
+        queueDao.saveBatchWithPolicies(messageIds);
+        taskDao.save(messageIds);
 
         Set<Long> scheduledOne = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
@@ -106,6 +112,8 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             e.printStackTrace();
         }
 
+        assertEquals(limit, scheduledOne.size());
+
         Set<Long> scheduledTwo = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
             scheduledTwo.addAll(taskDao.getScheduled(limit).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
@@ -119,9 +127,62 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             e.printStackTrace();
         }
 
+        assertEquals(limit, scheduledTwo.size());
+
         scheduledOne.retainAll(scheduledTwo);
         assertTrue(scheduledOne.isEmpty());
     }
+
+    @Test
+    public void testSelectForUpdateWithLockQueue() {
+
+        hookDao.create(HookDaoImplTest.buildHook("partyId", "fake2.url"));
+
+
+        int customLimit = 1;
+
+        InvoicingMessage message = BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED);
+
+        messageDao.saveBatch(List.of(message));
+        queueDao.saveBatchWithPolicies(List.of(message.getId()));
+        taskDao.save(List.of(message.getId()));
+
+        Set<String> scheduledOne = new HashSet<>();
+        new Thread(() -> transactionTemplate.execute(tr -> {
+            scheduledOne.addAll(taskDao.getScheduled(customLimit).values().stream().flatMap(List::stream).map(t -> t.getMessageId() + " " + t.getQueueId()).collect(Collectors.toSet()));
+            System.out.println("scheduledOne: " + scheduledOne);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return 1;
+        })).start();
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(customLimit, scheduledOne.size());
+
+        Set<String> scheduledTwo = new HashSet<>();
+        new Thread(() -> transactionTemplate.execute(tr -> {
+            scheduledTwo.addAll(taskDao.getScheduled(customLimit).values().stream().flatMap(List::stream).map(t -> t.getMessageId() + " " + t.getQueueId()).collect(Collectors.toSet()));
+            System.out.println("scheduledTwo :" + scheduledTwo);
+            return 1;
+        })).start();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertTrue(scheduledTwo.isEmpty());
+    }
+
 
     @Test
     public void removeAll() {
