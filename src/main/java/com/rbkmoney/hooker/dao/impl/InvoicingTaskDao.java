@@ -109,7 +109,8 @@ public class InvoicingTaskDao extends AbstractTaskDao {
                 "  WHERE liq.invoice_id IN (SELECT DISTINCT schd.invoice_id FROM scheduled schd) " +
                 "  FOR UPDATE SKIP LOCKED " +
                 ") SELECT message_id, queue_id FROM scheduled s " +
-                "  JOIN locked_invoicing_queue lq ON s.queue_id = lq.id";
+                "  JOIN locked_invoicing_queue lq ON s.queue_id = lq.id " +
+                " ORDER BY s.message_id";
         try {
             List<Task> tasks = jdbcTemplate.query(sql,
                     new MapSqlParameterSource("message_type", getMessageTopic())
