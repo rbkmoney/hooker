@@ -82,6 +82,12 @@ message:
     threadPoolSize: 10
     limit: 50
 
+clean:
+  scheduler:
+    cron: "0 0 1 * * *"
+    timezone: Europe/Moscow
+    daysAgo: 10
+
 management:
   security:
     flag: false
