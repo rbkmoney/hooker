@@ -86,7 +86,7 @@ clean:
   scheduler:
     cron: "0 0 10 * * *"
     timezone: Europe/Moscow
-    daysAgo: 10
+    daysAgo: 30
 
 management:
   security:
