@@ -61,6 +61,12 @@ public class PaymentToolUtils {
             if (pCard.isSetTokenProvider()) {
                 rootNode.put("token_provider", pCard.getTokenProvider().name());
             }
+            if (pCard.isSetIssuerCountry()) {
+                rootNode.put("issuer_country", pCard.getIssuerCountry().name());
+            }
+            if (pCard.isSetBankName()) {
+                rootNode.put("bank_name", pCard.getBankName());
+            }
         } else if (paymentTool.isSetPaymentTerminal()) {
             rootNode.put("type", "payment_terminal");
             rootNode.put("terminal_type", paymentTool.getPaymentTerminal().getTerminalType().toString());
