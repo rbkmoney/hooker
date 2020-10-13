@@ -27,7 +27,9 @@ public class PaymentToolUtils {
                     .cardNumberMask(paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
                     .tokenProvider(paymentTool.getBankCard().isSetTokenProvider() ?
                             PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(paymentTool.getBankCard().getTokenProvider().name()) : null)
-                    .paymentSystem(paymentTool.getBankCard().getPaymentSystem().name());
+                    .paymentSystem(paymentTool.getBankCard().getPaymentSystem().name())
+                    .issuerCountry(paymentTool.getBankCard().getIssuerCountry())
+                    .bankName(paymentTool.getBankCard().getBankName());
         } else if (paymentTool.isSetPaymentTerminal()) {
             return new PaymentToolDetailsPaymentTerminal()
                     .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(paymentTool.getPaymentTerminal().getTerminalType().name()));
@@ -60,12 +62,6 @@ public class PaymentToolUtils {
             rootNode.put("masked_pan", pCard.getLastDigits());
             if (pCard.isSetTokenProvider()) {
                 rootNode.put("token_provider", pCard.getTokenProvider().name());
-            }
-            if (pCard.isSetIssuerCountry()) {
-                rootNode.put("issuer_country", pCard.getIssuerCountry().name());
-            }
-            if (pCard.isSetBankName()) {
-                rootNode.put("bank_name", pCard.getBankName());
             }
         } else if (paymentTool.isSetPaymentTerminal()) {
             rootNode.put("type", "payment_terminal");
