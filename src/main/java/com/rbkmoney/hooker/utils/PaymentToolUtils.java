@@ -28,7 +28,7 @@ public class PaymentToolUtils {
                     .tokenProvider(paymentTool.getBankCard().isSetTokenProvider() ?
                             PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(paymentTool.getBankCard().getTokenProvider().name()) : null)
                     .paymentSystem(paymentTool.getBankCard().getPaymentSystem().name())
-                    .issuerCountry(paymentTool.getBankCard().getIssuerCountry())
+                    .issuerCountry(paymentTool.getBankCard().getIssuerCountry().name())
                     .bankName(paymentTool.getBankCard().getBankName());
         } else if (paymentTool.isSetPaymentTerminal()) {
             return new PaymentToolDetailsPaymentTerminal()
