@@ -49,4 +49,10 @@ public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMappe
         message.setPaymentStatus(PaymentStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentStatusChanged().getStatus().getSetField().getFieldName()));
     }
+
+    @Override
+    public boolean accept(InvoiceChange change) {
+        return getFilter().match(change) &&
+                !change.getInvoicePaymentChange().getPayload().getInvoicePaymentStatusChanged().getStatus().isSetChargedBack();
+    }
 }
