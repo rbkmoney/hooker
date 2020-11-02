@@ -91,8 +91,21 @@ clean:
 management:
   security:
     flag: false
+  server:
+    port: 8023
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
   metrics:
     export:
       statsd:
         enabled: false
         flavor: etsy
+      prometheus:
+        enabled: true
