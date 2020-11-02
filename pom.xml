@@ -21,7 +21,7 @@
         <sonar.cobertura.reportPath>target/site/cobertura/coverage.xml</sonar.cobertura.reportPath>
         <project.maintainer>Inal Arsanukaev &lt;i.arsanukaev@rbkmoney.com&gt;</project.maintainer>
         <server.port>8022</server.port>
-        <management.port>8022</management.port>
+        <management.port>8023</management.port>
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <postgresql.jdbc.version>42.2.5</postgresql.jdbc.version>
