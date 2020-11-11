@@ -14,7 +14,7 @@ public class CleanTablesDao {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public int cleanInvocingDaily(int daysAgo) {
+    public int cleanInvocing(int daysAgo) {
         final String sql =
             " with excluded_ids as (" +
             "    select queue_id from hook.scheduled_task st " +

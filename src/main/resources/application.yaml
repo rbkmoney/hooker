@@ -84,7 +84,7 @@ message:
 
 clean:
   scheduler:
-    cron: "0 0 10 * * *"
+    cron: "0 0 * * * *"
     timezone: Europe/Moscow
     daysAgo: 30
 

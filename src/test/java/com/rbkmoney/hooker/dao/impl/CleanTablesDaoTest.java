@@ -19,7 +19,7 @@ public class CleanTablesDaoTest extends AbstractIntegrationTest {
     private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Test
-    public void cleanInvocingDaily() {
+    public void cleanInvocingTest() {
 
         String sql = "with queue as ( " +
                 " insert into hook.invoicing_queue(hook_id, invoice_id, wtime) " +
@@ -41,7 +41,7 @@ public class CleanTablesDaoTest extends AbstractIntegrationTest {
         });
 
 
-        int count = cleanTablesDao.cleanInvocingDaily(10);
+        int count = cleanTablesDao.cleanInvocing(10);
         assertEquals(count, countOldRecords);
 
         long newRecordsCount = jdbcTemplate.queryForObject("select count(*) from hook.invoicing_queue", new MapSqlParameterSource(), Long.class);

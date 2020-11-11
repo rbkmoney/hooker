@@ -20,7 +20,7 @@ public class CleanTablesService {
     @Scheduled(cron = "${clean.scheduler.cron}", zone = "${clean.scheduler.timezone}")
     public void loop() {
         log.info("Start daily cleaning of invoicing queue tables, days ago = {}", daysAgo);
-        int affectedRows = cleanTablesDao.cleanInvocingDaily(daysAgo);
+        int affectedRows = cleanTablesDao.cleanInvocing(daysAgo);
         log.info("End daily cleaning of invoicing queue tables, rows deleted = {}", affectedRows);
 
     }
