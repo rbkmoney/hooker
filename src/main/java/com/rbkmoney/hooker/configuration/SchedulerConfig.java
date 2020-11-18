@@ -6,7 +6,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 public class SchedulerConfig {
-
     private static final int SCHEDULER_POOL_SIZE = 3;
 
     @Bean
