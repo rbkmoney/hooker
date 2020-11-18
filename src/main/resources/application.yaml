@@ -88,6 +88,9 @@ clean:
     timezone: Europe/Moscow
     daysAgo: 30
 
+scheduling:
+  poolSize: 3
+
 management:
   security:
     flag: false
