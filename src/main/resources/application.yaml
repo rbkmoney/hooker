@@ -7,6 +7,10 @@ spring:
   flyway:
     schemas: hook
     table: schema_version
+  task:
+    scheduling:
+      pool:
+        size: 3
 
 kafka:
   bootstrap-servers: kenny-kafka1.bst1.rbkmoney.net:9092
@@ -87,9 +91,6 @@ clean:
     cron: "0 0 * * * *"
     timezone: Europe/Moscow
     daysAgo: 30
-
-scheduling:
-  poolSize: 3
 
 management:
   security:
