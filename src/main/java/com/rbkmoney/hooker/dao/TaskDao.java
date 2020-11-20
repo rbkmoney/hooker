@@ -15,5 +15,5 @@ public interface TaskDao {
 
     void removeAll(long queueId) throws DaoException;
 
-    Map<Long, List<Task>> getScheduled(int limit) throws DaoException;
+    Map<Long, List<Task>> getScheduled() throws DaoException;
 }

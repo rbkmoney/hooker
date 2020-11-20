@@ -62,10 +62,10 @@ public class CustomerTaskDaoTest extends AbstractIntegrationTest {
     public void createDeleteGet() {
         queueDao.createWithPolicy(messageId);
         taskDao.create(messageId);
-        Map<Long, List<Task>> scheduled = taskDao.getScheduled(10);
+        Map<Long, List<Task>> scheduled = taskDao.getScheduled();
         assertEquals(1, scheduled.size());
         taskDao.remove(scheduled.keySet().iterator().next(), messageId);
-        assertEquals(0, taskDao.getScheduled(10).size());
+        assertEquals(0, taskDao.getScheduled().size());
     }
 
     @Test

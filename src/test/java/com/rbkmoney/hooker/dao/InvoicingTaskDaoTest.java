@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
 
 public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
-    private int limit = 10;
-
     @Autowired
     InvoicingTaskDao taskDao;
 
@@ -57,8 +55,6 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED)));
-        messageId = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("2345").type(InvoicingMessageEnum.INVOICE).build()).getId();
     }
 
     @After
@@ -68,16 +64,20 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
     @Test
     public void createDeleteGet() {
+        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED)));
+        messageId = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("2345").type(InvoicingMessageEnum.INVOICE).build()).getId();
         queueDao.saveBatchWithPolicies(Collections.singletonList(messageId));
         taskDao.save(Collections.singletonList(messageId));
-        Map<Long, List<Task>> scheduled = taskDao.getScheduled(limit);
+        Map<Long, List<Task>> scheduled = taskDao.getScheduled();
         assertEquals(1, scheduled.size());
         taskDao.remove(scheduled.keySet().iterator().next(), messageId);
-        assertEquals(0, taskDao.getScheduled(limit).size());
+        assertEquals(0, taskDao.getScheduled().size());
     }
 
     @Test
     public void testSaveWithHookIdAndInvoiceId(){
+        messageDao.saveBatch(Collections.singletonList(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),"2345", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED)));
+        messageId = messageDao.getInvoicingMessage(InvoicingMessageKey.builder().invoiceId("2345").type(InvoicingMessageEnum.INVOICE).build()).getId();
         queueDao.saveBatchWithPolicies(Collections.singletonList(messageId));
         int count = taskDao.save(hookId, "2345");
         assertEquals(1, count);
@@ -86,17 +86,27 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSelectForUpdate() {
 
-        List<InvoicingMessage> messages = IntStream.range(0, 20).mapToObj(i -> BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "" + i, "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED))
+        int cnt = 20;
+
+        List<InvoicingMessage> messagesOne = IntStream.range(0, cnt).mapToObj(i -> BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "invoice_id1", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED))
                 .collect(Collectors.toList());
 
-        messageDao.saveBatch(messages);
-        List<Long> messageIds = messages.stream().map(Message::getId).collect(Collectors.toList());
-        queueDao.saveBatchWithPolicies(messageIds);
-        taskDao.save(messageIds);
+        List<InvoicingMessage> messagesSecond = IntStream.range(0, cnt).mapToObj(i -> BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "invoice_id2", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED))
+                .collect(Collectors.toList());
+
+        messageDao.saveBatch(messagesOne);
+        List<Long> messageIdsOne = messagesOne.stream().map(Message::getId).collect(Collectors.toList());
+        queueDao.saveBatchWithPolicies(messageIdsOne);
+        taskDao.save(messageIdsOne);
+
+        messageDao.saveBatch(messagesSecond);
+        List<Long> messageIdsSecond = messagesSecond.stream().map(Message::getId).collect(Collectors.toList());
+        queueDao.saveBatchWithPolicies(messageIdsSecond);
+        taskDao.save(messageIdsSecond);
 
         Set<Long> scheduledOne = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
-            scheduledOne.addAll(taskDao.getScheduled(limit).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
+            scheduledOne.addAll(taskDao.getScheduled().values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
             System.out.println("scheduledOne: " + scheduledOne);
             try {
                 Thread.sleep(500);
@@ -112,11 +122,11 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             e.printStackTrace();
         }
 
-        assertEquals(limit, scheduledOne.size());
+        assertEquals(cnt, scheduledOne.size());
 
         Set<Long> scheduledTwo = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
-            scheduledTwo.addAll(taskDao.getScheduled(limit).values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
+            scheduledTwo.addAll(taskDao.getScheduled().values().stream().flatMap(List::stream).map(Task::getMessageId).collect(Collectors.toSet()));
             System.out.println("scheduledTwo :" + scheduledTwo);
             return 1;
         })).start();
@@ -127,7 +137,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             e.printStackTrace();
         }
 
-        assertEquals(limit, scheduledTwo.size());
+        assertEquals(cnt, scheduledTwo.size());
 
         scheduledOne.retainAll(scheduledTwo);
         assertTrue(scheduledOne.isEmpty());
@@ -138,9 +148,6 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
         hookDao.create(HookDaoImplTest.buildHook("partyId", "fake2.url"));
 
-
-        int customLimit = 1;
-
         InvoicingMessage message = BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED);
 
         messageDao.saveBatch(List.of(message));
@@ -149,7 +156,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
         Set<String> scheduledOne = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
-            scheduledOne.addAll(taskDao.getScheduled(customLimit).values().stream().flatMap(List::stream).map(t -> t.getMessageId() + " " + t.getQueueId()).collect(Collectors.toSet()));
+            scheduledOne.addAll(taskDao.getScheduled().values().stream().flatMap(List::stream).map(t -> t.getMessageId() + " " + t.getQueueId()).collect(Collectors.toSet()));
             System.out.println("scheduledOne: " + scheduledOne);
             try {
                 Thread.sleep(500);
@@ -165,11 +172,11 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             e.printStackTrace();
         }
 
-        assertEquals(customLimit, scheduledOne.size());
+        assertEquals(2, scheduledOne.size());
 
         Set<String> scheduledTwo = new HashSet<>();
         new Thread(() -> transactionTemplate.execute(tr -> {
-            scheduledTwo.addAll(taskDao.getScheduled(customLimit).values().stream().flatMap(List::stream).map(t -> t.getMessageId() + " " + t.getQueueId()).collect(Collectors.toSet()));
+            scheduledTwo.addAll(taskDao.getScheduled().values().stream().flatMap(List::stream).map(t -> t.getMessageId() + " " + t.getQueueId()).collect(Collectors.toSet()));
             System.out.println("scheduledTwo :" + scheduledTwo);
             return 1;
         })).start();

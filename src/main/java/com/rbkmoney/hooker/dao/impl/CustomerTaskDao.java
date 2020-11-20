@@ -75,7 +75,7 @@ public class CustomerTaskDao extends AbstractTaskDao {
     }
 
     @Override
-    public Map<Long, List<Task>> getScheduled(int limit) throws DaoException {
+    public Map<Long, List<Task>> getScheduled() throws DaoException {
         final String sql = " WITH scheduled AS (" +
                 "SELECT st.message_id, st.queue_id, cq.customer_id " +
                 "FROM hook.scheduled_task st " +
@@ -84,21 +84,21 @@ public class CustomerTaskDao extends AbstractTaskDao {
                 "AND st.message_type=srp.message_type " +
                 "WHERE st.message_type = CAST(:message_type as hook.message_topic) " +
                 "AND COALESCE(srp.next_fire_time_ms, 0) < :curr_time " +
-                "ORDER BY st.message_id " +
-                "ASC LIMIT :limit " +
-                "FOR UPDATE SKIP LOCKED " +
+                "ORDER BY st.message_id ASC " +
+                "LIMIT 1 " +
+                "FOR UPDATE OF cq SKIP LOCKED " +
                 "), locked_customer_queue AS (" +
-                "  SELECT cq.id FROM hook.customer_queue cq " +
-                "  WHERE cq.customer_id IN (SELECT DISTINCT schd.customer_id FROM scheduled schd) " +
-                "  FOR UPDATE SKIP LOCKED " +
-                ") SELECT message_id, queue_id FROM scheduled s " +
-                "  JOIN locked_customer_queue cq ON s.queue_id = cq.id " +
-                " ORDER BY s.message_id";
+                "  SELECT ciq.id FROM hook.customer_queue ciq " +
+                "  WHERE ciq.customer_id IN (SELECT DISTINCT schd.customer_id FROM scheduled schd) " +
+                "  FOR UPDATE OF ciq SKIP LOCKED " +
+                ") SELECT message_id, queue_id FROM hook.scheduled_task s " +
+                "  JOIN locked_customer_queue lq ON s.queue_id = lq.id " +
+                " ORDER BY s.message_id" +
+                " FOR UPDATE OF s SKIP LOCKED";
         try {
             List<Task> tasks = jdbcTemplate.query(sql,
                     new MapSqlParameterSource("message_type", getMessageTopic())
-                            .addValue("curr_time", System.currentTimeMillis())
-                            .addValue("limit", limit),
+                            .addValue("curr_time", System.currentTimeMillis()),
                     taskRowMapper);
             return splitByQueue(tasks);
         } catch (NestedRuntimeException e) {

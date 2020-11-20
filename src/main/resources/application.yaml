@@ -71,7 +71,7 @@ spring.datasource:
   username: @db.user@
   password: @db.password@
   hikari:
-    maximum-pool-size: 10
+    maximum-pool-size: 20
     idle-timeout: 30000
     data-source-properties:
       reWriteBatchedInserts: true
@@ -83,8 +83,11 @@ db:
 message:
   scheduler:
     delay: 1000
-    threadPoolSize: 10
-    limit: 50
+    invoicing:
+      threadPoolSize: 10
+    customer:
+      threadPoolSize: 3
+
 
 clean:
   scheduler:

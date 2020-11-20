@@ -16,8 +16,7 @@ public class PostSender {
     public static final String SIGNATURE_HEADER = "Content-Signature";
     public static final long RESPONSE_MAX_LENGTH = 4096L;
 
-    public PostSender(@Value("${message.scheduler.threadPoolSize}") int connectionPoolSize,
-                      @Value("${merchant.callback.timeout}") int timeout) {
+    public PostSender(int connectionPoolSize, int timeout) {
         OkHttpClient.Builder httpBuilder = new OkHttpClient.Builder();
 
         if (log.isDebugEnabled()) {
