@@ -23,8 +23,8 @@ public class MessageScheduler<M extends Message, Q extends Queue> {
     @PostConstruct
     public void loop() {
         executorService = Executors.newScheduledThreadPool(threadPoolSize);
-        IntStream.range(1, threadPoolSize).forEach(i ->
-            executorService.scheduleWithFixedDelay(messageProcessor, 0, delayMillis, TimeUnit.SECONDS));
+        IntStream.range(0, threadPoolSize).forEach(i ->
+            executorService.scheduleWithFixedDelay(messageProcessor, 0, delayMillis, TimeUnit.MILLISECONDS));
     }
 
     @PreDestroy
