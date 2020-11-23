@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -29,6 +30,7 @@ import static org.junit.Assert.*;
  * Created by jeckep on 17.04.17.
  */
 
+@TestPropertySource(properties = "message.scheduler.invoicing.threadPoolSize=0")
 public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
     @Autowired
