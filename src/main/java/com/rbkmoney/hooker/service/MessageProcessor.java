@@ -39,10 +39,10 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
 
     private void process() {
         Map<Long, List<Task>> scheduledTasks = taskDao.getScheduled();
-        if (scheduledTasks == null) {
+        log.debug("scheduledTasks {}", scheduledTasks);
+        if (scheduledTasks.entrySet().isEmpty()) {
             return;
         }
-        log.debug("scheduledTasks {}", scheduledTasks);
 
         Set<Long> queueIds = scheduledTasks.keySet();
         Map<Long, Q> queuesMap = queueDao.getWithPolicies(queueIds).stream().collect(Collectors.toMap(Queue::getId, q -> q));

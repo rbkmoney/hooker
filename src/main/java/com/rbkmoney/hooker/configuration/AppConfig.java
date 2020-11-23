@@ -21,6 +21,7 @@ import com.rbkmoney.hooker.service.crypt.Signer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.support.TransactionTemplate;
 
 
@@ -84,12 +85,14 @@ public class AppConfig {
     }
 
     @Bean
-    public MessageScheduler<InvoicingMessage, InvoicingQueue> invoicingMessageScheduler(MessageProcessor<InvoicingMessage, InvoicingQueue> invoicingMessageProcessor) {
-        return new MessageScheduler<>(invoicingThreadPoolSize, delayMillis, invoicingMessageProcessor);
+    public MessageScheduler<InvoicingMessage, InvoicingQueue> invoicingMessageScheduler(MessageProcessor<InvoicingMessage, InvoicingQueue> invoicingMessageProcessor,
+                                                                                        ThreadPoolTaskScheduler taskScheduler) {
+        return new MessageScheduler<>(invoicingThreadPoolSize, delayMillis, invoicingMessageProcessor, taskScheduler);
     }
 
     @Bean
-    public MessageScheduler<CustomerMessage, CustomerQueue> cuustomerMessageScheduler(MessageProcessor<CustomerMessage, CustomerQueue> customerMessageProcessor) {
-        return new MessageScheduler<>(customerThreadPoolSize, delayMillis, customerMessageProcessor);
+    public MessageScheduler<CustomerMessage, CustomerQueue> cuustomerMessageScheduler(MessageProcessor<CustomerMessage, CustomerQueue> customerMessageProcessor,
+                                                                                      ThreadPoolTaskScheduler taskScheduler) {
+        return new MessageScheduler<>(customerThreadPoolSize, delayMillis, customerMessageProcessor, taskScheduler);
     }
 }

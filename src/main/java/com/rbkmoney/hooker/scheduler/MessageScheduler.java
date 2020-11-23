@@ -5,10 +5,9 @@ import com.rbkmoney.hooker.model.Queue;
 import com.rbkmoney.hooker.service.MessageProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -17,28 +16,11 @@ public class MessageScheduler<M extends Message, Q extends Queue> {
     private final int threadPoolSize;
     private final int delayMillis;
     private final MessageProcessor<M, Q> messageProcessor;
-
-    private ScheduledExecutorService executorService;
+    private final ThreadPoolTaskScheduler executorService;
 
     @PostConstruct
-    public void loop() {
-        executorService = Executors.newScheduledThreadPool(threadPoolSize);
+    public void init() {
         IntStream.range(0, threadPoolSize).forEach(i ->
-            executorService.scheduleWithFixedDelay(messageProcessor, 0, delayMillis, TimeUnit.MILLISECONDS));
-    }
-
-    @PreDestroy
-    public void preDestroy() {
-        executorService.shutdownNow();
-        try {
-            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
-                log.warn("Failed to stop scheduller in time.");
-            } else {
-                log.info("Scheduller stopped.");
-            }
-        } catch (InterruptedException e) {
-            log.warn("Waiting for scheduller shutdown is interrupted.");
-            Thread.currentThread().interrupt();
-        }
+            executorService.scheduleWithFixedDelay(messageProcessor, delayMillis));
     }
 }

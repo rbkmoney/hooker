@@ -37,6 +37,7 @@ public class MessageSender<M extends Message, Q extends Queue> {
             List<Task> tasks = entry.getValue();
             Q queue = queuesMap.get(queueId);
             QueueStatus queueStatus = new QueueStatus();
+            queueStatus.setQueue(queue);
             M currentMessage = null;
             try {
                 for (Task task : tasks) {

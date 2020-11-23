@@ -10,7 +10,7 @@ spring:
   task:
     scheduling:
       pool:
-        size: 3
+        size: 20
 
 kafka:
   bootstrap-servers: kenny-kafka1.bst1.rbkmoney.net:9092
