@@ -24,4 +24,6 @@ public interface HookDao {
     Hook create(Hook hook) throws DaoException;
 
     void delete(long id) throws DaoException;
+
+    void updateAvailability(long id, double availability) throws DaoException;
 }

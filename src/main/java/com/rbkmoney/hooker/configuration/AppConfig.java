@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.rbkmoney.hooker.dao.CustomerDao;
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
 import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
@@ -53,35 +54,41 @@ public class AppConfig {
     @Bean
     public MessageSender<InvoicingMessage, InvoicingQueue> invoicngMessageSender(Signer signer,
                                                                  InvoicingEventService eventService,
-                                                                 ObjectMapper objectMapper) {
-        return new MessageSender<>(invoicingThreadPoolSize, timeout, signer, eventService, objectMapper);
+                                                                 ObjectMapper objectMapper,
+                                                                 FaultDetectorService faultDetector) {
+        return new MessageSender<>(invoicingThreadPoolSize, timeout, signer, eventService, objectMapper, faultDetector);
     }
 
     @Bean
     public MessageSender<CustomerMessage, CustomerQueue> customerMessageSender(Signer signer,
                                                                                CustomerEventService eventService,
-                                                                               ObjectMapper objectMapper) {
-        return new MessageSender<>(customerThreadPoolSize, timeout, signer, eventService, objectMapper);
+                                                                               ObjectMapper objectMapper,
+                                                                               FaultDetectorService faultDetector) {
+        return new MessageSender<>(customerThreadPoolSize, timeout, signer, eventService, objectMapper, faultDetector);
     }
 
     @Bean
-    public MessageProcessor<InvoicingMessage, InvoicingQueue> invoicingMessageProcessor(InvoicingTaskDao taskDao,
+    public MessageProcessor<InvoicingMessage, InvoicingQueue> invoicingMessageProcessor(HookDao hookDao,
+                                                                                        InvoicingTaskDao taskDao,
                                                                                         InvoicingQueueDao queueDao,
                                                                                         InvoicingMessageDao messageDao,
                                                                                         RetryPoliciesService retryPoliciesService,
                                                                                         TransactionTemplate transactionTemplate,
+                                                                                        FaultDetectorService faultDetector,
                                                                                         MessageSender<InvoicingMessage, InvoicingQueue> invoicngMessageSender) {
-        return new MessageProcessor<>(taskDao, queueDao, messageDao, retryPoliciesService, transactionTemplate, invoicngMessageSender);
+        return new MessageProcessor<>(hookDao, taskDao, queueDao, messageDao, retryPoliciesService, transactionTemplate, faultDetector, invoicngMessageSender);
     }
 
     @Bean
-    public MessageProcessor<CustomerMessage, CustomerQueue> customerMessageProcessor(CustomerTaskDao taskDao,
+    public MessageProcessor<CustomerMessage, CustomerQueue> customerMessageProcessor(HookDao hookDao,
+                                                                                     CustomerTaskDao taskDao,
                                                                                      CustomerQueueDao queueDao,
                                                                                      CustomerDao messageDao,
                                                                                      RetryPoliciesService retryPoliciesService,
                                                                                      TransactionTemplate transactionTemplate,
+                                                                                     FaultDetectorService faultDetector,
                                                                                      MessageSender<CustomerMessage, CustomerQueue> customerMessageSender) {
-        return new MessageProcessor<>(taskDao, queueDao, messageDao, retryPoliciesService, transactionTemplate, customerMessageSender);
+        return new MessageProcessor<>(hookDao, taskDao, queueDao, messageDao, retryPoliciesService, transactionTemplate, faultDetector, customerMessageSender);
     }
 
     @Bean

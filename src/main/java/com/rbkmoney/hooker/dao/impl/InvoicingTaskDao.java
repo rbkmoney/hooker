@@ -96,12 +96,13 @@ public class InvoicingTaskDao extends AbstractTaskDao {
         final String sql = " WITH scheduled AS (" +
                 "SELECT st.message_id, st.queue_id, iq.invoice_id " +
                 "FROM hook.scheduled_task st " +
-                "JOIN hook.invoicing_queue iq ON st.queue_id=iq.id " +
+                "JOIN hook.invoicing_queue iq ON st.queue_id=iq.id AND iq.enabled " +
                 "JOIN hook.simple_retry_policy srp ON st.queue_id=srp.queue_id " +
                 "AND st.message_type=srp.message_type " +
+                "JOIN hook.webhook w ON iq.hook_id = w.id AND w.enabled " +
                 "WHERE st.message_type = CAST(:message_type as hook.message_topic) " +
                 "AND COALESCE(srp.next_fire_time_ms, 0) < :curr_time " +
-                "ORDER BY st.message_id ASC " +
+                "ORDER BY w.availability ASC, st.message_id ASC " +
                 "LIMIT 1 " +
                 "FOR UPDATE OF iq SKIP LOCKED " +
                 "), locked_invoicing_queue AS (" +

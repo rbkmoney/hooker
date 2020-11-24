@@ -79,12 +79,13 @@ public class CustomerTaskDao extends AbstractTaskDao {
         final String sql = " WITH scheduled AS (" +
                 "SELECT st.message_id, st.queue_id, cq.customer_id " +
                 "FROM hook.scheduled_task st " +
-                "JOIN hook.customer_queue cq ON st.queue_id=cq.id " +
+                "JOIN hook.customer_queue cq ON st.queue_id=cq.id AND cq.enabled " +
                 "JOIN hook.simple_retry_policy srp ON st.queue_id=srp.queue_id " +
                 "AND st.message_type=srp.message_type " +
+                "JOIN hook.webhook w ON cq.hook_id = w.id AND w.enabled " +
                 "WHERE st.message_type = CAST(:message_type as hook.message_topic) " +
                 "AND COALESCE(srp.next_fire_time_ms, 0) < :curr_time " +
-                "ORDER BY st.message_id ASC " +
+                "ORDER BY w.availability ASC, st.message_id ASC " +
                 "LIMIT 1 " +
                 "FOR UPDATE OF cq SKIP LOCKED " +
                 "), locked_customer_queue AS (" +

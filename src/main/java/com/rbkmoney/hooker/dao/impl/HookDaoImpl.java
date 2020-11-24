@@ -252,6 +252,18 @@ public class HookDaoImpl implements HookDao {
         }
     }
 
+    @Override
+    public void updateAvailability(long id, double availability) throws DaoException {
+        final String sql =
+                "update hook.webhook set availability =:availability where id =:id ";
+        try {
+            jdbcTemplate.update(sql, new MapSqlParameterSource("id", id)
+                    .addValue("availability", availability));
+        } catch (NestedRuntimeException e) {
+            throw new DaoException(e);
+        }
+    }
+
     private String createOrGetPubKey(String partyId) throws DaoException {
         final String sql = "INSERT INTO hook.party_data(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +

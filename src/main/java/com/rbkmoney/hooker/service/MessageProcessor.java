@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.service;
 
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.dao.TaskDao;
@@ -22,11 +23,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class MessageProcessor<M extends Message, Q extends Queue> implements Runnable  {
+    private final HookDao hookDao;
     private final TaskDao taskDao;
     private final QueueDao<Q> queueDao;
     private final MessageDao<M> messageDao;
     private final RetryPoliciesService retryPoliciesService;
     private final TransactionTemplate transactionTemplate;
+    private final FaultDetectorService faultDetector;
     private final MessageSender<M, Q> messageSender;
 
     @Override
@@ -71,6 +74,7 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
             RetryPolicyRecord record = queue.getRetryPolicyRecord();
             record.reset();
             retryPoliciesService.update(record);
+            hookDao.updateAvailability(queue.getHook().getId(), faultDetector.getRate(queue.getHook().getId()));
         }
     }
 
@@ -80,6 +84,7 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         RetryPolicyRecord retryPolicyRecord = queue.getRetryPolicyRecord();
         retryPolicy.updateFailed(retryPolicyRecord);
         retryPoliciesService.update(retryPolicyRecord);
+        hookDao.updateAvailability(queue.getHook().getId(), faultDetector.getRate(queue.getHook().getId()));
         if (retryPolicy.shouldDisable(retryPolicyRecord)) {
             queueDao.disable(queue.getId());
             taskDao.removeAll(queue.getId());
