@@ -151,7 +151,9 @@ public class HookDaoImpl implements HookDao {
             hook.setPubKey(allHookTablesRow.getPubKey());
             hook.setEnabled(allHookTablesRow.isEnabled());
             hook.setAvailability(allHookTablesRow.getAvailability());
-            hook.setFilters(rows.stream().map(AllHookTablesRow::getWebhookAdditionalFilter).collect(Collectors.toSet()));
+            hook.setFilters(rows.stream()
+                    .map(AllHookTablesRow::getWebhookAdditionalFilter)
+                    .collect(Collectors.toSet()));
             result.add(hook);
         }
 
