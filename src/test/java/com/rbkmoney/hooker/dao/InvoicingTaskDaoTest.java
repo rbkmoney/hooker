@@ -86,7 +86,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testSelectForUpdate() {
+    public void testSelectForUpdate() throws InterruptedException {
 
         int cnt = 20;
 
@@ -118,11 +118,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             return 1;
         })).start();
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(100);
 
         assertEquals(cnt, scheduledOne.size());
 
@@ -133,11 +129,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             return 1;
         })).start();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(1000);
 
         assertEquals(cnt, scheduledTwo.size());
 
@@ -146,7 +138,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testSelectForUpdateWithLockQueue() {
+    public void testSelectForUpdateWithLockQueue() throws InterruptedException {
 
         hookDao.create(HookDaoImplTest.buildHook("partyId", "fake2.url"));
 
@@ -168,11 +160,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             return 1;
         })).start();
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(100);
 
         assertEquals(2, scheduledOne.size());
 
@@ -183,17 +171,13 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             return 1;
         })).start();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(1000);
 
         assertTrue(scheduledTwo.isEmpty());
     }
 
     @Test
-    public void testAvailabilityOrdering() {
+    public void testAvailabilityOrdering() throws InterruptedException {
 
         Hook hook1 = HookDaoImplTest.buildHook("partyId_1", "fake1.url");
         hookDao.create(hook1);
@@ -220,11 +204,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             return 1;
         })).start();
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(100);
 
         assertEquals(1, scheduledOne.entrySet().size());
         assertEquals(message2.getId().longValue(), scheduledOne.values().iterator().next().get(0).getMessageId());
@@ -241,11 +221,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
             return 1;
         })).start();
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(100);
 
         assertEquals(1, scheduledTwo.entrySet().size());
         assertEquals(message1.getId().longValue(), scheduledTwo.values().iterator().next().get(0).getMessageId());
