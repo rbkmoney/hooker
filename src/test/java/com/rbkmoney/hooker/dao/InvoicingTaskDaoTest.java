@@ -148,6 +148,8 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSelectForUpdateWithLockQueue() {
 
+        hookDao.create(HookDaoImplTest.buildHook("partyId", "fake2.url"));
+
         InvoicingMessage message = BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED);
 
         messageDao.saveBatch(List.of(message));
