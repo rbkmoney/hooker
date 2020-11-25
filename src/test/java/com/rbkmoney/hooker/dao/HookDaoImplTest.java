@@ -150,6 +150,13 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         return hook;
     }
 
+    @Test
+    public void updateAvailabilityTest() {
+        double availability = 0.1;
+        hookDao.getPartyHooks("123").forEach(h -> hookDao.updateAvailability(h.getId(), availability));
+        hookDao.getPartyHooks("123").forEach(h -> assertEquals(availability, h.getAvailability(), 0.000000000001));
+    }
+
     public static Hook buildCustomerHook(String partyId, String url){
         Hook hook = new Hook();
         hook.setPartyId(partyId);

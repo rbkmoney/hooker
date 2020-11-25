@@ -38,7 +38,7 @@ public class FaultDetectorServiceImpl implements FaultDetectorService {
     @Override
     public double getRate(long hookId) {
         try {
-            List<ServiceStatistics> statistics = faultDetector.getStatistics(List.of(String.valueOf(hookId)));
+            List<ServiceStatistics> statistics = faultDetector.getStatistics(List.of(buildServiceId(hookId)));
             return statistics.get(0).getFailureRate();
         } catch (Exception e) {
             log.error("Error in FaultDetectorService when getStatistics", e);
@@ -66,7 +66,7 @@ public class FaultDetectorServiceImpl implements FaultDetectorService {
                 .setOperationId(String.valueOf(eventId))
                 .setState(operationState);
         try {
-            faultDetector.registerOperation(String.valueOf(hookId), operation, serviceConfig);
+            faultDetector.registerOperation(buildServiceId(hookId), operation, serviceConfig);
         } catch (Exception e) {
             log.error("Error in FaultDetectorService when registerOperation", e);
         }
@@ -74,5 +74,9 @@ public class FaultDetectorServiceImpl implements FaultDetectorService {
 
     private String getNow() {
         return TypeUtil.temporalToString(LocalDateTime.now(), ZoneOffset.UTC);
+    }
+
+    private String buildServiceId(long id) {
+        return "hooker-" + id;
     }
 }

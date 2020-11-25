@@ -148,8 +148,6 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Test
     public void testSelectForUpdateWithLockQueue() {
 
-        hookDao.create(HookDaoImplTest.buildHook("partyId", "fake2.url"));
-
         InvoicingMessage message = BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1", "partyId", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED);
 
         messageDao.saveBatch(List.of(message));
@@ -192,6 +190,64 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
         assertTrue(scheduledTwo.isEmpty());
     }
 
+    @Test
+    public void testAvailabilityOrdering() {
+
+        Hook hook1 = HookDaoImplTest.buildHook("partyId_1", "fake1.url");
+        hookDao.create(hook1);
+        hookDao.updateAvailability(hookDao.getPartyHooks("partyId_1").get(0).getId(), 0.1);
+        InvoicingMessage message1 = BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "1", "partyId_1", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED);
+
+        Hook hook2 = HookDaoImplTest.buildHook("partyId_2", "fake2.url");
+        hookDao.create(hook2);
+        InvoicingMessage message2 = BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(), "2", "partyId_2", EventType.INVOICE_CREATED, InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED);
+
+        messageDao.saveBatch(List.of(message1, message2));
+        queueDao.saveBatchWithPolicies(List.of(message1.getId(), message2.getId()));
+        taskDao.save(List.of(message1.getId(), message2.getId()));
+
+
+        Map<Long, List<Task>> scheduledOne = new HashMap<>();
+        new Thread(() -> transactionTemplate.execute(tr -> {
+            scheduledOne.putAll(taskDao.getScheduled());
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return 1;
+        })).start();
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(1, scheduledOne.entrySet().size());
+        assertEquals(message2.getId().longValue(), scheduledOne.values().iterator().next().get(0).getMessageId());
+
+
+        Map<Long, List<Task>> scheduledTwo = new HashMap<>();
+        new Thread(() -> transactionTemplate.execute(tr -> {
+            scheduledTwo.putAll(taskDao.getScheduled());
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return 1;
+        })).start();
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(1, scheduledTwo.entrySet().size());
+        assertEquals(message1.getId().longValue(), scheduledTwo.values().iterator().next().get(0).getMessageId());
+    }
 
     @Test
     public void removeAll() {

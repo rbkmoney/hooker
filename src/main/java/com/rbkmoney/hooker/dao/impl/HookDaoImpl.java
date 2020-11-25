@@ -144,12 +144,14 @@ public class HookDaoImpl implements HookDao {
             List<AllHookTablesRow> rows = hookIdToRows.get(hookId);
             Hook hook = new Hook();
             hook.setId(hookId);
-            hook.setPartyId(rows.get(0).getPartyId());
-            hook.setTopic(rows.get(0).getTopic());
-            hook.setUrl(rows.get(0).getUrl());
-            hook.setPubKey(rows.get(0).getPubKey());
-            hook.setEnabled(rows.get(0).isEnabled());
-            hook.setFilters(rows.stream().map(r -> r.getWebhookAdditionalFilter()).collect(Collectors.toSet()));
+            AllHookTablesRow allHookTablesRow = rows.get(0);
+            hook.setPartyId(allHookTablesRow.getPartyId());
+            hook.setTopic(allHookTablesRow.getTopic());
+            hook.setUrl(allHookTablesRow.getUrl());
+            hook.setPubKey(allHookTablesRow.getPubKey());
+            hook.setEnabled(allHookTablesRow.isEnabled());
+            hook.setAvailability(allHookTablesRow.getAvailability());
+            hook.setFilters(rows.stream().map(AllHookTablesRow::getWebhookAdditionalFilter).collect(Collectors.toSet()));
             result.add(hook);
         }
 
@@ -293,6 +295,7 @@ public class HookDaoImpl implements HookDao {
                     rs.getString("url"),
                     rs.getString("pub_key"),
                     rs.getBoolean("enabled"),
+                    rs.getDouble("availability"),
                     new WebhookAdditionalFilter(EventType.valueOf(rs.getString("event_type")),
                             rs.getString("invoice_shop_id"),
                             rs.getString("invoice_status"),
