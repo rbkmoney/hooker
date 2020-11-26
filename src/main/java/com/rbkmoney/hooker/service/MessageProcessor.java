@@ -73,8 +73,7 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         if (queue.getRetryPolicyRecord().isFailed()) {
             RetryPolicyRecord record = queue.getRetryPolicyRecord();
             record.reset();
-            retryPoliciesService.update(record);
-            hookDao.updateAvailability(queue.getHook().getId(), faultDetector.getRate(queue.getHook().getId()));
+            updatePolicy(queue, record);
         }
     }
 
@@ -83,12 +82,19 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         RetryPolicy retryPolicy = retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType());
         RetryPolicyRecord retryPolicyRecord = queue.getRetryPolicyRecord();
         retryPolicy.updateFailed(retryPolicyRecord);
-        retryPoliciesService.update(retryPolicyRecord);
-        hookDao.updateAvailability(queue.getHook().getId(), faultDetector.getRate(queue.getHook().getId()));
+        updatePolicy(queue, retryPolicyRecord);
         if (retryPolicy.shouldDisable(retryPolicyRecord)) {
             queueDao.disable(queue.getId());
             taskDao.removeAll(queue.getId());
             log.warn("Queue {} was disabled according to retry policy.", queue.getId());
         }
+    }
+
+    private void updatePolicy(Queue queue, RetryPolicyRecord record) {
+        retryPoliciesService.update(record);
+        log.info("Queue retry policy has been updated {}", record);
+        double rate = faultDetector.getRate(queue.getHook().getId());
+        hookDao.updateAvailability(queue.getHook().getId(), rate);
+        log.info("Hook {} availability has been updated to {}", queue.getHook().getId(), rate);
     }
 }
