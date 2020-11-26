@@ -205,6 +205,11 @@
             <artifactId>machinegun-proto</artifactId>
             <version>1.12-ebae56f</version>
         </dependency>
+        <dependency>
+            <groupId>com.rbkmoney</groupId>
+            <artifactId>fault-detector-proto</artifactId>
+            <version>1.20-41d05a3</version>
+        </dependency>
         <!--Test libs-->
         <dependency>
             <groupId>org.hamcrest</groupId>

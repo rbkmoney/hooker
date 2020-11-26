@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.service;
 
+import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.dao.TaskDao;
@@ -22,11 +23,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class MessageProcessor<M extends Message, Q extends Queue> implements Runnable  {
+    private final HookDao hookDao;
     private final TaskDao taskDao;
     private final QueueDao<Q> queueDao;
     private final MessageDao<M> messageDao;
     private final RetryPoliciesService retryPoliciesService;
     private final TransactionTemplate transactionTemplate;
+    private final FaultDetectorService faultDetector;
     private final MessageSender<M, Q> messageSender;
 
     @Override
@@ -70,7 +73,7 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         if (queue.getRetryPolicyRecord().isFailed()) {
             RetryPolicyRecord record = queue.getRetryPolicyRecord();
             record.reset();
-            retryPoliciesService.update(record);
+            updatePolicy(queue, record);
         }
     }
 
@@ -79,11 +82,19 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         RetryPolicy retryPolicy = retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType());
         RetryPolicyRecord retryPolicyRecord = queue.getRetryPolicyRecord();
         retryPolicy.updateFailed(retryPolicyRecord);
-        retryPoliciesService.update(retryPolicyRecord);
+        updatePolicy(queue, retryPolicyRecord);
         if (retryPolicy.shouldDisable(retryPolicyRecord)) {
             queueDao.disable(queue.getId());
             taskDao.removeAll(queue.getId());
             log.warn("Queue {} was disabled according to retry policy.", queue.getId());
         }
+    }
+
+    private void updatePolicy(Queue queue, RetryPolicyRecord record) {
+        retryPoliciesService.update(record);
+        log.info("Queue retry policy has been updated {}", record);
+        double rate = faultDetector.getRate(queue.getHook().getId());
+        hookDao.updateAvailability(queue.getHook().getId(), rate);
+        log.info("Hook {} availability has been updated to {}", queue.getHook().getId(), rate);
     }
 }

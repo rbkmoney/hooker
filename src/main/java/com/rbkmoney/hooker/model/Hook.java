@@ -23,6 +23,7 @@ public class Hook {
     private String pubKey;
     private String privKey;
     private boolean enabled;
+    private double availability;
     private RetryPolicyType retryPolicyType;
 
     @Override

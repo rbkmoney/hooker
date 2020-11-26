@@ -52,6 +52,11 @@ service:
   customer:
     url: http://hellgate:8022/v1/processing/customer_management
     networkTimeout: 5000
+  fault-detector:
+    url: http://fault-detector:8022/v1/
+    networkTimeout: 5000
+    slidingWindow: 60000
+    operationTimeLimit: 3000
 
 cache:
   invoice:
