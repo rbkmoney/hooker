@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class MessageProcessor<M extends Message, Q extends Queue> implements Runnable  {
+
+    private static final double UPDATE_PROBABILITY = 0.25;
     private final HookDao hookDao;
     private final TaskDao taskDao;
     private final QueueDao<Q> queueDao;
@@ -73,7 +75,12 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         if (queue.getRetryPolicyRecord().isFailed()) {
             RetryPolicyRecord record = queue.getRetryPolicyRecord();
             record.reset();
-            updatePolicy(queue, record);
+            updatePolicy(record);
+            updateAvailability(queue);
+        } else {
+            if (Math.random() < UPDATE_PROBABILITY) {
+                updateAvailability(queue);
+            }
         }
     }
 
@@ -82,7 +89,8 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         RetryPolicy retryPolicy = retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType());
         RetryPolicyRecord retryPolicyRecord = queue.getRetryPolicyRecord();
         retryPolicy.updateFailed(retryPolicyRecord);
-        updatePolicy(queue, retryPolicyRecord);
+        updatePolicy(retryPolicyRecord);
+        updateAvailability(queue);
         if (retryPolicy.shouldDisable(retryPolicyRecord)) {
             queueDao.disable(queue.getId());
             taskDao.removeAll(queue.getId());
@@ -90,9 +98,12 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         }
     }
 
-    private void updatePolicy(Queue queue, RetryPolicyRecord record) {
+    private void updatePolicy(RetryPolicyRecord record) {
         retryPoliciesService.update(record);
         log.info("Queue retry policy has been updated {}", record);
+    }
+
+    private void updateAvailability(Queue queue) {
         double rate = faultDetector.getRate(queue.getHook().getId());
         hookDao.updateAvailability(queue.getHook().getId(), rate);
         log.info("Hook {} availability has been updated to {}", queue.getHook().getId(), rate);

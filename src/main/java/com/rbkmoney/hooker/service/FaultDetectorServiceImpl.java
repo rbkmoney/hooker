@@ -39,7 +39,7 @@ public class FaultDetectorServiceImpl implements FaultDetectorService {
     public double getRate(long hookId) {
         try {
             List<ServiceStatistics> statistics = faultDetector.getStatistics(List.of(buildServiceId(hookId)));
-            return statistics.get(0).getFailureRate();
+            return statistics.isEmpty() ? 0 : statistics.get(0).getFailureRate();
         } catch (Exception e) {
             log.error("Error in FaultDetectorService when getStatistics", e);
             return 0;
@@ -73,7 +73,7 @@ public class FaultDetectorServiceImpl implements FaultDetectorService {
     }
 
     private String getNow() {
-        return TypeUtil.temporalToString(LocalDateTime.now(), ZoneOffset.UTC);
+        return TypeUtil.temporalToString(LocalDateTime.now(ZoneOffset.UTC));
     }
 
     private String buildServiceId(long id) {
