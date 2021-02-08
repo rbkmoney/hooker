@@ -123,4 +123,3 @@ clean:
     cron: "0 0 * * * *"
     timezone: Europe/Moscow
     daysAgo: 30
-  true
