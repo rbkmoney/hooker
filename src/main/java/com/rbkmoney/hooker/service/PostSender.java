@@ -2,8 +2,12 @@ package com.rbkmoney.hooker.service;
 
 import com.rbkmoney.hooker.logging.HttpLoggingInterceptor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
-import org.springframework.beans.factory.annotation.Value;
+import okhttp3.ConnectionPool;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +49,8 @@ public class PostSender {
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
-            log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.code(), response.body() != null ? response.peekBody(RESPONSE_MAX_LENGTH).string() : "<empty>");
+            log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.code(),
+                    response.body() != null ? response.peekBody(RESPONSE_MAX_LENGTH).string() : "<empty>");
             return response.code();
         }
     }

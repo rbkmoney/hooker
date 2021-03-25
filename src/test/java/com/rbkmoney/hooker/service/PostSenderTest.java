@@ -5,13 +5,13 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class PostSenderTest {
 
     @Test
     public void doPost() throws Exception {
-        PostSender postSender = new PostSender(1,1);
+        PostSender postSender = new PostSender(1, 1);
         MockWebServer server = new MockWebServer();
         HttpUrl httpUrl = server.url("/");
 

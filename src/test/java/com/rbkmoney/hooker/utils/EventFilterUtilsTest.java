@@ -22,18 +22,24 @@ public class EventFilterUtilsTest {
     private EventFilter getEventFilter() {
         Collection<WebhookAdditionalFilter> eventTypeCodeSet = new HashSet<>();
         eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_CREATED).build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_STARTED).shopId("77").build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED).build());
+        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_STARTED).shopId("77")
+                .build());
+        eventTypeCodeSet
+                .add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED).build());
         eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_STATUS_CHANGED).build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_REFUND_STARTED).build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED).build());
+        eventTypeCodeSet
+                .add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_REFUND_STARTED).build());
+        eventTypeCodeSet
+                .add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED)
+                        .build());
         return EventFilterUtils.getEventFilter(eventTypeCodeSet);
     }
 
     private EventFilter getCustomerEventFilter() {
         Collection<WebhookAdditionalFilter> eventTypeCodeSet = new HashSet<>();
         eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_DELETED).shopId("77").build());
+        eventTypeCodeSet
+                .add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_DELETED).shopId("77").build());
         eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_READY).build());
         eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_BINDING_STARTED).build());
         eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_BINDING_SUCCEEDED).build());

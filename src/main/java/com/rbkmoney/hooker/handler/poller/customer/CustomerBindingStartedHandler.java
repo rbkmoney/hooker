@@ -22,7 +22,8 @@ public class CustomerBindingStartedHandler extends NeedReadCustomerEventHandler 
 
     private EventType eventType = EventType.CUSTOMER_BINDING_STARTED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
+    private Filter filter =
+            new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public CustomerBindingStartedHandler(CustomerDaoImpl customerDao,
                                          CustomerQueueDao customerQueueDao,

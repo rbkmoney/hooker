@@ -24,7 +24,8 @@ public class RefundConverterTest extends AbstractIntegrationTest {
         InvoicePaymentRefund source = new MockTBaseProcessor(MockMode.RANDOM, 15, 1)
                 .process(new InvoicePaymentRefund(), new TBaseHandler<>(InvoicePaymentRefund.class));
         source.setCreatedAt("2016-03-22T06:12:27Z");
-        Refund target = converter.convert(new com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund(source, of()));
+        Refund target =
+                converter.convert(new com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund(source, of()));
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         assertEquals(source.getReason(), target.getReason());

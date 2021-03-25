@@ -8,7 +8,11 @@ import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
 import com.rbkmoney.damsel.domain.InvoiceStatus;
 import com.rbkmoney.damsel.payment_processing.InvoicingSrv;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.PaymentStatusEnum;
+import com.rbkmoney.hooker.model.RefundStatusEnum;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.swag_webhook_events.model.RefundSucceeded;
@@ -38,7 +42,8 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         Mockito.when(invoicingClient.get(any(), any(), any()))
                 .thenReturn(BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
-                        InvoiceStatus.paid(new InvoicePaid()), InvoicePaymentStatus.pending(new InvoicePaymentPending())));
+                        InvoiceStatus.paid(new InvoicePaid()),
+                        InvoicePaymentStatus.pending(new InvoicePaymentPending())));
     }
 
     @Test

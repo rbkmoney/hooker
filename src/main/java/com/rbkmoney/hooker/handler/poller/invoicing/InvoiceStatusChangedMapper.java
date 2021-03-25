@@ -6,7 +6,11 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoiceStatusEnum;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,7 +18,8 @@ public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_STATUS_CHANGED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
+    private Filter filter =
+            new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public InvoiceStatusChangedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
@@ -45,6 +50,7 @@ public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        message.setInvoiceStatus(InvoiceStatusEnum.lookup(ic.getInvoiceStatusChanged().getStatus().getSetField().getFieldName()));
+        message.setInvoiceStatus(
+                InvoiceStatusEnum.lookup(ic.getInvoiceStatusChanged().getStatus().getSetField().getFieldName()));
     }
 }

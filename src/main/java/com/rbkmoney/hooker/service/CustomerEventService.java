@@ -12,7 +12,13 @@ import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.utils.HellgateUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
-import com.rbkmoney.swag_webhook_events.model.*;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingFailed;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingStarted;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingSucceeded;
+import com.rbkmoney.swag_webhook_events.model.CustomerCreated;
+import com.rbkmoney.swag_webhook_events.model.CustomerDeleted;
+import com.rbkmoney.swag_webhook_events.model.CustomerReady;
+import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.woody.api.flow.WFlow;
 import com.rbkmoney.woody.api.trace.ContextUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +31,12 @@ public class CustomerEventService implements EventService<CustomerMessage> {
     private final CustomerManagementSrv.Iface customerClient;
     private final CustomerConverter customerConverter;
     private final CustomerBindingConverter customerBindingConverter;
-    private final WFlow wFlow = new WFlow();
+    private final WFlow woodyFlow = new WFlow();
 
     @Override
     public Event getEventByMessage(CustomerMessage message) {
         try {
-            Customer customer = wFlow.createServiceFork(() -> {
+            Customer customer = woodyFlow.createServiceFork(() -> {
                         addWoodyContext();
                         return customerClient.get(message.getCustomerId(),
                                 HellgateUtils.getEventRange(message.getSequenceId().intValue()));
@@ -48,7 +54,7 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         }
     }
 
-    private void addWoodyContext(){
+    private void addWoodyContext() {
         ContextUtils.setCustomMetadataValue(UserIdentityIdExtensionKit.KEY, "hooker");
         ContextUtils.setCustomMetadataValue(UserIdentityRealmExtensionKit.KEY, "service");
     }
@@ -78,7 +84,8 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         }
     }
 
-    private com.rbkmoney.damsel.payment_processing.CustomerBinding extractBinding(CustomerMessage message, Customer customer) {
+    private com.rbkmoney.damsel.payment_processing.CustomerBinding extractBinding(CustomerMessage message,
+                                                                                  Customer customer) {
         return customer.getBindings().stream()
                 .filter(b -> b.getId().equals(message.getBindingId()))
                 .findFirst()

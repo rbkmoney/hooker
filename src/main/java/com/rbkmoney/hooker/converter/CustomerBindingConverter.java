@@ -12,20 +12,24 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CustomerBindingConverter implements Converter<com.rbkmoney.damsel.payment_processing.CustomerBinding, CustomerBinding> {
+public class CustomerBindingConverter
+        implements Converter<com.rbkmoney.damsel.payment_processing.CustomerBinding, CustomerBinding> {
 
     @Override
     public CustomerBinding convert(com.rbkmoney.damsel.payment_processing.CustomerBinding source) {
         DisposablePaymentResource paymentResource = source.getPaymentResource();
         return new CustomerBinding()
                 .status(CustomerBinding.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
-                .error(source.getStatus().isSetFailed() ? ErrorUtils.getCustomerBindingError(source.getStatus().getFailed().getFailure()) : null)
+                .error(source.getStatus().isSetFailed()
+                        ? ErrorUtils.getCustomerBindingError(source.getStatus().getFailed().getFailure()) : null)
                 .id(source.getId())
                 .paymentResource(new PaymentResource()
                         .paymentSession(paymentResource.getPaymentSessionId())
                         .clientInfo(new ClientInfo()
-                                .ip(paymentResource.isSetClientInfo() ? paymentResource.getClientInfo().getIpAddress() : null)
-                                .fingerprint(paymentResource.isSetClientInfo() ? paymentResource.getClientInfo().getFingerprint() : null))
+                                .ip(paymentResource.isSetClientInfo()
+                                        ? paymentResource.getClientInfo().getIpAddress() : null)
+                                .fingerprint(paymentResource.isSetClientInfo()
+                                        ? paymentResource.getClientInfo().getFingerprint() : null))
                         .paymentToolDetails(PaymentToolUtils.getPaymentToolDetails(paymentResource.getPaymentTool())));
     }
 }

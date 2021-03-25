@@ -1,7 +1,15 @@
 package com.rbkmoney.hooker.logging;
 
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import okhttp3.Connection;
+import okhttp3.Headers;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okhttp3.internal.http.HttpHeaders;
 import okio.Buffer;
 import okio.BufferedSource;
@@ -105,7 +113,9 @@ public final class HttpLoggingInterceptor implements Interceptor {
      * Change the level at which this interceptor logs.
      */
     public HttpLoggingInterceptor setLevel(Level level) {
-        if (level == null) throw new NullPointerException("level == null. Use Level.NONE instead.");
+        if (level == null) {
+            throw new NullPointerException("level == null. Use Level.NONE instead.");
+        }
         this.level = level;
         return this;
     }
@@ -204,7 +214,8 @@ public final class HttpLoggingInterceptor implements Interceptor {
                 .append(response.code())
                 .append(response.message().isEmpty() ? "" : " " + response.message())
                 .append(' ').append(response.request().url())
-                .append(" (").append(tookMs).append("ms").append((!logHeaders ? ", " + bodySize + " body" : "") + ')').append('\n');
+                .append(" (").append(tookMs).append("ms").append((!logHeaders ? ", " + bodySize + " body" : "") + ')')
+                .append('\n');
 
         if (logHeaders) {
             Headers headers = response.headers();

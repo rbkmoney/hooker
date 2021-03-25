@@ -7,7 +7,13 @@ import com.rbkmoney.damsel.domain.DigitalWalletProvider;
 import com.rbkmoney.damsel.domain.MobilePhone;
 import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWallet;
-import com.rbkmoney.swag_webhook_events.model.*;
+import com.rbkmoney.swag_webhook_events.model.CryptoCurrency;
+import com.rbkmoney.swag_webhook_events.model.DigitalWalletDetailsQIWI;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsCryptoWallet;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsMobileCommerce;
+import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsPaymentTerminal;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -24,15 +30,19 @@ public class PaymentToolUtils {
             return new PaymentToolDetailsBankCard()
                     .bin(paymentTool.getBankCard().getBin())
                     .lastDigits(paymentTool.getBankCard().getLastDigits())
-                    .cardNumberMask(paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
-                    .tokenProvider(paymentTool.getBankCard().isSetTokenProvider() ?
-                            PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(paymentTool.getBankCard().getTokenProvider().name()) : null)
+                    .cardNumberMask(
+                            paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
+                    .tokenProvider(paymentTool.getBankCard().isSetTokenProvider()
+                            ? PaymentToolDetailsBankCard.TokenProviderEnum
+                            .fromValue(paymentTool.getBankCard().getTokenProvider().name()) : null)
                     .paymentSystem(paymentTool.getBankCard().getPaymentSystem().name())
-                    .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null ? paymentTool.getBankCard().getIssuerCountry().name() : null)
+                    .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null
+                            ? paymentTool.getBankCard().getIssuerCountry().name() : null)
                     .bankName(paymentTool.getBankCard().getBankName());
         } else if (paymentTool.isSetPaymentTerminal()) {
             return new PaymentToolDetailsPaymentTerminal()
-                    .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(paymentTool.getPaymentTerminal().getTerminalType().name()));
+                    .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum
+                            .fromValue(paymentTool.getPaymentTerminal().getTerminalType().name()));
         } else if (paymentTool.isSetDigitalWallet()) {
             if (paymentTool.getDigitalWallet().getProvider() == DigitalWalletProvider.qiwi) {
                 return new PaymentToolDetailsDigitalWallet(new DigitalWalletDetailsQIWI()
@@ -45,23 +55,25 @@ public class PaymentToolUtils {
                     .cryptoCurrency(CryptoCurrency.fromValue(paymentTool.getCryptoCurrency().name()));
         } else if (paymentTool.isSetMobileCommerce()) {
             return new PaymentToolDetailsMobileCommerce()
-                    .phoneNumber(paymentTool.getMobileCommerce().getPhone().getCc() + paymentTool.getMobileCommerce().getPhone().getCtn());
+                    .phoneNumber(paymentTool.getMobileCommerce().getPhone().getCc() +
+                            paymentTool.getMobileCommerce().getPhone().getCtn());
         } else {
-            throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
+            throw new UnsupportedOperationException(
+                    "Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
     }
 
     public static String getPaymentToolToken(PaymentTool paymentTool) {
         ObjectNode rootNode = mapper.createObjectNode();
         if (paymentTool.isSetBankCard()) {
-            BankCard pCard = paymentTool.getBankCard();
+            BankCard paymentCard = paymentTool.getBankCard();
             rootNode.put("type", "bank_card");
-            rootNode.put("token", pCard.getToken());
-            rootNode.put("payment_system", pCard.getPaymentSystem().toString());
-            rootNode.put("bin", pCard.getBin());
-            rootNode.put("masked_pan", pCard.getLastDigits());
-            if (pCard.isSetTokenProvider()) {
-                rootNode.put("token_provider", pCard.getTokenProvider().name());
+            rootNode.put("token", paymentCard.getToken());
+            rootNode.put("payment_system", paymentCard.getPaymentSystem().toString());
+            rootNode.put("bin", paymentCard.getBin());
+            rootNode.put("masked_pan", paymentCard.getLastDigits());
+            if (paymentCard.isSetTokenProvider()) {
+                rootNode.put("token_provider", paymentCard.getTokenProvider().name());
             }
         } else if (paymentTool.isSetPaymentTerminal()) {
             rootNode.put("type", "payment_terminal");
@@ -78,7 +90,8 @@ public class PaymentToolUtils {
             MobilePhone mobilePhone = paymentTool.getMobileCommerce().getPhone();
             rootNode.put("mobile_commerce", mobilePhone.getCc() + mobilePhone.getCtn());
         } else {
-            throw new UnsupportedOperationException("Unknown payment tool type. Must be bank card, terminal or digital wallet");
+            throw new UnsupportedOperationException(
+                    "Unknown payment tool type. Must be bank card, terminal or digital wallet");
         }
         return Base64.getUrlEncoder().encodeToString(rootNode.toString().getBytes(StandardCharsets.UTF_8));
     }

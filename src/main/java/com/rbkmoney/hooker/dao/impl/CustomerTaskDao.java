@@ -31,7 +31,8 @@ public class CustomerTaskDao extends AbstractTaskDao {
                 " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
                         " select m.id, q.id, w.topic" +
                         " from hook.customer_message m" +
-                        " join hook.webhook w on m.party_id = w.party_id and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
+                        " join hook.webhook w on m.party_id = w.party_id " +
+                        " and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
                         " join hook.webhook_to_events wte on wte.hook_id = w.id" +
                         " join hook.customer_queue q on q.hook_id=w.id and q.enabled and q.customer_id=m.customer_id" +
                         " where m.id = :message_id " +
@@ -53,7 +54,7 @@ public class CustomerTaskDao extends AbstractTaskDao {
                         " select m.id, q.id, w.topic" +
                         " from hook.customer_message m" +
                         " join hook.webhook w on m.party_id = w.party_id " +
-                        "                    and w.id = :hook_id "+
+                        "                    and w.id = :hook_id " +
                         "                    and w.enabled " +
                         "                    and w.topic=CAST(:message_type as hook.message_topic)" +
                         " join hook.webhook_to_events wte on wte.hook_id = w.id" +

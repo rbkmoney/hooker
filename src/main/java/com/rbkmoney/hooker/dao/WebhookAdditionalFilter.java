@@ -1,7 +1,11 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.model.EventType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * Created by inalarsanukaev on 18.04.17.

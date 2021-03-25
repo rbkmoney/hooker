@@ -1,28 +1,64 @@
 package com.rbkmoney.hooker.service;
 
 import com.rbkmoney.damsel.base.Content;
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.BankCard;
+import com.rbkmoney.damsel.domain.BankCardPaymentSystem;
+import com.rbkmoney.damsel.domain.Cash;
+import com.rbkmoney.damsel.domain.ClientInfo;
+import com.rbkmoney.damsel.domain.ContactInfo;
+import com.rbkmoney.damsel.domain.CurrencyRef;
+import com.rbkmoney.damsel.domain.DisposablePaymentResource;
 import com.rbkmoney.damsel.domain.Invoice;
+import com.rbkmoney.damsel.domain.InvoiceCart;
+import com.rbkmoney.damsel.domain.InvoiceDetails;
+import com.rbkmoney.damsel.domain.InvoiceLine;
 import com.rbkmoney.damsel.domain.InvoicePayment;
+import com.rbkmoney.damsel.domain.InvoicePaymentFlow;
 import com.rbkmoney.damsel.domain.InvoicePaymentPending;
-import com.rbkmoney.damsel.payment_processing.*;
+import com.rbkmoney.damsel.domain.InvoicePaymentProcessed;
+import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
+import com.rbkmoney.damsel.domain.InvoiceStatus;
+import com.rbkmoney.damsel.domain.InvoiceUnpaid;
+import com.rbkmoney.damsel.domain.Payer;
+import com.rbkmoney.damsel.domain.PaymentResourcePayer;
+import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.damsel.payment_processing.InvoiceChange;
+import com.rbkmoney.damsel.payment_processing.InvoiceCreated;
+import com.rbkmoney.damsel.payment_processing.InvoicePaymentChange;
+import com.rbkmoney.damsel.payment_processing.InvoicePaymentChangePayload;
+import com.rbkmoney.damsel.payment_processing.InvoicePaymentStarted;
+import com.rbkmoney.damsel.payment_processing.InvoicePaymentStatusChanged;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingMessageDaoImpl;
 import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.invoicing.AbstractInvoiceEventMapper;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventInfo;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
+import com.rbkmoney.hooker.model.PaymentStatusEnum;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.hooker.utils.KeyUtils;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.util.*;
+import javax.validation.constraints.NotNull;
 
-import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class BatchProcessingTest extends AbstractIntegrationTest {
 
@@ -46,15 +82,12 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
 
     @Test
     public void testBatchProcess() {
-
         hookDao.create(BuildUtils.buildHook("partyId", "www.kek.ru", EventType.INVOICE_CREATED));
 
-
         LinkedHashMap<InvoicingMessageKey, InvoicingMessage> storage = new LinkedHashMap<>();
-        List<InvoicingMessage> messages = new ArrayList<>();
 
         InvoiceChange ic = getInvoiceCreated();
-        EventInfo eventInfo = new EventInfo(null, "2016-03-22T06:12:27Z", "invoiceId",1L,1);
+        EventInfo eventInfo = new EventInfo(null, "2016-03-22T06:12:27Z", "invoiceId", 1L, 1);
         Optional<AbstractInvoiceEventMapper> eventMapperOptional = handlerManager.getHandler(ic);
         assertTrue(eventMapperOptional.isPresent());
         AbstractInvoiceEventMapper invoiceEventMapper = eventMapperOptional.get();
@@ -63,30 +96,39 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         assertEquals("invoiceId", invoiceCreated.getInvoiceId());
         assertEquals(InvoicingMessageEnum.INVOICE, invoiceCreated.getType());
         storage.put(KeyUtils.key(invoiceCreated), invoiceCreated);
-        messages.add(invoiceCreated);
 
         InvoiceChange icPaymentStarted = getInvoicePaymentStarted();
         EventInfo eventInfoPaymentStarted = new EventInfo(null, "2016-03-22T06:12:27Z", "invoiceId",1L,2);
-        Optional<AbstractInvoiceEventMapper> eventMapperPaymentStartedOptional = handlerManager.getHandler(icPaymentStarted);
+        Optional<AbstractInvoiceEventMapper> eventMapperPaymentStartedOptional =
+                handlerManager.getHandler(icPaymentStarted);
         assertTrue(eventMapperPaymentStartedOptional.isPresent());
         AbstractInvoiceEventMapper invoicePaymentStartedEventMapper = eventMapperPaymentStartedOptional.get();
-        InvoicingMessage paymentStarted = invoicePaymentStartedEventMapper.handle(icPaymentStarted, eventInfoPaymentStarted, storage);
+        InvoicingMessage paymentStarted =
+                invoicePaymentStartedEventMapper.handle(icPaymentStarted, eventInfoPaymentStarted, storage);
         assertNotNull(paymentStarted);
         assertEquals(InvoicingMessageEnum.PAYMENT, paymentStarted.getType());
         assertEquals("partyId", paymentStarted.getPartyId());
         assertNotEquals(invoiceCreated.getChangeId(), paymentStarted.getChangeId());
+
+        List<InvoicingMessage> messages = new ArrayList<>();
+
+        storage.put(KeyUtils.key(invoiceCreated), invoiceCreated);
         storage.put(KeyUtils.key(paymentStarted), paymentStarted);
+        messages.add(invoiceCreated);
         messages.add(paymentStarted);
 
         assertEquals(2, storage.size());
         assertEquals(2, messages.size());
 
         InvoiceChange icStatusChanged = getInvoicePaymentChangeStatus();
-        EventInfo eventInfoPaymentStatusChanged = new EventInfo(null, "2016-03-22T06:12:27Z", "invoiceId",1L,3);
-        Optional<AbstractInvoiceEventMapper> eventMapperPaymentStatusChangedOptional = handlerManager.getHandler(icStatusChanged);
+        EventInfo eventInfoPaymentStatusChanged = new EventInfo(null, "2016-03-22T06:12:27Z", "invoiceId", 1L, 3);
+        Optional<AbstractInvoiceEventMapper> eventMapperPaymentStatusChangedOptional =
+                handlerManager.getHandler(icStatusChanged);
         assertTrue(eventMapperPaymentStatusChangedOptional.isPresent());
-        AbstractInvoiceEventMapper invoicePaymentStatusChangedEventMapper = eventMapperPaymentStatusChangedOptional.get();
-        InvoicingMessage statusChanged = invoicePaymentStatusChangedEventMapper.handle(icStatusChanged, eventInfoPaymentStatusChanged, storage);
+        AbstractInvoiceEventMapper invoicePaymentStatusChangedEventMapper =
+                eventMapperPaymentStatusChangedOptional.get();
+        InvoicingMessage statusChanged =
+                invoicePaymentStatusChangedEventMapper.handle(icStatusChanged, eventInfoPaymentStatusChanged, storage);
         assertNotNull(statusChanged);
         assertEquals("partyId", statusChanged.getPartyId());
         assertEquals(PaymentStatusEnum.PROCESSED, statusChanged.getPaymentStatus());
@@ -98,13 +140,17 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         assertEquals(3, messages.size());
 
         // not found message
-        InvoiceChange icStatusNFChanged = getInvoicePaymentChangeStatus();
-        EventInfo eventInfoPaymentStatusNFChanged = new EventInfo(null, "2016-03-22T06:12:27Z", "not_found",1L,3);
-        Optional<AbstractInvoiceEventMapper> eventMapperPaymentStatusNFChangedOptional = handlerManager.getHandler(icStatusNFChanged);
+        InvoiceChange icStatusNotFoundChanged = getInvoicePaymentChangeStatus();
+        EventInfo eventInfoPaymentStatusNotFoundChanged =
+                new EventInfo(null, "2016-03-22T06:12:27Z", "not_found", 1L, 3);
+        Optional<AbstractInvoiceEventMapper> eventMapperPaymentStatusNotFoundChangedOptional =
+                handlerManager.getHandler(icStatusNotFoundChanged);
         assertTrue(eventMapperPaymentStatusChangedOptional.isPresent());
-        AbstractInvoiceEventMapper invoicePaymentStatusNFChangedEventMapper = eventMapperPaymentStatusNFChangedOptional.get();
-        InvoicingMessage statusNFChanged = invoicePaymentStatusNFChangedEventMapper.handle(icStatusNFChanged, eventInfoPaymentStatusNFChanged, storage);
-        assertNull(statusNFChanged);
+        AbstractInvoiceEventMapper invoicePaymentStatusNotFoundChangedEventMapper =
+                eventMapperPaymentStatusNotFoundChangedOptional.get();
+        InvoicingMessage statusNotFoundChanged = invoicePaymentStatusNotFoundChangedEventMapper
+                .handle(icStatusNotFoundChanged, eventInfoPaymentStatusNotFoundChanged, storage);
+        assertNull(statusNotFoundChanged);
 
         batchService.process(messages);
         //
@@ -132,31 +178,33 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
     }
 
     private InvoiceChange getInvoicePaymentStarted() {
+        InvoicePayment payment = new InvoicePayment()
+                .setId("1")
+                .setCreatedAt("2016-03-22T06:12:27Z")
+                .setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()))
+                .setPayer(Payer.payment_resource(
+                        new PaymentResourcePayer()
+                                .setResource(new DisposablePaymentResource()
+                                        .setPaymentTool(PaymentTool.bank_card(new BankCard()
+                                                .setToken("token")
+                                                .setPaymentSystem(BankCardPaymentSystem.amex)
+                                                .setBin("bin")
+                                                .setLastDigits("masked")))
+                                        .setClientInfo(new ClientInfo()))
+                                .setContactInfo(new ContactInfo())))
+                .setCost(new Cash()
+                        .setAmount(123L)
+                        .setCurrency(new CurrencyRef()
+                                .setSymbolicCode("RUB")))
+                .setFlow(new InvoicePaymentFlow());
+
         return InvoiceChange.invoice_payment_change(
                 new InvoicePaymentChange()
                         .setId("1")
-                        .setPayload(InvoicePaymentChangePayload.invoice_payment_started(
-                                new InvoicePaymentStarted()
-                                        .setPayment(new InvoicePayment()
-                                                .setId("1")
-                                                .setCreatedAt("2016-03-22T06:12:27Z")
-                                                .setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()))
-                                                .setPayer(Payer.payment_resource(
-                                                        new PaymentResourcePayer()
-                                                                .setResource(new DisposablePaymentResource()
-                                                                        .setPaymentTool(PaymentTool.bank_card(new BankCard()
-                                                                                .setToken("token")
-                                                                                .setPaymentSystem(BankCardPaymentSystem.amex)
-                                                                                .setBin("bin")
-                                                                                .setLastDigits("masked")))
-                                                                        .setClientInfo(new ClientInfo()))
-                                                                .setContactInfo(new ContactInfo())))
-                                                .setCost(new Cash()
-                                                        .setAmount(123L)
-                                                        .setCurrency(new CurrencyRef()
-                                                                .setSymbolicCode("RUB")))
-                                        .setFlow(new InvoicePaymentFlow())))
-                        ));
+                        .setPayload(
+                                InvoicePaymentChangePayload.invoice_payment_started(
+                                        new InvoicePaymentStarted().setPayment(payment)
+                                )));
     }
 
 

@@ -43,9 +43,10 @@ public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.In
                         .price(l.getPrice().getAmount())
                         .quantity((long) l.getQuantity())
                         .cost(l.getPrice().getAmount() * l.getQuantity())
-                        .taxMode(l.getMetadata() != null && l.getMetadata().get("TaxMode") != null ?
-                                new InvoiceCartLineTaxMode()
-                                        .rate(InvoiceCartLineTaxMode.RateEnum.fromValue(l.getMetadata().get("TaxMode").getStr()))
+                        .taxMode(l.getMetadata() != null && l.getMetadata().get("TaxMode") != null
+                                ? new InvoiceCartLineTaxMode()
+                                .rate(InvoiceCartLineTaxMode.RateEnum
+                                        .fromValue(l.getMetadata().get("TaxMode").getStr()))
                                 : null))
                 .collect(Collectors.toList());
     }

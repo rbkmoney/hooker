@@ -9,7 +9,10 @@ import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.dao.impl.CustomerQueueDao;
 import com.rbkmoney.hooker.dao.impl.CustomerTaskDao;
 import com.rbkmoney.hooker.exception.DaoException;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageEnum;
+import com.rbkmoney.hooker.model.EventInfo;
+import com.rbkmoney.hooker.model.EventType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +25,8 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
 
     private EventType eventType = EventType.CUSTOMER_CREATED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
+    private Filter filter =
+            new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     private final CustomerDaoImpl customerDao;
 

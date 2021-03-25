@@ -2,13 +2,16 @@ package com.rbkmoney.hooker.kafka;
 
 import com.rbkmoney.damsel.payment_processing.EventPayload;
 import com.rbkmoney.hooker.AbstractKafkaIntegrationTest;
-import com.rbkmoney.hooker.listener.*;
-import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
+import com.rbkmoney.hooker.listener.CustomerEventKafkaListener;
+import com.rbkmoney.hooker.listener.CustomerMachineEventHandler;
+import com.rbkmoney.hooker.listener.InvoicingEventKafkaListener;
+import com.rbkmoney.hooker.listener.InvoicingMachineEventHandler;
 import com.rbkmoney.hooker.service.HandlerManager;
 import com.rbkmoney.kafka.common.serialization.ThriftSerializer;
 import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.machinegun.eventsink.SinkEvent;
 import com.rbkmoney.machinegun.msgpack.Value;
+import com.rbkmoney.sink.common.parser.impl.MachineEventParser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -20,7 +23,6 @@ import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

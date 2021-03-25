@@ -7,7 +7,11 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
+import com.rbkmoney.hooker.model.PaymentStatusEnum;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,7 +19,8 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_PAYMENT_STARTED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
+    private Filter filter =
+            new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public InvoicePaymentStartedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
@@ -38,7 +43,8 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePayment paymentOrigin = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
+        InvoicePayment paymentOrigin =
+                ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
         message.setPaymentId(paymentOrigin.getId());
         message.setPaymentStatus(PaymentStatusEnum.lookup(paymentOrigin.getStatus().getSetField().getFieldName()));
     }

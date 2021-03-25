@@ -12,9 +12,12 @@ import java.util.Map;
 public abstract class AbstractInvoiceEventMapper implements Mapper<InvoiceChange, InvoicingMessage> {
 
     @Override
-    public InvoicingMessage handle(InvoiceChange ic, EventInfo eventInfo, Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException {
+    public InvoicingMessage handle(InvoiceChange ic, EventInfo eventInfo,
+                                   Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException {
         return buildEvent(ic, eventInfo, storage);
     }
 
-    protected abstract InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo, Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException;
+    protected abstract InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo,
+                                                   Map<InvoicingMessageKey, InvoicingMessage> storage)
+            throws DaoException;
 }

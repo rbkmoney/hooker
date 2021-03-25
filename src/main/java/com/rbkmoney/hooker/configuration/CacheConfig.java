@@ -12,7 +12,8 @@ import org.springframework.context.annotation.Configuration;
 public class CacheConfig {
 
     @Bean
-    public Cache<InvoicingMessageKey, InvoicingMessage> invoiceDataCache(@Value("${cache.invoice.size}") int cacheSize) {
+    public Cache<InvoicingMessageKey, InvoicingMessage> invoiceDataCache(
+            @Value("${cache.invoice.size}") int cacheSize) {
         return Caffeine.newBuilder()
                 .maximumSize(cacheSize)
                 .build();

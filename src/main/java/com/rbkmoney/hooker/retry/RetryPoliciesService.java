@@ -29,7 +29,8 @@ public class RetryPoliciesService {
         if (RetryPolicyType.SIMPLE.equals(record.getType())) {
             simpleRetryPolicyDao.update((SimpleRetryPolicyRecord) record);
         } else {
-            throw new UnsupportedOperationException("Retry policy DAO for type: " + record.getType().toString() + " not found");
+            throw new UnsupportedOperationException(
+                    "Retry policy DAO for type: " + record.getType().toString() + " not found");
         }
     }
 }

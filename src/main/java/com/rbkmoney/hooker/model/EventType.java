@@ -3,6 +3,7 @@ package com.rbkmoney.hooker.model;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@SuppressWarnings("LineLength")
 @Getter
 @AllArgsConstructor
 public enum EventType {
