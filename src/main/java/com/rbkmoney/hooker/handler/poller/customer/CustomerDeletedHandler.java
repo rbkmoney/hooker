@@ -19,7 +19,8 @@ public class CustomerDeletedHandler extends NeedReadCustomerEventHandler {
 
     private EventType eventType = EventType.CUSTOMER_DELETED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
+    private Filter filter =
+            new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public CustomerDeletedHandler(CustomerDaoImpl customerDao,
                                   CustomerQueueDao customerQueueDao,

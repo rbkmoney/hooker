@@ -64,7 +64,8 @@ public class CustomerDaoImpl implements CustomerDao {
         final String sql = "SELECT * FROM hook.customer_message " +
                 "WHERE customer_id =:customer_id AND type=CAST(:type as hook.customer_message_type) " +
                 "ORDER BY id DESC LIMIT 1";
-        MapSqlParameterSource params = new MapSqlParameterSource(CUSTOMER_ID, customerId).addValue(TYPE, type.getValue());
+        MapSqlParameterSource params =
+                new MapSqlParameterSource(CUSTOMER_ID, customerId).addValue(TYPE, type.getValue());
         try {
             result = jdbcTemplate.queryForObject(sql, params, messageRowMapper);
         } catch (EmptyResultDataAccessException e) {
@@ -127,7 +128,8 @@ public class CustomerDaoImpl implements CustomerDao {
         }
         final String sql = "SELECT * FROM hook.customer_message WHERE id in (:ids)";
         try {
-            List<CustomerMessage> messagesFromDb = jdbcTemplate.query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
+            List<CustomerMessage> messagesFromDb =
+                    jdbcTemplate.query(sql, new MapSqlParameterSource("ids", messageIds), messageRowMapper);
             log.debug("messagesFromDb {}", messagesFromDb);
             return messagesFromDb;
         } catch (NestedRuntimeException e) {

@@ -43,7 +43,8 @@ public class ErrorUtilsTest {
 
     @Test
     public void toPaymentError() {
-        assertEquals("test", ErrorUtils.toPaymentError("code:sub_code:test", "message").getSubError().getSubError().getCode());
+        assertEquals("test",
+                ErrorUtils.toPaymentError("code:sub_code:test", "message").getSubError().getSubError().getCode());
         assertEquals("sub_code", ErrorUtils.toPaymentError("code:sub_code", "message").getSubError().getCode());
         assertNull(ErrorUtils.toPaymentError("code:sub_code", "message").getSubError().getSubError());
         assertEquals("code", ErrorUtils.toPaymentError("code", "message").getCode());

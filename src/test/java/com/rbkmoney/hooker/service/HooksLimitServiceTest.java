@@ -1,6 +1,10 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.damsel.webhooker.*;
+import com.rbkmoney.damsel.webhooker.EventFilter;
+import com.rbkmoney.damsel.webhooker.InvoiceCreated;
+import com.rbkmoney.damsel.webhooker.InvoiceEventFilter;
+import com.rbkmoney.damsel.webhooker.InvoiceEventType;
+import com.rbkmoney.damsel.webhooker.WebhookParams;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.utils.HookConverter;
@@ -10,11 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class HooksLimitServiceTest extends AbstractIntegrationTest {
 
@@ -39,7 +43,7 @@ public class HooksLimitServiceTest extends AbstractIntegrationTest {
     public void isShopLimitExceededTrueTest() {
         WebhookParams webhookParams = buildWebhookParams();
 
-        IntStream.range(1, 11).forEach( x -> hookDao.create(HookConverter.convert(webhookParams)));
+        IntStream.range(1, 11).forEach(x -> hookDao.create(HookConverter.convert(webhookParams)));
         assertTrue(hooksLimitService.isLimitExceeded(webhookParams));
     }
 
@@ -47,7 +51,7 @@ public class HooksLimitServiceTest extends AbstractIntegrationTest {
     public void isShopLimitExceededFalseTest() {
         WebhookParams webhookParams = buildWebhookParams();
 
-        IntStream.range(1, 11).forEach( x -> hookDao.create(HookConverter.convert(webhookParams)));
+        IntStream.range(1, 11).forEach(x -> hookDao.create(HookConverter.convert(webhookParams)));
         jdbcTemplate.update("update hook.party_data set metadata =:metadata where party_id=:party_id",
                 new MapSqlParameterSource("party_id", "party_id")
                         .addValue("metadata", "{\"hooksLimit\":{\"perShop\":{\"shop_id\":22},\"perParty\":15}}"));
@@ -59,14 +63,13 @@ public class HooksLimitServiceTest extends AbstractIntegrationTest {
         WebhookParams webhookParams = buildWebhookParams();
         webhookParams.getEventFilter().getInvoice().setShopId(null);
 
-        IntStream.range(1, 6).forEach( x -> hookDao.create(HookConverter.convert(webhookParams)));
+        IntStream.range(1, 6).forEach(x -> hookDao.create(HookConverter.convert(webhookParams)));
         assertTrue(hooksLimitService.isLimitExceeded(webhookParams));
     }
 
 
-
     @After
-    public void after(){
+    public void after() {
         jdbcTemplate.update("truncate hook.webhook cascade", new MapSqlParameterSource());
         jdbcTemplate.update("truncate hook.party_data cascade", new MapSqlParameterSource());
     }

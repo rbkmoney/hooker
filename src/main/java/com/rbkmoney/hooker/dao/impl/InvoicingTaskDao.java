@@ -38,7 +38,8 @@ public class InvoicingTaskDao extends AbstractTaskDao {
                 " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
                         " select m.id, q.id, w.topic" +
                         " from hook.message m" +
-                        " join hook.webhook w on m.party_id = w.party_id and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
+                        " join hook.webhook w on m.party_id = w.party_id " +
+                        " and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
                         " join hook.webhook_to_events wte on wte.hook_id = w.id" +
                         " join hook.invoicing_queue q on q.hook_id=w.id and q.enabled and q.invoice_id=m.invoice_id" +
                         " where m.id in (:message_ids) " +
@@ -46,7 +47,8 @@ public class InvoicingTaskDao extends AbstractTaskDao {
                         " and (m.shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
                         " and (m.invoice_status = wte.invoice_status or wte.invoice_status is null) " +
                         " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
-                        " and (m.refund_status = wte.invoice_payment_refund_status or wte.invoice_payment_refund_status is null)" +
+                        " and (m.refund_status = wte.invoice_payment_refund_status " +
+                        " or wte.invoice_payment_refund_status is null)" +
                         " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
 
         final MapSqlParameterSource sqlParameterSources = new MapSqlParameterSource("message_ids", messageIds)
@@ -77,7 +79,8 @@ public class InvoicingTaskDao extends AbstractTaskDao {
                         " and (m.shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
                         " and (m.invoice_status = wte.invoice_status or wte.invoice_status is null) " +
                         " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
-                        " and (m.refund_status = wte.invoice_payment_refund_status or wte.invoice_payment_refund_status is null)" +
+                        " and (m.refund_status = wte.invoice_payment_refund_status " +
+                        " or wte.invoice_payment_refund_status is null)" +
                         " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
 
         final MapSqlParameterSource sqlParameterSources = new MapSqlParameterSource("hook_id", hookId)

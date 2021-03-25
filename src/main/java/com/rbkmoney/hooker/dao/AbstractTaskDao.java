@@ -29,7 +29,11 @@ public abstract class AbstractTaskDao implements TaskDao {
 
     @Override
     public void remove(long queueId, long messageId) throws DaoException {
-        final String sql = "DELETE FROM hook.scheduled_task where queue_id=:queue_id and message_id=:message_id and message_type=CAST(:message_type as hook.message_topic)";
+        final String sql =
+                "DELETE FROM hook.scheduled_task " +
+                        " where queue_id=:queue_id " +
+                        " and message_id=:message_id " +
+                        " and message_type=CAST(:message_type as hook.message_topic)";
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("queue_id", queueId)
                     .addValue("message_id", messageId)
@@ -43,9 +47,11 @@ public abstract class AbstractTaskDao implements TaskDao {
 
     @Override
     public void removeAll(long queueId) throws DaoException {
-        final String sql = "DELETE FROM hook.scheduled_task where queue_id=:queue_id and message_type=CAST(:message_type as hook.message_topic)";
+        final String sql = "DELETE FROM hook.scheduled_task " +
+                "where queue_id=:queue_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
-            jdbcTemplate.update(sql, new MapSqlParameterSource("queue_id", queueId).addValue("message_type", getMessageTopic()));
+            jdbcTemplate.update(sql,
+                    new MapSqlParameterSource("queue_id", queueId).addValue("message_type", getMessageTopic()));
         } catch (NestedRuntimeException e) {
             log.warn("Fail to delete tasks for hook:" + queueId, e);
             throw new DaoException(e);

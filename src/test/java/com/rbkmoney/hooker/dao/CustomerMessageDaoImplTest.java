@@ -34,8 +34,10 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        if(!messagesCreated){
-            CustomerMessage message = buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124", "4356");
+        if (!messagesCreated) {
+            CustomerMessage message =
+                    buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124",
+                            "4356");
             message.setSequenceId(1L);
             message.setChangeId(1);
             messageDao.create(message);
@@ -45,7 +47,9 @@ public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void testDuplication() {
-        CustomerMessage message = buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124", "4356");
+        CustomerMessage message =
+                buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED, CustomerMessageEnum.CUSTOMER, "124",
+                        "4356");
         message.setSequenceId(1L);
         message.setChangeId(1);
         messageDao.create(message);

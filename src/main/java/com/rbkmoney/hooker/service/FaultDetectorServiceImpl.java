@@ -1,7 +1,13 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.damsel.fault_detector.*;
 import com.rbkmoney.damsel.fault_detector.Error;
+import com.rbkmoney.damsel.fault_detector.FaultDetectorSrv;
+import com.rbkmoney.damsel.fault_detector.Finish;
+import com.rbkmoney.damsel.fault_detector.Operation;
+import com.rbkmoney.damsel.fault_detector.OperationState;
+import com.rbkmoney.damsel.fault_detector.ServiceConfig;
+import com.rbkmoney.damsel.fault_detector.ServiceStatistics;
+import com.rbkmoney.damsel.fault_detector.Start;
 import com.rbkmoney.geck.common.util.TypeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;

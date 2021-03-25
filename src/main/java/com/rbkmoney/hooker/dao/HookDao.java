@@ -5,7 +5,6 @@ import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.PartyMetadata;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by inal on 28.11.2016.

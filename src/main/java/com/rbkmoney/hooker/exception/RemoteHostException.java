@@ -17,7 +17,8 @@ public class RemoteHostException extends RuntimeException {
         super(cause);
     }
 
-    protected RemoteHostException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected RemoteHostException(String message, Throwable cause, boolean enableSuppression,
+                                  boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

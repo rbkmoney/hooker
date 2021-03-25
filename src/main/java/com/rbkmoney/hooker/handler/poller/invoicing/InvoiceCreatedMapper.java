@@ -7,7 +7,12 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.exception.DaoException;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventInfo;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoiceStatusEnum;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +23,13 @@ public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_CREATED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
+    private Filter filter =
+            new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     @Override
     @Transactional
-    public InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo, Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException {
+    public InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo,
+                                       Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         InvoicingMessage message = new InvoicingMessage();
         message.setEventTime(eventInfo.getEventCreatedAt());

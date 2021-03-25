@@ -1,15 +1,12 @@
 server:
-  port: @server.port@
+  port: '@server.port@'
 management:
-  security:
-    flag: false
   server:
-    port: @management.port@
+    port: '@management.port@'
   metrics:
     export:
       statsd:
         flavor: etsy
-        enabled: false
       prometheus:
         enabled: false
   endpoint:
@@ -64,10 +61,10 @@ kafka:
       concurrency: 1
 
 info:
-  version: @version@
+  version: '@version@'
   responsible: Inal Arsanukaev
   stage: dev
-  damsel.version: @damsel.version@
+  damsel.version: '@damsel.version@'
 
 service:
   invoicing:
@@ -96,9 +93,9 @@ limit:
 spring.datasource:
   type: com.zaxxer.hikari.HikariDataSource
   driver-class-name: org.postgresql.Driver
-  url: @db.url@
-  username: @db.user@
-  password: @db.password@
+  url: '@db.url@'
+  username: '@db.user@'
+  password: '@db.password@'
   hikari:
     maximum-pool-size: 20
     idle-timeout: 30000

@@ -18,7 +18,9 @@ public class SimpleRetryPolicyDaoImpl implements SimpleRetryPolicyDao {
     @Override
     public void update(SimpleRetryPolicyRecord record) throws DaoException {
         final String sql = "update hook.simple_retry_policy " +
-                " set last_fail_time = :last_fail_time, fail_count = :fail_count, next_fire_time_ms = :next_fire_time_ms" +
+                " set last_fail_time = :last_fail_time, " +
+                " fail_count = :fail_count, " +
+                " next_fire_time_ms = :next_fire_time_ms" +
                 " where queue_id = :queue_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("queue_id", record.getQueueId())

@@ -3,7 +3,13 @@ package com.rbkmoney.hooker.utils;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.BankCard;
+import com.rbkmoney.damsel.domain.CryptoCurrency;
+import com.rbkmoney.damsel.domain.DigitalWallet;
+import com.rbkmoney.damsel.domain.DigitalWalletProvider;
+import com.rbkmoney.damsel.domain.PaymentTerminal;
+import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.damsel.domain.TerminalPaymentProvider;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
@@ -15,7 +21,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class PaymentToolUtilsTest {
 
@@ -25,15 +33,20 @@ public class PaymentToolUtilsTest {
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsCryptoWallet);
         assertNull(paymentToolDetails.getDetailsType());
-        assertEquals(com.rbkmoney.swag_webhook_events.model.CryptoCurrency.BITCOIN.getValue(), ((PaymentToolDetailsCryptoWallet)paymentToolDetails).getCryptoCurrency().getValue());
+        assertEquals(com.rbkmoney.swag_webhook_events.model.CryptoCurrency.BITCOIN.getValue(),
+                ((PaymentToolDetailsCryptoWallet) paymentToolDetails).getCryptoCurrency().getValue());
     }
 
     @Test
     public void testDigitalWalletJson() throws JsonProcessingException {
         PaymentTool paymentTool = PaymentTool.digital_wallet(new DigitalWallet(DigitalWalletProvider.qiwi, "kke"));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
-        String json = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY).writeValueAsString(paymentToolDetails);
-        assertEquals("{\"detailsType\":\"PaymentToolDetailsDigitalWallet\",\"digitalWalletDetails\":{\"digitalWalletDetailsType\":\"DigitalWalletDetailsQIWI\",\"phoneNumberMask\":\"kke\"}}", json);
+        String json = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+                .writeValueAsString(paymentToolDetails);
+        assertEquals(
+                "{\"detailsType\":\"PaymentToolDetailsDigitalWallet\",\"digitalWalletDetails\":" +
+                        "{\"digitalWalletDetailsType\":\"DigitalWalletDetailsQIWI\",\"phoneNumberMask\":\"kke\"}}",
+                json);
     }
 
     @Test
@@ -44,7 +57,8 @@ public class PaymentToolUtilsTest {
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
         assertNull(paymentToolDetails.getDetailsType());
-        assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.ALIPAY.getValue(), ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
+        assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.ALIPAY.getValue(),
+                ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
 
         paymentTool = PaymentTool.payment_terminal(new PaymentTerminal()
                 .setTerminalType(TerminalPaymentProvider.wechat)
@@ -52,16 +66,18 @@ public class PaymentToolUtilsTest {
         paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
         assertNull(paymentToolDetails.getDetailsType());
-        assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.WECHAT.getValue(), ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
+        assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.WECHAT.getValue(),
+                ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
     }
 
     @Test
     public void testGetPaymentToolDetailsBankCard() throws IOException {
-        PaymentTool paymentTool = PaymentTool.bank_card(new MockTBaseProcessor(MockMode.RANDOM, 15, 2).process(new BankCard(), new TBaseHandler<>(BankCard.class)));
+        PaymentTool paymentTool = PaymentTool.bank_card(new MockTBaseProcessor(MockMode.RANDOM, 15, 2)
+                .process(new BankCard(), new TBaseHandler<>(BankCard.class)));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsBankCard);
         assertNull(paymentToolDetails.getDetailsType());
-        assertEquals(paymentTool.getBankCard().getBin(), ((PaymentToolDetailsBankCard)paymentToolDetails).getBin());
+        assertEquals(paymentTool.getBankCard().getBin(), ((PaymentToolDetailsBankCard) paymentToolDetails).getBin());
     }
 
 }

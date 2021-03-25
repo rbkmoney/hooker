@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageEnum;
+import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.swag_webhook_events.model.CustomerBindingSucceeded;
 import com.rbkmoney.swag_webhook_events.model.Event;
@@ -15,7 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 public class CustomerEventServiceTest extends AbstractIntegrationTest {

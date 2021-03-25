@@ -4,7 +4,11 @@ import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.exception.NotFoundException;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventInfo;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +21,8 @@ public abstract class NeedReadInvoiceEventMapper extends AbstractInvoiceEventMap
     private final InvoicingMessageDao messageDao;
 
     @Override
-    protected InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo, Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException {
+    protected InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo,
+                                          Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException {
         InvoicingMessage message;
         InvoicingMessageKey messageKey = getMessageKey(eventInfo.getSourceId(), ic);
         try {
@@ -41,7 +46,8 @@ public abstract class NeedReadInvoiceEventMapper extends AbstractInvoiceEventMap
 
     protected abstract InvoicingMessageEnum getMessageType();
 
-    protected abstract InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) throws NotFoundException, DaoException;
+    protected abstract InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic)
+            throws NotFoundException, DaoException;
 
     protected abstract EventType getEventType();
 

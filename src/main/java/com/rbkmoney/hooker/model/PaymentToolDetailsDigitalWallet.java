@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class PaymentToolDetailsDigitalWallet extends com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsDigitalWallet {
+public class PaymentToolDetailsDigitalWallet
+        extends com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsDigitalWallet {
     private DigitalWalletDetails digitalWalletDetails;
 }

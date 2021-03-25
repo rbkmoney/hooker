@@ -90,8 +90,9 @@ public class ErrorUtils {
     }
 
     private static SubError getSubErrorTree(String[] codes) {
-        if (codes.length == 1)
+        if (codes.length == 1) {
             return null;
+        }
 
         List<SubError> subErrors = Arrays.stream(codes)
                 .map(code -> new SubError().code(code))

@@ -69,19 +69,22 @@ public class CustomerMachineEventHandlerTest extends AbstractIntegrationTest {
     }
 
     private static List<CustomerChange> createCustomerChangeList(String customerId) {
-        List<CustomerChange> changes = new ArrayList<>();
-        CustomerChange change = new CustomerChange();
+        ContactInfo contactInfo = new ContactInfo();
+        contactInfo.setEmail("1@1.ru");
+        contactInfo.setPhoneNumber("88005553535");
+
         CustomerCreated created = new CustomerCreated();
         created.setCustomerId(customerId);
         created.setOwnerId("PartyId");
         created.setShopId("ShopId");
         created.setMetadata(null);
-        ContactInfo contactInfo = new ContactInfo();
-        contactInfo.setEmail("1@1.ru");
-        contactInfo.setPhoneNumber("88005553535");
         created.setContactInfo(contactInfo);
         created.setCreatedAt(TypeUtil.temporalToString(LocalDateTime.now()));
+
+        CustomerChange change = new CustomerChange();
         change.setCustomerCreated(created);
+
+        List<CustomerChange> changes = new ArrayList<>();
         changes.add(change);
         return changes;
     }

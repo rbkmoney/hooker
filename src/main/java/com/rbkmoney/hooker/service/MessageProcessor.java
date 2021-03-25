@@ -5,7 +5,10 @@ import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.exception.DaoException;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.Queue;
+import com.rbkmoney.hooker.model.QueueStatus;
+import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.retry.RetryPoliciesService;
 import com.rbkmoney.hooker.retry.RetryPolicy;
 import com.rbkmoney.hooker.retry.RetryPolicyRecord;
@@ -22,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MessageProcessor<M extends Message, Q extends Queue> implements Runnable  {
+public class MessageProcessor<M extends Message, Q extends Queue> implements Runnable {
 
     private static final double UPDATE_PROBABILITY = 0.25;
     private final HookDao hookDao;
@@ -50,9 +53,12 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
         }
 
         Set<Long> queueIds = scheduledTasks.keySet();
-        Map<Long, Q> queuesMap = queueDao.getWithPolicies(queueIds).stream().collect(Collectors.toMap(Queue::getId, q -> q));
-        Set<Long> messageIds = scheduledTasks.values().stream().flatMap(Collection::stream).map(Task::getMessageId).collect(Collectors.toSet());
-        Map<Long, M> messagesMap = messageDao.getBy(messageIds).stream().collect(Collectors.toMap(Message::getId, m -> m));
+        Map<Long, Q> queuesMap =
+                queueDao.getWithPolicies(queueIds).stream().collect(Collectors.toMap(Queue::getId, q -> q));
+        Set<Long> messageIds = scheduledTasks.values().stream().flatMap(Collection::stream).map(Task::getMessageId)
+                .collect(Collectors.toSet());
+        Map<Long, M> messagesMap =
+                messageDao.getBy(messageIds).stream().collect(Collectors.toMap(Message::getId, m -> m));
 
         List<QueueStatus> queueStatuses = messageSender.send(scheduledTasks, queuesMap, messagesMap);
         queueStatuses.forEach(queueStatus -> {
@@ -65,7 +71,8 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
                     fail(queue);
                 }
             } catch (DaoException e) {
-                log.error("DaoException error when remove sent messages. It's not a big deal, but some messages may be re-sent: {}",
+                log.error("DaoException error when remove sent messages. " +
+                                "It's not a big deal, but some messages may be re-sent: {}",
                         queueStatus.getMessagesDone(), e);
             }
         });

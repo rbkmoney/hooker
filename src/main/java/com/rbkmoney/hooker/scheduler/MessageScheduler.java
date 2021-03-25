@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.annotation.PostConstruct;
+
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -21,6 +22,6 @@ public class MessageScheduler<M extends Message, Q extends Queue> {
     @PostConstruct
     public void init() {
         IntStream.range(0, threadPoolSize).forEach(i ->
-            executorService.scheduleWithFixedDelay(messageProcessor, delayMillis));
+                executorService.scheduleWithFixedDelay(messageProcessor, delayMillis));
     }
 }

@@ -7,7 +7,6 @@ import com.rbkmoney.hooker.model.QueueStatus;
 import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.service.EventService;
 import com.rbkmoney.hooker.service.FaultDetectorService;
-import com.rbkmoney.hooker.service.FaultDetectorServiceImpl;
 import com.rbkmoney.hooker.service.PostSender;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import com.rbkmoney.hooker.service.err.PostRequestException;
@@ -30,7 +29,8 @@ public class MessageSender<M extends Message, Q extends Queue> {
     private final ObjectMapper objectMapper;
     private final FaultDetectorService faultDetector;
 
-    public List<QueueStatus> send(Map<Long, List<Task>> scheduledTasks, Map<Long, Q> queuesMap, Map<Long, M> messagesMap) {
+    public List<QueueStatus> send(Map<Long, List<Task>> scheduledTasks, Map<Long, Q> queuesMap,
+                                  Map<Long, M> messagesMap) {
         PostSender postSender = new PostSender(connectionPoolSize, timeout);
         List<QueueStatus> queueStatuses = new ArrayList<>();
         for (Map.Entry<Long, List<Task>> entry : scheduledTasks.entrySet()) {
@@ -49,9 +49,12 @@ public class MessageSender<M extends Message, Q extends Queue> {
                     final String messageJson = objectMapper.writeValueAsString(event);
                     final String signature = signer.sign(messageJson, queue.getHook().getPrivKey());
                     faultDetector.startRequest(queue.getHook().getId(), message.getEventId());
-                    int statusCode = postSender.doPost(queue.getHook().getUrl(), message.getId(), messageJson, signature);
+                    int statusCode =
+                            postSender.doPost(queue.getHook().getUrl(), message.getId(), messageJson, signature);
                     if (statusCode != HttpStatus.SC_OK) {
-                        String wrongCodeMessage = String.format("Wrong status code: %d from merchant, we'll try to resend it. Message with id: %d %s", statusCode, message.getId(), message);
+                        String wrongCodeMessage = String.format(
+                                "Wrong status code: %d from merchant, we'll try to resend it. Message with id: %d %s",
+                                statusCode, message.getId(), message);
                         log.info(wrongCodeMessage);
                         faultDetector.errorRequest(queue.getHook().getId(), message.getEventId());
                         throw new PostRequestException(wrongCodeMessage);
@@ -61,8 +64,10 @@ public class MessageSender<M extends Message, Q extends Queue> {
                 }
                 queueStatus.setSuccess(true);
             } catch (Exception e) {
-                if (currentMessage != null)
-                    log.warn("Couldn't send message with id {} {} to hook {}. We'll try to resend it", currentMessage.getId(), currentMessage, queue.getHook(), e);
+                if (currentMessage != null) {
+                    log.warn("Couldn't send message with id {} {} to hook {}. We'll try to resend it",
+                            currentMessage.getId(), currentMessage, queue.getHook(), e);
+                }
                 queueStatus.setSuccess(false);
             }
             queueStatuses.add(queueStatus);

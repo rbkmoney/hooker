@@ -23,6 +23,7 @@ public class InvoicingEventKafkaListener {
         invoicingMachineEventHandler.handle(messages.stream()
                 .map(m -> m.value().getEvent())
                 .collect(Collectors.toList()), ack);
-        log.info("Batch has been committed, size={}, {}", messages.size(), LogUtil.toSummaryStringWithSinkEventValues(messages));
+        log.info("Batch has been committed, size={}, {}", messages.size(),
+                LogUtil.toSummaryStringWithSinkEventValues(messages));
     }
 }

@@ -21,7 +21,11 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -229,11 +233,13 @@ public class HookDaoImpl implements HookDao {
             batchValues.add(mapSqlParameterSource.getValues());
         }
 
-        final String sql = "INSERT INTO hook.webhook_to_events(hook_id, event_type, invoice_shop_id, invoice_status, invoice_payment_status, invoice_payment_refund_status) VALUES (:hook_id, CAST(:event_type AS hook.eventtype)," +
-                " :invoice_shop_id, :invoice_status, :invoice_payment_status, :invoice_payment_refund_status)";
+        final String sql = "INSERT INTO hook.webhook_to_events(hook_id, event_type, invoice_shop_id, invoice_status, " +
+                "invoice_payment_status, invoice_payment_refund_status) VALUES " +
+                "(:hook_id, CAST(:event_type AS hook.eventtype), :invoice_shop_id, :invoice_status, " +
+                ":invoice_payment_status, :invoice_payment_refund_status)";
 
         try {
-            int updateCount[] = jdbcTemplate.batchUpdate(sql, batchValues.toArray(new Map[size]));
+            int[] updateCount = jdbcTemplate.batchUpdate(sql, batchValues.toArray(new Map[size]));
             if (updateCount.length != size) {
                 throw new DaoException("Couldn't insert relation between hook and events.");
             }
@@ -246,8 +252,10 @@ public class HookDaoImpl implements HookDao {
     @Override
     public void delete(long id) throws DaoException {
         final String sql =
-                " DELETE FROM hook.scheduled_task st USING hook.invoicing_queue q WHERE st.queue_id = q.id AND q.hook_id=:id; " +
-                        " DELETE FROM hook.scheduled_task st USING hook.customer_queue q WHERE st.queue_id = q.id AND q.hook_id=:id; " +
+                " DELETE FROM hook.scheduled_task st USING hook.invoicing_queue q " +
+                        " WHERE st.queue_id = q.id AND q.hook_id=:id; " +
+                        " DELETE FROM hook.scheduled_task st USING hook.customer_queue q " +
+                        " WHERE st.queue_id = q.id AND q.hook_id=:id; " +
                         " UPDATE hook.webhook SET enabled = FALSE where id=:id;";
         try {
             jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));

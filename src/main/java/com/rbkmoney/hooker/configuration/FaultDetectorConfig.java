@@ -14,7 +14,8 @@ public class FaultDetectorConfig {
 
     @Bean
     public FaultDetectorSrv.Iface faultDetectorClient(@Value("${service.fault-detector.url}") Resource resource,
-                                                      @Value("${service.fault-detector.networkTimeout}") int networkTimeout) throws IOException {
+                                                      @Value("${service.fault-detector.networkTimeout}")
+                                                              int networkTimeout) throws IOException {
 
         return new THSpawnClientBuilder()
                 .withNetworkTimeout(networkTimeout)

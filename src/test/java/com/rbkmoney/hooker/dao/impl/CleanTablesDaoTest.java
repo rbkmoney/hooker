@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class CleanTablesDaoTest extends AbstractIntegrationTest {
 
@@ -30,7 +30,7 @@ public class CleanTablesDaoTest extends AbstractIntegrationTest {
         int countOldRecords = 1000;
         IntStream.range(0, countOldRecords).forEach(i -> {
             jdbcTemplate.update(sql, new MapSqlParameterSource("invoice_id", "old" + i)
-                            .addValue("days_ago", 11));
+                    .addValue("days_ago", 11));
         });
 
 
@@ -44,7 +44,8 @@ public class CleanTablesDaoTest extends AbstractIntegrationTest {
         int count = cleanTablesDao.cleanInvocing(10);
         assertEquals(count, countOldRecords);
 
-        long newRecordsCount = jdbcTemplate.queryForObject("select count(*) from hook.invoicing_queue", new MapSqlParameterSource(), Long.class);
+        long newRecordsCount = jdbcTemplate
+                .queryForObject("select count(*) from hook.invoicing_queue", new MapSqlParameterSource(), Long.class);
         assertEquals(newRecordsCount, countNewRecords);
     }
 }

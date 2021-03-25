@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker;
 
 import lombok.extern.slf4j.Slf4j;
-import org.flywaydb.core.Flyway;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +23,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @ContextConfiguration(classes = HookerApplication.class, initializers = AbstractKafkaIntegrationTest.Initializer.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Slf4j
-public abstract class   AbstractKafkaIntegrationTest {
+public abstract class AbstractKafkaIntegrationTest {
     public static final String SOURCE_ID = "source_id";
     public static final String SOURCE_NS = "source_ns";
 
@@ -35,12 +34,12 @@ public abstract class   AbstractKafkaIntegrationTest {
 
     @ClassRule
     public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer("postgres:9.6")
-                    .withStartupTimeout(Duration.ofMinutes(5));
+            .withStartupTimeout(Duration.ofMinutes(5));
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            log.info("Postgres URL: "+ postgres.getJdbcUrl());
+            log.info("Postgres URL: " + postgres.getJdbcUrl());
             TestPropertyValues.of(
                     "spring.datasource.url=" + postgres.getJdbcUrl(),
                     "spring.datasource.username=" + postgres.getUsername(),
@@ -60,6 +59,7 @@ public abstract class   AbstractKafkaIntegrationTest {
                     .applyTo(configurableApplicationContext);
         }
     }
+
     @Value("${local.server.port}")
     protected int port;
 }

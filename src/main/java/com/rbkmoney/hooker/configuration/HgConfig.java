@@ -17,7 +17,8 @@ import java.util.List;
 public class HgConfig {
     @Bean
     public InvoicingSrv.Iface invoicingClient(@Value("${service.invoicing.url}") Resource resource,
-                                              @Value("${service.invoicing.networkTimeout}") int networkTimeout) throws IOException {
+                                              @Value("${service.invoicing.networkTimeout}") int networkTimeout)
+            throws IOException {
         return new THSpawnClientBuilder()
                 .withNetworkTimeout(networkTimeout)
                 .withAddress(resource.getURI()).build(InvoicingSrv.Iface.class);
@@ -25,7 +26,8 @@ public class HgConfig {
 
     @Bean
     public CustomerManagementSrv.Iface customerClient(@Value("${service.customer.url}") Resource resource,
-                                                      @Value("${service.customer.networkTimeout}") int networkTimeout) throws IOException {
+                                                      @Value("${service.customer.networkTimeout}") int networkTimeout)
+            throws IOException {
         return new THSpawnClientBuilder()
                 .withMetaExtensions(List.of(
                         UserIdentityIdExtensionKit.INSTANCE,

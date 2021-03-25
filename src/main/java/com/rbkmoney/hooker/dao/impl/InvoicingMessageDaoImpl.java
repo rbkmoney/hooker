@@ -21,7 +21,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.*;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.CHANGE_ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.EVENT_TIME;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.EVENT_TYPE;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.INVOICE_ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.INVOICE_STATUS;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.NEW_EVENT_ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.PARTY_ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.PAYMENT_ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.PAYMENT_STATUS;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.REFUND_ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.REFUND_STATUS;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.SEQUENCE_ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.SHOP_ID;
+import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.TYPE;
 
 @Slf4j
 @Component
@@ -38,7 +52,8 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
         int[] batchMessagesResult = saveBatchMessages(messages);
         log.info("Batch messages saved info {}",
                 IntStream.range(0, messages.size())
-                        .mapToObj(i -> "(" + i + " : " + batchMessagesResult[i] + " : " + messages.get(i).getId() + " : " + messages.get(i).getInvoiceId() + ")")
+                        .mapToObj(i -> "(" + i + " : " + batchMessagesResult[i] + " : " + messages.get(i).getId() +
+                                " : " + messages.get(i).getInvoiceId() + ")")
                         .collect(Collectors.toList()));
     }
 
@@ -50,8 +65,9 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                     "(id, new_event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
                     "invoice_id, shop_id, invoice_status, payment_id, payment_status, refund_id, refund_status) " +
                     "VALUES " +
-                    "(:id, :new_event_id, :event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
-                    ":invoice_id, :shop_id, :invoice_status, :payment_id, :payment_status, :refund_id, :refund_status) " +
+                    "(:id, :new_event_id, :event_time, :sequence_id, :change_id, :type, :party_id, " +
+                    "CAST(:event_type as hook.eventtype), :invoice_id, :shop_id, :invoice_status, :payment_id, " +
+                    ":payment_status, :refund_id, :refund_status) " +
                     "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING ";
 
             MapSqlParameterSource[] sqlParameterSources = messages.stream()
@@ -68,9 +84,11 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                             .addValue(SHOP_ID, message.getShopId())
                             .addValue(INVOICE_STATUS, message.getInvoiceStatus().getValue())
                             .addValue(PAYMENT_ID, message.getPaymentId())
-                            .addValue(PAYMENT_STATUS, message.getPaymentStatus() != null ? message.getPaymentStatus().getValue() : null)
+                            .addValue(PAYMENT_STATUS,
+                                    message.getPaymentStatus() != null ? message.getPaymentStatus().getValue() : null)
                             .addValue(REFUND_ID, message.getRefundId())
-                            .addValue(REFUND_STATUS, message.getRefundStatus() != null ? message.getRefundStatus().getValue() : null))
+                            .addValue(REFUND_STATUS,
+                                    message.getRefundStatus() != null ? message.getRefundStatus().getValue() : null))
                     .toArray(MapSqlParameterSource[]::new);
             return jdbcTemplate.batchUpdate(sql, sqlParameterSources);
         } catch (NestedRuntimeException e) {

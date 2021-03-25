@@ -1,6 +1,11 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoiceStatusEnum;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.PaymentStatusEnum;
+import com.rbkmoney.hooker.model.RefundStatusEnum;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -39,11 +44,11 @@ public class InvoicingMessageRowMapper implements RowMapper<InvoicingMessage> {
         message.setInvoiceId(rs.getString(INVOICE_ID));
         message.setInvoiceStatus(InvoiceStatusEnum.lookup(rs.getString(INVOICE_STATUS)));
         message.setPaymentId(rs.getString(PAYMENT_ID));
-        message.setPaymentStatus(rs.getString(PAYMENT_STATUS) != null ?
-                PaymentStatusEnum.lookup(rs.getString(PAYMENT_STATUS)) : null);
+        message.setPaymentStatus(rs.getString(PAYMENT_STATUS) != null
+                ? PaymentStatusEnum.lookup(rs.getString(PAYMENT_STATUS)) : null);
         message.setRefundId(rs.getString(REFUND_ID));
-        message.setRefundStatus(rs.getString(REFUND_STATUS) != null ?
-                RefundStatusEnum.lookup(rs.getString(REFUND_STATUS)) : null);
+        message.setRefundStatus(rs.getString(REFUND_STATUS) != null
+                ? RefundStatusEnum.lookup(rs.getString(REFUND_STATUS)) : null);
         return message;
     }
 }

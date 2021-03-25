@@ -25,7 +25,7 @@ public class MetadataDeserializer {
         }
     }
 
-    public Object deserialize(Value value){
+    public Object deserialize(Value value) {
         if (!value.isSetObj()) {
             throw new IllegalArgumentException("Wrong metadata format. It should be obj: " + value);
         }
@@ -34,7 +34,8 @@ public class MetadataDeserializer {
 
     private Object deserializeValue(Value value) {
         if (value.isSetObj()) {
-            return value.getObj().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> deserializeValue(e.getValue())));
+            return value.getObj().entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> deserializeValue(e.getValue())));
         } else if (value.isSetArr()) {
             return value.getArr().stream().map(this::deserializeValue).collect(Collectors.toList());
         } else if (value.isSetNl()) {

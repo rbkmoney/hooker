@@ -8,7 +8,11 @@ import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
-import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.model.InvoicingMessageEnum;
+import com.rbkmoney.hooker.model.InvoicingMessageKey;
+import com.rbkmoney.hooker.model.RefundStatusEnum;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,7 +20,8 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
 
     private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STARTED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
+    private Filter filter =
+            new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public InvoicePaymentRefundStartedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
@@ -48,8 +53,9 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
-                .getPayload().getInvoicePaymentRefundCreated();
+        InvoicePaymentRefundCreated refundCreated =
+                ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
+                        .getPayload().getInvoicePaymentRefundCreated();
         InvoicePaymentRefund refundOrigin = refundCreated.getRefund();
         message.setRefundId(refundOrigin.getId());
         message.setRefundStatus(RefundStatusEnum.lookup(refundOrigin.getStatus().getSetField().getFieldName()));

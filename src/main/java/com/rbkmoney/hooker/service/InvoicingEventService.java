@@ -1,6 +1,8 @@
 package com.rbkmoney.hooker.service;
 
-import com.rbkmoney.damsel.payment_processing.*;
+import com.rbkmoney.damsel.payment_processing.InvoiceNotFound;
+import com.rbkmoney.damsel.payment_processing.InvoicePayment;
+import com.rbkmoney.damsel.payment_processing.InvoicingSrv;
 import com.rbkmoney.hooker.converter.InvoiceConverter;
 import com.rbkmoney.hooker.converter.PaymentConverter;
 import com.rbkmoney.hooker.converter.RefundConverter;
@@ -11,15 +13,29 @@ import com.rbkmoney.hooker.utils.HellgateUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.swag_webhook_events.model.Invoice;
+import com.rbkmoney.swag_webhook_events.model.InvoiceCancelled;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCreated;
-import com.rbkmoney.swag_webhook_events.model.*;
+import com.rbkmoney.swag_webhook_events.model.InvoiceFulfilled;
+import com.rbkmoney.swag_webhook_events.model.InvoicePaid;
+import com.rbkmoney.swag_webhook_events.model.Payment;
+import com.rbkmoney.swag_webhook_events.model.PaymentCancelled;
+import com.rbkmoney.swag_webhook_events.model.PaymentCaptured;
+import com.rbkmoney.swag_webhook_events.model.PaymentFailed;
+import com.rbkmoney.swag_webhook_events.model.PaymentProcessed;
+import com.rbkmoney.swag_webhook_events.model.PaymentRefunded;
+import com.rbkmoney.swag_webhook_events.model.PaymentStarted;
+import com.rbkmoney.swag_webhook_events.model.Refund;
+import com.rbkmoney.swag_webhook_events.model.RefundCreated;
+import com.rbkmoney.swag_webhook_events.model.RefundFailed;
+import com.rbkmoney.swag_webhook_events.model.RefundSucceeded;
 import lombok.RequiredArgsConstructor;
 import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class InvoicingEventService implements EventService<InvoicingMessage>, HellgateInvoicingService<InvoicingMessage> {
+public class InvoicingEventService
+        implements EventService<InvoicingMessage>, HellgateInvoicingService<InvoicingMessage> {
 
     private final InvoicingSrv.Iface invoicingClient;
     private final InvoiceConverter invoiceConverter;
@@ -83,7 +99,8 @@ public class InvoicingEventService implements EventService<InvoicingMessage>, He
         return invoiceConverter.convert(invoiceInfo.getInvoice());
     }
 
-    private Event resolveInvoiceStatusChanged(InvoicingMessage message, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
+    private Event resolveInvoiceStatusChanged(InvoicingMessage message,
+                                              com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
         switch (message.getInvoiceStatus()) {
             case UNPAID:
@@ -105,18 +122,21 @@ public class InvoicingEventService implements EventService<InvoicingMessage>, He
         return paymentConverter.convert(damselPayment);
     }
 
-    private InvoicePayment extractPayment(InvoicingMessage message, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
+    private InvoicePayment extractPayment(InvoicingMessage message,
+                                          com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
         return invoiceInfo.getPayments().stream()
                 .filter(p -> p.getPayment().getId().equals(message.getPaymentId()))
                 .findFirst()
                 .orElseThrow(
                         () -> new NotFoundException(
-                                String.format("Payment not found, invoiceId=%s, paymentId=%s", message.getInvoiceId(), message.getPaymentId())
+                                String.format("Payment not found, invoiceId=%s, paymentId=%s", message.getInvoiceId(),
+                                        message.getPaymentId())
                         )
                 );
     }
 
-    private Event resolvePaymentStatusChanged(InvoicingMessage message, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
+    private Event resolvePaymentStatusChanged(InvoicingMessage message,
+                                              com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
         Payment swagPayment = getSwagPayment(message, invoiceInfo);
         switch (message.getPaymentStatus()) {
@@ -149,7 +169,8 @@ public class InvoicingEventService implements EventService<InvoicingMessage>, He
         return swagRefund;
     }
 
-    private com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund extractRefund(InvoicingMessage m, InvoicePayment damselPayment) {
+    private com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund extractRefund(InvoicingMessage m,
+                                                                                      InvoicePayment damselPayment) {
         return damselPayment.getRefunds().stream()
                 .filter(invoicePaymentRefund -> invoicePaymentRefund.getRefund().getId().equals(m.getRefundId()))
                 .findFirst()
@@ -163,7 +184,8 @@ public class InvoicingEventService implements EventService<InvoicingMessage>, He
                 );
     }
 
-    private Event resolveRefundStatusChanged(InvoicingMessage message, com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
+    private Event resolveRefundStatusChanged(InvoicingMessage message,
+                                             com.rbkmoney.damsel.payment_processing.Invoice invoiceInfo) {
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
         Payment swagPayment = getSwagPayment(message, invoiceInfo);
         Refund swagRefund = getSwagRefund(message, invoiceInfo);

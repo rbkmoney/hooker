@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class CustomerBindingConverterTest extends AbstractIntegrationTest {
 
@@ -24,10 +24,12 @@ public class CustomerBindingConverterTest extends AbstractIntegrationTest {
         MockTBaseProcessor mockTBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
         CustomerBinding source = mockTBaseProcessor
                 .process(new CustomerBinding(), new TBaseHandler<>(CustomerBinding.class));
-        source.getPaymentResource().setPaymentTool(PaymentTool.bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
+        source.getPaymentResource().setPaymentTool(
+                PaymentTool.bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
         com.rbkmoney.swag_webhook_events.model.CustomerBinding target = converter.convert(source);
         assertEquals(source.getId(), target.getId());
-        assertEquals(source.getPaymentResource().getPaymentSessionId(), target.getPaymentResource().getPaymentSession());
+        assertEquals(source.getPaymentResource().getPaymentSessionId(),
+                target.getPaymentResource().getPaymentSession());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
     }
 }
