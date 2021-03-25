@@ -23,9 +23,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class WebhookMessageServiceServlet extends GenericServlet {
 
-    private Servlet thriftServlet;
-
     private final WebhookMessageServiceSrv.Iface requestHandler;
+    private Servlet thriftServlet;
 
     @Override
     public void init(ServletConfig config) throws ServletException {

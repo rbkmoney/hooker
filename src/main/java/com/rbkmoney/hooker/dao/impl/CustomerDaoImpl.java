@@ -28,8 +28,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerDaoImpl implements CustomerDao {
 
-    private final NamedParameterJdbcTemplate jdbcTemplate;
-
     public static final String ID = "id";
     public static final String EVENT_ID = "event_id";
     public static final String TYPE = "type";
@@ -41,7 +39,6 @@ public class CustomerDaoImpl implements CustomerDao {
     public static final String CUSTOMER_ID = "customer_id";
     public static final String CUSTOMER_SHOP_ID = "customer_shop_id";
     public static final String BINDING_ID = "binding_id";
-
     private static RowMapper<CustomerMessage> messageRowMapper = (rs, i) -> {
         CustomerMessage message = new CustomerMessage();
         message.setId(rs.getLong(ID));
@@ -57,6 +54,7 @@ public class CustomerDaoImpl implements CustomerDao {
         message.setBindingId(rs.getString(BINDING_ID));
         return message;
     };
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public CustomerMessage getAny(String customerId, CustomerMessageEnum type) throws DaoException {

@@ -39,6 +39,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KafkaConfig {
 
+    private final KafkaSslProperties kafkaSslProperties;
+
     @Value("${kafka.consumer.auto-offset-reset}")
     private String autoOffsetReset;
     @Value("${kafka.consumer.enable-auto-commit}")
@@ -49,15 +51,12 @@ public class KafkaConfig {
     private String clientId;
     @Value("${kafka.consumer.max-poll-records}")
     private int maxPollRecords;
-
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
     @Value("${kafka.topics.invoice.concurrency}")
     private int invoicingConcurrency;
     @Value("${kafka.topics.customer.concurrency}")
     private int customerConcurrency;
-
-    private final KafkaSslProperties kafkaSslProperties;
 
     @Bean
     public Map<String, Object> consumerConfigs() {

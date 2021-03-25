@@ -23,7 +23,7 @@ public class WebhookMessageService implements WebhookMessageServiceSrv.Iface {
     private final CustomerTaskDao customerTaskDao;
 
     @Override
-    public void send(long hookId, String sourceId) throws WebhookNotFound, SourceNotFound, TException {
+    public void send(long hookId, String sourceId) throws TException {
         log.info("Start creating tasks for sending hooks for hookId={}, invoiceId={}", hookId, sourceId);
         Hook hook = hookDao.getHookById(hookId);
         if (hook == null) {

@@ -37,18 +37,6 @@ public class CustomerMachineEventHandlerTest extends AbstractIntegrationTest {
     @MockBean
     private MachineEventParser<EventPayload> paymentEventPayloadMachineEventParser;
 
-    @Test
-    public void saveEventTest() {
-        String customerId = "CID";
-        MachineEvent machineEvent = createTestMachineEvent();
-        Mockito.when(paymentEventPayloadMachineEventParser.parse(any(MachineEvent.class)))
-                .thenReturn(createTestCusomerEventPayload(customerId));
-
-        customerMachineEventHandler.handle(Arrays.asList(machineEvent), new TestAcknowledgment());
-        CustomerMessage message = customerDao.getAny(customerId, CustomerMessageEnum.CUSTOMER);
-        assertTrue("The message should not be empty", message != null);
-    }
-
     private static MachineEvent createTestMachineEvent() {
         MachineEvent machineEvent = new MachineEvent();
         machineEvent.setSourceId("sourceId-1");
@@ -87,6 +75,18 @@ public class CustomerMachineEventHandlerTest extends AbstractIntegrationTest {
         List<CustomerChange> changes = new ArrayList<>();
         changes.add(change);
         return changes;
+    }
+
+    @Test
+    public void saveEventTest() {
+        String customerId = "CID";
+        MachineEvent machineEvent = createTestMachineEvent();
+        Mockito.when(paymentEventPayloadMachineEventParser.parse(any(MachineEvent.class)))
+                .thenReturn(createTestCusomerEventPayload(customerId));
+
+        customerMachineEventHandler.handle(Arrays.asList(machineEvent), new TestAcknowledgment());
+        CustomerMessage message = customerDao.getAny(customerId, CustomerMessageEnum.CUSTOMER);
+        assertTrue("The message should not be empty", message != null);
     }
 
     private static class TestAcknowledgment implements Acknowledgment {

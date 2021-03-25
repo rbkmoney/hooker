@@ -37,13 +37,40 @@ import static org.junit.Assert.assertNull;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class HookDaoImplTest extends AbstractIntegrationTest {
 
+    List<Long> ids = new ArrayList<>();
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
-
     @Autowired
     private HookDao hookDao;
 
-    List<Long> ids = new ArrayList<>();
+    public static Hook buildHook(String partyId, String url) {
+        Hook hook = new Hook();
+        hook.setPartyId(partyId);
+        hook.setUrl(url);
+        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
+
+        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
+        webhookAdditionalFilters
+                .add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled",
+                        "failed"));
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_CREATED).build());
+        hook.setFilters(webhookAdditionalFilters);
+
+        return hook;
+    }
+
+    public static Hook buildCustomerHook(String partyId, String url) {
+        Hook hook = new Hook();
+        hook.setPartyId(partyId);
+        hook.setUrl(url);
+        hook.setTopic(Event.TopicEnum.CUSTOMERSTOPIC.getValue());
+
+        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
+        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
+        hook.setFilters(webhookAdditionalFilters);
+
+        return hook;
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -154,39 +181,10 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         assertEquals(0, hookDao.getPartyHooksCount("keke"));
     }
 
-    public static Hook buildHook(String partyId, String url) {
-        Hook hook = new Hook();
-        hook.setPartyId(partyId);
-        hook.setUrl(url);
-        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
-
-        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        webhookAdditionalFilters
-                .add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled",
-                        "failed"));
-        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_CREATED).build());
-        hook.setFilters(webhookAdditionalFilters);
-
-        return hook;
-    }
-
     @Test
     public void updateAvailabilityTest() {
         double availability = 0.1;
         hookDao.getPartyHooks("123").forEach(h -> hookDao.updateAvailability(h.getId(), availability));
         hookDao.getPartyHooks("123").forEach(h -> assertEquals(availability, h.getAvailability(), 0.000000000001));
-    }
-
-    public static Hook buildCustomerHook(String partyId, String url) {
-        Hook hook = new Hook();
-        hook.setPartyId(partyId);
-        hook.setUrl(url);
-        hook.setTopic(Event.TopicEnum.CUSTOMERSTOPIC.getValue());
-
-        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
-        hook.setFilters(webhookAdditionalFilters);
-
-        return hook;
     }
 }

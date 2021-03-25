@@ -98,7 +98,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
         storage.put(KeyUtils.key(invoiceCreated), invoiceCreated);
 
         InvoiceChange icPaymentStarted = getInvoicePaymentStarted();
-        EventInfo eventInfoPaymentStarted = new EventInfo(null, "2016-03-22T06:12:27Z", "invoiceId",1L,2);
+        EventInfo eventInfoPaymentStarted = new EventInfo(null, "2016-03-22T06:12:27Z", "invoiceId", 1L, 2);
         Optional<AbstractInvoiceEventMapper> eventMapperPaymentStartedOptional =
                 handlerManager.getHandler(icPaymentStarted);
         assertTrue(eventMapperPaymentStartedOptional.isPresent());
