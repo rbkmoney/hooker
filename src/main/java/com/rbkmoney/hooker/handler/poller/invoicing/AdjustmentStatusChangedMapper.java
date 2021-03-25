@@ -18,17 +18,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
-    private final HellgateInvoicingService<InvoicingMessage> invoicingEventService;
-
     private static final EventType EVENT_TYPE = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
-
     private static final String ADJUSTMENT_STATUS_CHANGED_PATH = "invoice_payment_change.payload." +
             "invoice_payment_adjustment_change.payload.invoice_payment_adjustment_status_changed." +
             "status.captured";
-
     private static final Filter FILTER = new PathConditionFilter(
             new PathConditionRule(ADJUSTMENT_STATUS_CHANGED_PATH, new IsNullCondition().not())
     );
+    private final HellgateInvoicingService<InvoicingMessage> invoicingEventService;
 
     public AdjustmentStatusChangedMapper(InvoicingMessageDao messageDao,
                                          HellgateInvoicingService<InvoicingMessage> invoicingEventService) {

@@ -20,10 +20,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public abstract class AbstractTaskDao implements TaskDao {
 
-    protected final NamedParameterJdbcTemplate jdbcTemplate;
-
     public static RowMapper<Task> taskRowMapper = (rs, i) ->
             new Task(rs.getLong("message_id"), rs.getLong("queue_id"));
+    protected final NamedParameterJdbcTemplate jdbcTemplate;
 
     protected abstract String getMessageTopic();
 

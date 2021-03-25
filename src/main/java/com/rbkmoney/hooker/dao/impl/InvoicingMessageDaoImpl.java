@@ -42,11 +42,9 @@ import static com.rbkmoney.hooker.dao.impl.InvoicingMessageRowMapper.TYPE;
 @RequiredArgsConstructor
 public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
 
-    private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    private final Cache<InvoicingMessageKey, InvoicingMessage> invoicingCache;
-
     private static RowMapper<InvoicingMessage> messageRowMapper = new InvoicingMessageRowMapper();
+    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final Cache<InvoicingMessageKey, InvoicingMessage> invoicingCache;
 
     public void saveBatch(List<InvoicingMessage> messages) throws DaoException {
         int[] batchMessagesResult = saveBatchMessages(messages);

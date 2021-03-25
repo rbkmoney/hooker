@@ -32,11 +32,9 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(InvoicingMessageDaoImplTest.class);
-
+    private static boolean messagesCreated = false;
     @Autowired
     InvoicingMessageDaoImpl messageDao;
-
-    private static boolean messagesCreated = false;
 
     @Before
     public void setUp() throws Exception {

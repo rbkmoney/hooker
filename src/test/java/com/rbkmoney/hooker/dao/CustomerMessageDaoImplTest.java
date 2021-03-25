@@ -26,11 +26,9 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CustomerMessageDaoImplTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(CustomerMessageDaoImplTest.class);
-
+    private static boolean messagesCreated = false;
     @Autowired
     CustomerDaoImpl messageDao;
-
-    private static boolean messagesCreated = false;
 
     @Before
     public void setUp() throws Exception {

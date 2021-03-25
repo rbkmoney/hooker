@@ -55,12 +55,10 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
     @Autowired
     InvoicingMessageDaoImpl messageDao;
-
-    @Autowired
-    private TransactionTemplate transactionTemplate;
-
     Long messageId;
     Long hookId;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @Before
     public void setUp() throws Exception {

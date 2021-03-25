@@ -36,6 +36,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HookDaoImpl implements HookDao {
 
+    private static RowMapper<AllHookTablesRow> allHookTablesRowRowMapper =
+            (rs, i) -> new AllHookTablesRow(rs.getLong("id"),
+                    rs.getString("party_id"),
+                    rs.getString("topic"),
+                    rs.getString("url"),
+                    rs.getString("pub_key"),
+                    rs.getBoolean("enabled"),
+                    rs.getDouble("availability"),
+                    new WebhookAdditionalFilter(EventType.valueOf(rs.getString("event_type")),
+                            rs.getString("invoice_shop_id"),
+                            rs.getString("invoice_status"),
+                            rs.getString("invoice_payment_status"),
+                            rs.getString("invoice_payment_refund_status")));
     private final Signer signer;
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final PartyMetadataRowMapper partyMetadataRowMapper;
@@ -297,18 +310,4 @@ public class HookDaoImpl implements HookDao {
         }
         return pubKey;
     }
-
-    private static RowMapper<AllHookTablesRow> allHookTablesRowRowMapper =
-            (rs, i) -> new AllHookTablesRow(rs.getLong("id"),
-                    rs.getString("party_id"),
-                    rs.getString("topic"),
-                    rs.getString("url"),
-                    rs.getString("pub_key"),
-                    rs.getBoolean("enabled"),
-                    rs.getDouble("availability"),
-                    new WebhookAdditionalFilter(EventType.valueOf(rs.getString("event_type")),
-                            rs.getString("invoice_shop_id"),
-                            rs.getString("invoice_status"),
-                            rs.getString("invoice_payment_status"),
-                            rs.getString("invoice_payment_refund_status")));
 }

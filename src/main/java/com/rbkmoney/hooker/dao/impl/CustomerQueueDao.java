@@ -25,8 +25,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerQueueDao implements QueueDao<CustomerQueue> {
 
-    private final NamedParameterJdbcTemplate jdbcTemplate;
-
     public static RowMapper<CustomerQueue> queueWithPolicyRowMapper = (rs, i) -> {
         CustomerQueue queue = new CustomerQueue();
         queue.setId(rs.getLong("id"));
@@ -45,6 +43,7 @@ public class CustomerQueueDao implements QueueDao<CustomerQueue> {
         queue.setRetryPolicyRecord(retryPolicyType.build(rs));
         return queue;
     };
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public void createWithPolicy(long messageId) throws DaoException {
         final String sql = "with queue as ( " +

@@ -15,10 +15,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class PostSender {
 
-    private final OkHttpClient httpClient;
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public static final String SIGNATURE_HEADER = "Content-Signature";
     public static final long RESPONSE_MAX_LENGTH = 4096L;
+    private final OkHttpClient httpClient;
 
     public PostSender(int connectionPoolSize, int timeout) {
         OkHttpClient.Builder httpBuilder = new OkHttpClient.Builder();

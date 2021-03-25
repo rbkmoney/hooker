@@ -23,16 +23,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
 
+    private final CustomerDaoImpl customerDao;
+    private final CustomerQueueDao customerQueueDao;
+    private final CustomerTaskDao customerTaskDao;
     private EventType eventType = EventType.CUSTOMER_CREATED;
-
     private Filter filter =
             new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
-
-    private final CustomerDaoImpl customerDao;
-
-    private final CustomerQueueDao customerQueueDao;
-
-    private final CustomerTaskDao customerTaskDao;
 
     @Override
     public Filter getFilter() {

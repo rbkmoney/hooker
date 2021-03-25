@@ -23,8 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
 
-    private final NamedParameterJdbcTemplate jdbcTemplate;
-
     public static RowMapper<InvoicingQueue> queueWithPolicyRowMapper = (rs, i) -> {
         InvoicingQueue queue = new InvoicingQueue();
         queue.setId(rs.getLong("id"));
@@ -43,6 +41,7 @@ public class InvoicingQueueDao implements QueueDao<InvoicingQueue> {
         queue.setRetryPolicyRecord(retryPolicyType.build(rs));
         return queue;
     };
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public int[] saveBatchWithPolicies(List<Long> messageIds) throws DaoException {
         final String sql = "with queue as ( " +
