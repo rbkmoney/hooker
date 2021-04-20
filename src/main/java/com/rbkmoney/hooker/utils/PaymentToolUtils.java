@@ -92,7 +92,7 @@ public class PaymentToolUtils {
             rootNode.put("type", "digital_wallet");
             rootNode.put("provider", DigitalWalletUtil.getDigitalWalletName(paymentTool.getDigitalWallet()));
             rootNode.put("id", paymentTool.getDigitalWallet().getId());
-        } else if (paymentTool.isSetCryptoCurrency()) {
+        } else if (CryptoCurrencyUtil.isSetCryptoCurrency(paymentTool)) {
             rootNode.put("type", "crypto_currency");
             rootNode.put("crypto_currency",CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool));
         } else if (paymentTool.isSetMobileCommerce()) {
