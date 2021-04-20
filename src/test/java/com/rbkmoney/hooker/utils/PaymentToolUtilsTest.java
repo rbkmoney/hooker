@@ -6,10 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.damsel.domain.BankCard;
 import com.rbkmoney.damsel.domain.CryptoCurrency;
 import com.rbkmoney.damsel.domain.DigitalWallet;
-import com.rbkmoney.damsel.domain.DigitalWalletProvider;
+import com.rbkmoney.damsel.domain.LegacyCryptoCurrency;
+import com.rbkmoney.damsel.domain.LegacyDigitalWalletProvider;
+import com.rbkmoney.damsel.domain.LegacyTerminalPaymentProvider;
 import com.rbkmoney.damsel.domain.PaymentTerminal;
 import com.rbkmoney.damsel.domain.PaymentTool;
-import com.rbkmoney.damsel.domain.TerminalPaymentProvider;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
@@ -29,7 +30,7 @@ public class PaymentToolUtilsTest {
 
     @Test
     public void testGetPaymentToolDetailsCryptoWallet() {
-        PaymentTool paymentTool = PaymentTool.crypto_currency(CryptoCurrency.bitcoin);
+        PaymentTool paymentTool = PaymentTool.crypto_currency_deprecated(LegacyCryptoCurrency.bitcoin);
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsCryptoWallet);
         assertNull(paymentToolDetails.getDetailsType());
@@ -39,7 +40,9 @@ public class PaymentToolUtilsTest {
 
     @Test
     public void testDigitalWalletJson() throws JsonProcessingException {
-        PaymentTool paymentTool = PaymentTool.digital_wallet(new DigitalWallet(DigitalWalletProvider.qiwi, "kke"));
+        PaymentTool paymentTool =
+                PaymentTool.digital_wallet(new DigitalWallet("kke"));
+        paymentTool.getDigitalWallet().setProviderDeprecated(LegacyDigitalWalletProvider.qiwi);
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         String json = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
                 .writeValueAsString(paymentToolDetails);
@@ -52,7 +55,7 @@ public class PaymentToolUtilsTest {
     @Test
     public void testGetPaymentToolDetailsPaymentTerminal() {
         PaymentTool paymentTool = PaymentTool.payment_terminal(new PaymentTerminal()
-                .setTerminalType(TerminalPaymentProvider.alipay)
+                .setTerminalTypeDeprecated(LegacyTerminalPaymentProvider.alipay)
         );
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
@@ -61,7 +64,7 @@ public class PaymentToolUtilsTest {
                 ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
 
         paymentTool = PaymentTool.payment_terminal(new PaymentTerminal()
-                .setTerminalType(TerminalPaymentProvider.wechat)
+                .setTerminalTypeDeprecated(LegacyTerminalPaymentProvider.wechat)
         );
         paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);

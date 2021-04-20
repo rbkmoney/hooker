@@ -3,10 +3,15 @@ package com.rbkmoney.hooker.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rbkmoney.damsel.domain.BankCard;
-import com.rbkmoney.damsel.domain.DigitalWalletProvider;
+import com.rbkmoney.damsel.domain.LegacyDigitalWalletProvider;
 import com.rbkmoney.damsel.domain.MobilePhone;
 import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWallet;
+import com.rbkmoney.mamsel.CryptoCurrencyUtil;
+import com.rbkmoney.mamsel.DigitalWalletUtil;
+import com.rbkmoney.mamsel.PaymentSystemUtil;
+import com.rbkmoney.mamsel.TerminalPaymentUtil;
+import com.rbkmoney.mamsel.TokenProviderUtil;
 import com.rbkmoney.swag_webhook_events.model.CryptoCurrency;
 import com.rbkmoney.swag_webhook_events.model.DigitalWalletDetailsQIWI;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
@@ -32,27 +37,29 @@ public class PaymentToolUtils {
                     .lastDigits(paymentTool.getBankCard().getLastDigits())
                     .cardNumberMask(
                             paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
-                    .tokenProvider(paymentTool.getBankCard().isSetTokenProvider()
+                    .tokenProvider(TokenProviderUtil.isSetTokenProvider(paymentTool.getBankCard())
                             ? PaymentToolDetailsBankCard.TokenProviderEnum
-                            .fromValue(paymentTool.getBankCard().getTokenProvider().name()) : null)
-                    .paymentSystem(paymentTool.getBankCard().getPaymentSystem().name())
+                            .fromValue(TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard())) : null)
+                    .paymentSystem(PaymentSystemUtil.getPaymentSystemName(paymentTool.getBankCard()))
                     .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null
                             ? paymentTool.getBankCard().getIssuerCountry().name() : null)
                     .bankName(paymentTool.getBankCard().getBankName());
         } else if (paymentTool.isSetPaymentTerminal()) {
             return new PaymentToolDetailsPaymentTerminal()
-                    .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum
-                            .fromValue(paymentTool.getPaymentTerminal().getTerminalType().name()));
+                    .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(
+                            TerminalPaymentUtil.getTerminalPaymentProviderName(paymentTool.getPaymentTerminal())));
         } else if (paymentTool.isSetDigitalWallet()) {
-            if (paymentTool.getDigitalWallet().getProvider() == DigitalWalletProvider.qiwi) {
+            LegacyDigitalWalletProvider walletProvider = LegacyDigitalWalletProvider.valueOf(
+                    DigitalWalletUtil.getDigitalWalletName(paymentTool.getDigitalWallet()));
+            if (walletProvider == LegacyDigitalWalletProvider.qiwi) {
                 return new PaymentToolDetailsDigitalWallet(new DigitalWalletDetailsQIWI()
                         .phoneNumberMask(paymentTool.getDigitalWallet().getId()));
             } else {
                 throw new UnsupportedOperationException("Unknown digital wallet type");
             }
-        } else if (paymentTool.isSetCryptoCurrency()) {
+        } else if (CryptoCurrencyUtil.isSetCryptoCurrency(paymentTool)) {
             return new PaymentToolDetailsCryptoWallet()
-                    .cryptoCurrency(CryptoCurrency.fromValue(paymentTool.getCryptoCurrency().name()));
+                    .cryptoCurrency(CryptoCurrency.fromValue(CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool)));
         } else if (paymentTool.isSetMobileCommerce()) {
             return new PaymentToolDetailsMobileCommerce()
                     .phoneNumber(paymentTool.getMobileCommerce().getPhone().getCc() +
@@ -69,22 +76,25 @@ public class PaymentToolUtils {
             BankCard paymentCard = paymentTool.getBankCard();
             rootNode.put("type", "bank_card");
             rootNode.put("token", paymentCard.getToken());
-            rootNode.put("payment_system", paymentCard.getPaymentSystem().toString());
+            rootNode.put("payment_system", PaymentSystemUtil.getPaymentSystemName(paymentCard));
             rootNode.put("bin", paymentCard.getBin());
             rootNode.put("masked_pan", paymentCard.getLastDigits());
-            if (paymentCard.isSetTokenProvider()) {
-                rootNode.put("token_provider", paymentCard.getTokenProvider().name());
+            if (TokenProviderUtil.isSetTokenProvider(paymentCard)) {
+                rootNode.put("token_provider", TokenProviderUtil.getTokenProviderName(paymentCard));
             }
         } else if (paymentTool.isSetPaymentTerminal()) {
             rootNode.put("type", "payment_terminal");
-            rootNode.put("terminal_type", paymentTool.getPaymentTerminal().getTerminalType().toString());
+            rootNode.put(
+                    "terminal_type",
+                    TerminalPaymentUtil.getTerminalPaymentProviderName(paymentTool.getPaymentTerminal())
+            );
         } else if (paymentTool.isSetDigitalWallet()) {
             rootNode.put("type", "digital_wallet");
-            rootNode.put("provider", paymentTool.getDigitalWallet().getProvider().name());
+            rootNode.put("provider", DigitalWalletUtil.getDigitalWalletName(paymentTool.getDigitalWallet()));
             rootNode.put("id", paymentTool.getDigitalWallet().getId());
         } else if (paymentTool.isSetCryptoCurrency()) {
             rootNode.put("type", "crypto_currency");
-            rootNode.put("crypto_currency", paymentTool.getCryptoCurrency().name());
+            rootNode.put("crypto_currency",CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool));
         } else if (paymentTool.isSetMobileCommerce()) {
             rootNode.put("type", "mobile_commerce");
             MobilePhone mobilePhone = paymentTool.getMobileCommerce().getPhone();

@@ -2,7 +2,6 @@ package com.rbkmoney.hooker.service;
 
 import com.rbkmoney.damsel.base.Content;
 import com.rbkmoney.damsel.domain.BankCard;
-import com.rbkmoney.damsel.domain.BankCardPaymentSystem;
 import com.rbkmoney.damsel.domain.Cash;
 import com.rbkmoney.damsel.domain.ClientInfo;
 import com.rbkmoney.damsel.domain.ContactInfo;
@@ -19,6 +18,7 @@ import com.rbkmoney.damsel.domain.InvoicePaymentProcessed;
 import com.rbkmoney.damsel.domain.InvoicePaymentStatus;
 import com.rbkmoney.damsel.domain.InvoiceStatus;
 import com.rbkmoney.damsel.domain.InvoiceUnpaid;
+import com.rbkmoney.damsel.domain.LegacyBankCardPaymentSystem;
 import com.rbkmoney.damsel.domain.Payer;
 import com.rbkmoney.damsel.domain.PaymentResourcePayer;
 import com.rbkmoney.damsel.domain.PaymentTool;
@@ -187,7 +187,7 @@ public class BatchProcessingTest extends AbstractIntegrationTest {
                                 .setResource(new DisposablePaymentResource()
                                         .setPaymentTool(PaymentTool.bank_card(new BankCard()
                                                 .setToken("token")
-                                                .setPaymentSystem(BankCardPaymentSystem.amex)
+                                                .setPaymentSystemDeprecated(LegacyBankCardPaymentSystem.amex)
                                                 .setBin("bin")
                                                 .setLastDigits("masked")))
                                         .setClientInfo(new ClientInfo()))
