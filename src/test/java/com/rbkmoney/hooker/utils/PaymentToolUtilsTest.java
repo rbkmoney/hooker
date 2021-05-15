@@ -14,6 +14,7 @@ import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
+import com.rbkmoney.mamsel.TokenProviderUtil;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsCryptoWallet;
@@ -27,6 +28,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class PaymentToolUtilsTest {
+
+    @Test
+    public void testFromValueWithNull() {
+        assertNull(PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(null));
+    }
 
     @Test
     public void testGetPaymentToolDetailsCryptoWallet() {

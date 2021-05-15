@@ -7,18 +7,8 @@ import com.rbkmoney.damsel.domain.LegacyDigitalWalletProvider;
 import com.rbkmoney.damsel.domain.MobilePhone;
 import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.hooker.model.PaymentToolDetailsDigitalWallet;
-import com.rbkmoney.mamsel.CryptoCurrencyUtil;
-import com.rbkmoney.mamsel.DigitalWalletUtil;
-import com.rbkmoney.mamsel.PaymentSystemUtil;
-import com.rbkmoney.mamsel.TerminalPaymentUtil;
-import com.rbkmoney.mamsel.TokenProviderUtil;
-import com.rbkmoney.swag_webhook_events.model.CryptoCurrency;
-import com.rbkmoney.swag_webhook_events.model.DigitalWalletDetailsQIWI;
-import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
-import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
-import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsCryptoWallet;
-import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsMobileCommerce;
-import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsPaymentTerminal;
+import com.rbkmoney.mamsel.*;
+import com.rbkmoney.swag_webhook_events.model.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -37,9 +27,8 @@ public class PaymentToolUtils {
                     .lastDigits(paymentTool.getBankCard().getLastDigits())
                     .cardNumberMask(
                             paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
-                    .tokenProvider(TokenProviderUtil.isSetTokenProvider(paymentTool.getBankCard())
-                            ? PaymentToolDetailsBankCard.TokenProviderEnum
-                            .fromValue(TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard())) : null)
+                    .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(
+                            TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard())))
                     .paymentSystem(PaymentSystemUtil.getPaymentSystemName(paymentTool.getBankCard()))
                     .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null
                             ? paymentTool.getBankCard().getIssuerCountry().name() : null)
@@ -79,9 +68,7 @@ public class PaymentToolUtils {
             rootNode.put("payment_system", PaymentSystemUtil.getPaymentSystemName(paymentCard));
             rootNode.put("bin", paymentCard.getBin());
             rootNode.put("masked_pan", paymentCard.getLastDigits());
-            if (TokenProviderUtil.isSetTokenProvider(paymentCard)) {
-                rootNode.put("token_provider", TokenProviderUtil.getTokenProviderName(paymentCard));
-            }
+            rootNode.put("token_provider", TokenProviderUtil.getTokenProviderName(paymentCard));
         } else if (paymentTool.isSetPaymentTerminal()) {
             rootNode.put("type", "payment_terminal");
             rootNode.put(
@@ -94,7 +81,7 @@ public class PaymentToolUtils {
             rootNode.put("id", paymentTool.getDigitalWallet().getId());
         } else if (CryptoCurrencyUtil.isSetCryptoCurrency(paymentTool)) {
             rootNode.put("type", "crypto_currency");
-            rootNode.put("crypto_currency",CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool));
+            rootNode.put("crypto_currency", CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool));
         } else if (paymentTool.isSetMobileCommerce()) {
             rootNode.put("type", "mobile_commerce");
             MobilePhone mobilePhone = paymentTool.getMobileCommerce().getPhone();
