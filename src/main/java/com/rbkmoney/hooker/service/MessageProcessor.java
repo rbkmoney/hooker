@@ -111,8 +111,8 @@ public class MessageProcessor<M extends Message, Q extends Queue> implements Run
     }
 
     private void updateAvailability(Queue queue) {
-        double rate = faultDetector.getRate(queue.getHook().getId());
-        hookDao.updateAvailability(queue.getHook().getId(), rate);
-        log.info("Hook {} availability has been updated to {}", queue.getHook().getId(), rate);
+        //double rate = faultDetector.getRate(queue.getHook().getId());
+        //hookDao.updateAvailability(queue.getHook().getId(), rate);
+        //log.info("Hook {} availability has been updated to {}", queue.getHook().getId(), rate);
     }
 }
