@@ -1,34 +1,26 @@
 package com.rbkmoney.hooker.converter;
 
-import com.rbkmoney.damsel.base.Rational;
-import com.rbkmoney.damsel.domain.InvoiceCart;
-import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.damsel.domain.AdditionalTransactionInfo;
+import com.rbkmoney.damsel.domain.DisposablePaymentResource;
+import com.rbkmoney.damsel.domain.InvoicePaymentCaptured;
+import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.damsel.payment_processing.InvoicePayment;
 import com.rbkmoney.hooker.model.FeeType;
 import com.rbkmoney.hooker.utils.CashFlowUtils;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
-import com.rbkmoney.swag_webhook_events.model.Allocation;
-import com.rbkmoney.swag_webhook_events.model.AllocationTransaction;
-import com.rbkmoney.swag_webhook_events.model.ClientInfo;
-import com.rbkmoney.swag_webhook_events.model.ContactInfo;
-import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
-import com.rbkmoney.swag_webhook_events.model.PaymentResourcePayer;
-import com.rbkmoney.swag_webhook_events.model.RecurrentPayer;
 import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
     private final MetadataDeserializer deserializer;
+    private final AllocationConverter allocationConverter;
 
     @Override
     public Payment convert(InvoicePayment sourceWrapper) {
@@ -152,101 +144,9 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
     private Allocation getAllocation(InvoicePayment sourceWrapper) {
         if (sourceWrapper.isSetAllocaton()) {
-            Allocation result = new Allocation();
-            var transactions = sourceWrapper.getAllocaton().getTransactions();
-            List<AllocationTransaction> allocationTransactions = transactions.stream()
-                    .map(this::buildAllocationTransaction)
-                    .collect(Collectors.toList());
-            result.addAll(allocationTransactions);
-            return result;
+            var allocation = sourceWrapper.getAllocaton();
+            return allocationConverter.convert(allocation);
         }
         return null;
-    }
-
-    private AllocationTransaction buildAllocationTransaction(
-            com.rbkmoney.damsel.domain.AllocationTransaction allocationTransaction) {
-        if (allocationTransaction.isSetBody()) {
-            return buildAllocationBodyTotal(allocationTransaction);
-        } else {
-            return buildAllocationBodyAmount(allocationTransaction);
-        }
-    }
-
-    private AllocationBodyTotal buildAllocationBodyTotal(
-            com.rbkmoney.damsel.domain.AllocationTransaction allocationTransaction) {
-        AllocationTransactionBodyTotal body = allocationTransaction.getBody();
-        AllocationBodyTotal allocationBodyTotal = new AllocationBodyTotal();
-        allocationBodyTotal.setAllocationBodyType(AllocationTransaction.AllocationBodyTypeEnum.ALLOCATIONBODYTOTAL);
-        allocationBodyTotal.setTotal(body.getTotal().getAmount());
-        if (allocationTransaction.isSetAmount()) {
-            allocationBodyTotal.setAmount(allocationTransaction.getAmount().getAmount());
-            allocationBodyTotal.setCurrency(allocationTransaction.getAmount().getCurrency().getSymbolicCode());
-        }
-        allocationBodyTotal.setTarget(buildTarget(allocationTransaction));
-        if (body.isSetFee()) {
-            AllocationTransactionFeeShare fee = body.getFee();
-            AllocationFeeShare allocationFeeShare = new AllocationFeeShare();
-            allocationFeeShare.setAllocationFeeType(AllocationFee.AllocationFeeTypeEnum.ALLOCATIONFEESHARE);
-            if (fee.isSetParts()) {
-                Rational parts = fee.getParts();
-                allocationFeeShare.setShare(
-                        new Decimal()
-                                .m(parts.getP())
-                                .exp(parts.getQ())
-                );
-            }
-            allocationBodyTotal.setFee(allocationFeeShare);
-        } else {
-            AllocationFeeFixed allocationFeeFixed = new AllocationFeeFixed();
-            allocationFeeFixed.setAllocationFeeType(AllocationFee.AllocationFeeTypeEnum.ALLOCATIONFEEFIXED);
-            allocationFeeFixed.setAmount(body.getFeeAmount().getAmount());
-        }
-        allocationBodyTotal.setCart(buildInvoiceCart(allocationTransaction));
-        return allocationBodyTotal;
-    }
-
-    private AllocationTarget buildTarget(com.rbkmoney.damsel.domain.AllocationTransaction sourceAllocationTransaction) {
-        if (sourceAllocationTransaction.isSetTarget()) {
-            AllocationTargetShop target = new AllocationTargetShop();
-            target.setAllocationTargetType(AllocationTarget.AllocationTargetTypeEnum.ALLOCATIONTARGETSHOP);
-            target.setShopID(sourceAllocationTransaction.getTarget().getShop().getShopId());
-            return target;
-        }
-        return null;
-    }
-
-    private com.rbkmoney.swag_webhook_events.model.InvoiceCart buildInvoiceCart(
-            com.rbkmoney.damsel.domain.AllocationTransaction sourceAllocationTransaction) {
-        if (sourceAllocationTransaction.isSetDetails() && sourceAllocationTransaction.getDetails().isSetCart()) {
-            InvoiceCart invoiceCartSource = sourceAllocationTransaction.getDetails().getCart();
-            var invoiceCart = new com.rbkmoney.swag_webhook_events.model.InvoiceCart();
-            List<InvoiceCartLine> invoiceCartLines = invoiceCartSource.getLines().stream()
-                    .map(this::buildInvoiceCartLine)
-                    .collect(Collectors.toList());
-            invoiceCart.addAll(invoiceCartLines);
-            return invoiceCart;
-        }
-        return null;
-    }
-
-    private InvoiceCartLine buildInvoiceCartLine(InvoiceLine invoiceLine) {
-        InvoiceCartLine invoiceCartLine = new InvoiceCartLine();
-        invoiceCartLine.setPrice(invoiceLine.getPrice().getAmount());
-        invoiceCartLine.setProduct(invoiceLine.getProduct());
-        invoiceCartLine.setQuantity((long) invoiceLine.getQuantity());
-        return invoiceCartLine;
-    }
-
-    private AllocationBodyAmount buildAllocationBodyAmount(
-            com.rbkmoney.damsel.domain.AllocationTransaction allocationTransaction) {
-        AllocationBodyAmount allocationBodyAmount = new AllocationBodyAmount();
-        allocationBodyAmount.setAllocationBodyType(AllocationTransaction.AllocationBodyTypeEnum.ALLOCATIONBODYAMOUNT);
-        if (allocationTransaction.isSetAmount()) {
-            allocationBodyAmount.setAmount(allocationTransaction.getAmount().getAmount());
-            allocationBodyAmount.setCurrency(allocationTransaction.getAmount().getCurrency().getSymbolicCode());
-        }
-        allocationBodyAmount.setTarget(buildTarget(allocationTransaction));
-        allocationBodyAmount.setCart(buildInvoiceCart(allocationTransaction));
-        return allocationBodyAmount;
     }
 }
