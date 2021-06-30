@@ -22,6 +22,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -152,18 +153,23 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
     private Allocation getAllocation(InvoicePayment sourceWrapper) {
         if (sourceWrapper.isSetAllocaton()) {
             Allocation result = new Allocation();
-            List<com.rbkmoney.damsel.domain.AllocationTransaction> transactions =
-                    sourceWrapper.getAllocaton().getTransactions();
-            transactions.forEach(allocationTransaction -> {
-                if (allocationTransaction.isSetBody()) {
-                    result.add(buildAllocationBodyTotal(allocationTransaction));
-                } else {
-                    result.add(buildAllocationBodyAmount(allocationTransaction));
-                }
-            });
+            var transactions = sourceWrapper.getAllocaton().getTransactions();
+            List<AllocationTransaction> allocationTransactions = transactions.stream()
+                    .map(this::buildAllocationTransaction)
+                    .collect(Collectors.toList());
+            result.addAll(allocationTransactions);
             return result;
         }
         return null;
+    }
+
+    private AllocationTransaction buildAllocationTransaction(
+            com.rbkmoney.damsel.domain.AllocationTransaction allocationTransaction) {
+        if (allocationTransaction.isSetBody()) {
+            return buildAllocationBodyTotal(allocationTransaction);
+        } else {
+            return buildAllocationBodyAmount(allocationTransaction);
+        }
     }
 
     private AllocationBodyTotal buildAllocationBodyTotal(
@@ -176,17 +182,18 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
             allocationBodyTotal.setAmount(allocationTransaction.getAmount().getAmount());
             allocationBodyTotal.setCurrency(allocationTransaction.getAmount().getCurrency().getSymbolicCode());
         }
-        fillTarget(allocationTransaction, allocationBodyTotal);
+        allocationBodyTotal.setTarget(buildTarget(allocationTransaction));
         if (body.isSetFee()) {
             AllocationTransactionFeeShare fee = body.getFee();
             AllocationFeeShare allocationFeeShare = new AllocationFeeShare();
             allocationFeeShare.setAllocationFeeType(AllocationFee.AllocationFeeTypeEnum.ALLOCATIONFEESHARE);
             if (fee.isSetParts()) {
                 Rational parts = fee.getParts();
-                Decimal decimal = new Decimal();
-                decimal.setM(parts.getP());
-                decimal.setExp(parts.getQ());
-                allocationFeeShare.setShare(decimal);
+                allocationFeeShare.setShare(
+                        new Decimal()
+                                .m(parts.getP())
+                                .exp(parts.getQ())
+                );
             }
             allocationBodyTotal.setFee(allocationFeeShare);
         } else {
@@ -194,35 +201,40 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
             allocationFeeFixed.setAllocationFeeType(AllocationFee.AllocationFeeTypeEnum.ALLOCATIONFEEFIXED);
             allocationFeeFixed.setAmount(body.getFeeAmount().getAmount());
         }
-        fillInvoiceCart(allocationTransaction, allocationBodyTotal);
+        allocationBodyTotal.setCart(buildInvoiceCart(allocationTransaction));
         return allocationBodyTotal;
     }
 
-    private void fillTarget(com.rbkmoney.damsel.domain.AllocationTransaction sourceAllocationTransaction,
-                            AllocationTransaction allocationTransaction) {
+    private AllocationTarget buildTarget(com.rbkmoney.damsel.domain.AllocationTransaction sourceAllocationTransaction) {
         if (sourceAllocationTransaction.isSetTarget()) {
             AllocationTargetShop target = new AllocationTargetShop();
             target.setAllocationTargetType(AllocationTarget.AllocationTargetTypeEnum.ALLOCATIONTARGETSHOP);
             target.setShopID(sourceAllocationTransaction.getTarget().getShop().getShopId());
-            allocationTransaction.setTarget(target);
+            return target;
         }
+        return null;
     }
 
-    private void fillInvoiceCart(com.rbkmoney.damsel.domain.AllocationTransaction sourceAllocationTransaction,
-                                 AllocationTransaction allocationTransaction) {
+    private com.rbkmoney.swag_webhook_events.model.InvoiceCart buildInvoiceCart(
+            com.rbkmoney.damsel.domain.AllocationTransaction sourceAllocationTransaction) {
         if (sourceAllocationTransaction.isSetDetails() && sourceAllocationTransaction.getDetails().isSetCart()) {
             InvoiceCart invoiceCartSource = sourceAllocationTransaction.getDetails().getCart();
-            com.rbkmoney.swag_webhook_events.model.InvoiceCart invoiceCart =
-                    new com.rbkmoney.swag_webhook_events.model.InvoiceCart();
-            invoiceCartSource.getLines().forEach(invoiceLine -> {
-                InvoiceCartLine invoiceCartLine = new InvoiceCartLine();
-                invoiceCartLine.setPrice(invoiceLine.getPrice().getAmount());
-                invoiceCartLine.setProduct(invoiceLine.getProduct());
-                invoiceCartLine.setQuantity((long) invoiceLine.getQuantity());
-                invoiceCart.add(invoiceCartLine);
-            });
-            allocationTransaction.setCart(invoiceCart);
+            var invoiceCart = new com.rbkmoney.swag_webhook_events.model.InvoiceCart();
+            List<InvoiceCartLine> invoiceCartLines = invoiceCartSource.getLines().stream()
+                    .map(this::buildInvoiceCartLine)
+                    .collect(Collectors.toList());
+            invoiceCart.addAll(invoiceCartLines);
+            return invoiceCart;
         }
+        return null;
+    }
+
+    private InvoiceCartLine buildInvoiceCartLine(InvoiceLine invoiceLine) {
+        InvoiceCartLine invoiceCartLine = new InvoiceCartLine();
+        invoiceCartLine.setPrice(invoiceLine.getPrice().getAmount());
+        invoiceCartLine.setProduct(invoiceLine.getProduct());
+        invoiceCartLine.setQuantity((long) invoiceLine.getQuantity());
+        return invoiceCartLine;
     }
 
     private AllocationBodyAmount buildAllocationBodyAmount(
@@ -233,8 +245,8 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
             allocationBodyAmount.setAmount(allocationTransaction.getAmount().getAmount());
             allocationBodyAmount.setCurrency(allocationTransaction.getAmount().getCurrency().getSymbolicCode());
         }
-        fillTarget(allocationTransaction, allocationBodyAmount);
-        fillInvoiceCart(allocationTransaction, allocationBodyAmount);
+        allocationBodyAmount.setTarget(buildTarget(allocationTransaction));
+        allocationBodyAmount.setCart(buildInvoiceCart(allocationTransaction));
         return allocationBodyAmount;
     }
 }

@@ -87,6 +87,9 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
         allocationTransaction.setBody(mockTBaseProcessor
                 .process(new com.rbkmoney.damsel.domain.AllocationTransactionBodyTotal(), new TBaseHandler<>(
                         com.rbkmoney.damsel.domain.AllocationTransactionBodyTotal.class)));
+        allocationTransaction.getBody().setFee(mockTBaseProcessor
+                .process(new com.rbkmoney.damsel.domain.AllocationTransactionFeeShare(), new TBaseHandler<>(
+                        com.rbkmoney.damsel.domain.AllocationTransactionFeeShare.class)));
         allocationTransaction.setTarget(mockTBaseProcessor
                 .process(new com.rbkmoney.damsel.domain.AllocationTransactionTarget(), new TBaseHandler<>(
                         com.rbkmoney.damsel.domain.AllocationTransactionTarget.class)));
