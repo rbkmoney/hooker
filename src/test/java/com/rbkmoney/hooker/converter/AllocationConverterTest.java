@@ -7,6 +7,7 @@ import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.swag_webhook_events.model.*;
+import com.rbkmoney.swag_webhook_events.model.AllocationTransaction.AllocationBodyTypeEnum;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,8 +56,7 @@ public class AllocationConverterTest extends AbstractIntegrationTest {
         assertEquals(1, target.size());
 
         com.rbkmoney.swag_webhook_events.model.AllocationTransaction actualAllocationTransaction = target.get(0);
-        assertEquals(
-                com.rbkmoney.swag_webhook_events.model.AllocationTransaction.AllocationBodyTypeEnum.ALLOCATIONBODYTOTAL,
+        assertEquals(AllocationBodyTypeEnum.ALLOCATIONBODYTOTAL,
                 actualAllocationTransaction.getAllocationBodyType());
         AllocationBodyTotal allocationBodyTotal = (AllocationBodyTotal) actualAllocationTransaction;
         assertEquals(Long.valueOf(allocationTransaction.getBody().getTotal().getAmount()),
@@ -114,8 +114,7 @@ public class AllocationConverterTest extends AbstractIntegrationTest {
         assertEquals(1, target.size());
 
         com.rbkmoney.swag_webhook_events.model.AllocationTransaction actualAllocationTransaction = target.get(0);
-        assertEquals(
-                com.rbkmoney.swag_webhook_events.model.AllocationTransaction.AllocationBodyTypeEnum.ALLOCATIONBODYAMOUNT,
+        assertEquals(AllocationBodyTypeEnum.ALLOCATIONBODYAMOUNT,
                 actualAllocationTransaction.getAllocationBodyType());
         AllocationBodyAmount allocationBodyAmount = (AllocationBodyAmount) actualAllocationTransaction;
         assertEquals(Long.valueOf(allocationTransaction.getAmount().getAmount()), allocationBodyAmount.getAmount());
