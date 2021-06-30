@@ -39,7 +39,8 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
             return sourceWrapper.getRefund().getCash().getAmount();
         }
         if (sourceWrapper.isSetCashFlow()) {
-            return CashFlowUtils.getFees(sourceWrapper.getCashFlow()).getOrDefault(FeeType.AMOUNT, null);
+            return CashFlowUtils.getFees(sourceWrapper.getDeprecatedCashFlow())
+                    .getOrDefault(FeeType.AMOUNT, null); // TODO ???
         }
         return null;
     }
@@ -49,7 +50,8 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
             return sourceWrapper.getRefund().getCash().getCurrency().getSymbolicCode();
         }
         if (sourceWrapper.isSetCashFlow()) {
-            return CashFlowUtils.getCurrency(sourceWrapper.getCashFlow()).getOrDefault(FeeType.AMOUNT, null);
+            return CashFlowUtils.getCurrency(sourceWrapper.getDeprecatedCashFlow())
+                    .getOrDefault(FeeType.AMOUNT, null); // TODO ???
         }
         return null;
     }
