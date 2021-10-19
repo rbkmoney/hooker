@@ -39,7 +39,9 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
         Payment target = converter
                 .convert(new com.rbkmoney.damsel.payment_processing.InvoicePayment(source, of(), of(), of(), of()));
         assertEquals(source.getId(), target.getId());
-        assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
+        if (!source.getStatus().isSetChargedBack()) {
+            assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
+        }
         if (source.getStatus().isSetCaptured() && source.getStatus().getCaptured().isSetCost()) {
             assertEquals(source.getStatus().getCaptured().getCost().getAmount(), target.getAmount().longValue());
             assertEquals(source.getStatus().getCaptured().getCost().getCurrency().getSymbolicCode(),
