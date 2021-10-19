@@ -57,12 +57,20 @@ public class HookDaoImpl implements HookDao {
     public List<Hook> getPartyHooks(String partyId) throws DaoException {
         log.debug("getPartyHooks request. PartyId = {}", partyId);
         final String sql =
-                " select w.*, k.pub_key, wte.hook_id, " +
-                        "wte.event_type," +
-                        "wte.invoice_shop_id," +
-                        "wte.invoice_status," +
-                        "wte.invoice_payment_status," +
-                        "wte.invoice_payment_refund_status " +
+                " select w.id, " +
+                        " w.party_id, " +
+                        " w.url, " +
+                        " w.retry_policy, " +
+                        " w.enabled, " +
+                        " w.topic, " +
+                        " w.availability, " +
+                        " k.pub_key, " +
+                        " wte.hook_id, " +
+                        " wte.event_type, " +
+                        " wte.invoice_shop_id," +
+                        " wte.invoice_status," +
+                        " wte.invoice_payment_status," +
+                        " wte.invoice_payment_refund_status " +
                         " from hook.webhook w " +
                         " join hook.party_data k " +
                         " on w.party_id = k.party_id " +
@@ -184,18 +192,26 @@ public class HookDaoImpl implements HookDao {
 
     @Override
     public Hook getHookById(long id) throws DaoException {
-        final String sql = "select w.*, k.pub_key, wte.hook_id, " +
-                "wte.event_type," +
-                "wte.invoice_shop_id," +
-                "wte.invoice_status," +
-                "wte.invoice_payment_status," +
-                "wte.invoice_payment_refund_status " +
-                "from hook.webhook w " +
-                "join hook.party_data k " +
-                "on w.party_id = k.party_id " +
-                "join hook.webhook_to_events wte " +
-                "on wte.hook_id = w.id " +
-                "where w.id =:id";
+        final String sql = "select w.id, " +
+                " w.party_id, " +
+                " w.url, " +
+                " w.retry_policy, " +
+                " w.enabled, " +
+                " w.topic, " +
+                " w.availability, " +
+                " k.pub_key, " +
+                " wte.hook_id, " +
+                " wte.event_type, " +
+                " wte.invoice_shop_id, " +
+                " wte.invoice_status, " +
+                " wte.invoice_payment_status, " +
+                " wte.invoice_payment_refund_status " +
+                " from hook.webhook w " +
+                " join hook.party_data k " +
+                " on w.party_id = k.party_id " +
+                " join hook.webhook_to_events wte " +
+                " on wte.hook_id = w.id " +
+                " where w.id =:id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);
