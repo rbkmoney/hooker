@@ -57,14 +57,19 @@ public class HookDaoImpl implements HookDao {
     public List<Hook> getPartyHooks(String partyId) throws DaoException {
         log.debug("getPartyHooks request. PartyId = {}", partyId);
         final String sql =
-                " select w.*, k.pub_key, wte.* " +
+                " select w.*, k.pub_key, wte.hook_id, " +
+                        "wte.event_type," +
+                        "wte.invoice_shop_id," +
+                        "wte.invoice_status," +
+                        "wte.invoice_payment_status," +
+                        "wte.invoice_payment_refund_status " +
                         " from hook.webhook w " +
                         " join hook.party_data k " +
                         " on w.party_id = k.party_id " +
                         " join hook.webhook_to_events wte " +
                         " on wte.hook_id = w.id " +
                         " where w.party_id =:party_id " +
-                        " order by id";
+                        " order by w.id";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("party_id", partyId);
@@ -179,7 +184,12 @@ public class HookDaoImpl implements HookDao {
 
     @Override
     public Hook getHookById(long id) throws DaoException {
-        final String sql = "select w.*, k.pub_key, wte.* " +
+        final String sql = "select w.*, k.pub_key, wte.hook_id, " +
+                "wte.event_type," +
+                "wte.invoice_shop_id," +
+                "wte.invoice_status," +
+                "wte.invoice_payment_status," +
+                "wte.invoice_payment_refund_status " +
                 "from hook.webhook w " +
                 "join hook.party_data k " +
                 "on w.party_id = k.party_id " +

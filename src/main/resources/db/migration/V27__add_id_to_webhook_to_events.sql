@@ -1,0 +1,1 @@
+alter table hook.webhook_to_events add IF NOT EXISTS id bigserial primary key;
