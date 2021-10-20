@@ -1,8 +1,6 @@
 package com.rbkmoney.hooker.converter;
 
-import com.rbkmoney.damsel.domain.BankCard;
-import com.rbkmoney.damsel.domain.InvoicePayment;
-import com.rbkmoney.damsel.domain.PaymentTool;
+import com.rbkmoney.damsel.domain.*;
 import com.rbkmoney.geck.serializer.kit.mock.MockMode;
 import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
 import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
@@ -15,10 +13,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.List;
 
 import static java.util.List.of;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class PaymentConverterTest extends AbstractIntegrationTest {
 
@@ -36,8 +34,15 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
                     .setPaymentTool(PaymentTool
                             .bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
         }
-        Payment target = converter
-                .convert(new com.rbkmoney.damsel.payment_processing.InvoicePayment(source, of(), of(), of(), of()));
+        source.setStatus(InvoicePaymentStatus.captured(new InvoicePaymentCaptured()));
+        com.rbkmoney.damsel.payment_processing.InvoicePayment sourceWrapper =
+                new com.rbkmoney.damsel.payment_processing.InvoicePayment(source, of(), of(), of(), of());
+        sourceWrapper.setAllocaton(mockTBaseProcessor.process(new Allocation(), new TBaseHandler<>(Allocation.class)));
+        com.rbkmoney.damsel.domain.AllocationTransaction allocationTransaction =
+                mockTBaseProcessor.process(new com.rbkmoney.damsel.domain.AllocationTransaction(), new TBaseHandler<>(
+                        com.rbkmoney.damsel.domain.AllocationTransaction.class));
+        sourceWrapper.getAllocaton().setTransactions(List.of(allocationTransaction));
+        Payment target = converter.convert(sourceWrapper);
         assertEquals(source.getId(), target.getId());
         if (!source.getStatus().isSetChargedBack()) {
             assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
@@ -68,5 +73,8 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
             assertEquals(source.getPayer().getRecurrent().getRecurrentParent().getInvoiceId(),
                     ((RecurrentPayer) target.getPayer()).getRecurrentParentPayment().getInvoiceID());
         }
+        com.rbkmoney.swag_webhook_events.model.Allocation allocation = target.getAllocation();
+        assertNotNull(allocation);
+        assertEquals(allocation.size(), 1);
     }
 }

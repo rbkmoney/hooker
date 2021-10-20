@@ -2,6 +2,7 @@ package com.rbkmoney.hooker.converter;
 
 import com.rbkmoney.damsel.domain.InvoiceLine;
 import com.rbkmoney.hooker.utils.TimeUtils;
+import com.rbkmoney.swag_webhook_events.model.Allocation;
 import com.rbkmoney.swag_webhook_events.model.Invoice;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCartLine;
 import com.rbkmoney.swag_webhook_events.model.InvoiceCartLineTaxMode;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.Invoice, Invoice> {
 
     private final MetadataDeserializer deserializer;
+    private final AllocationConverter allocationConverter;
 
     @Override
     public Invoice convert(com.rbkmoney.damsel.domain.Invoice source) {
@@ -33,7 +35,8 @@ public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.In
                 .reason(source.getStatus().isSetCancelled() ? source.getStatus().getCancelled().getDetails() :
                         source.getStatus().isSetFulfilled() ? source.getStatus().getFulfilled().getDetails() : null)
                 .description(source.getDetails().getDescription())
-                .cart(source.getDetails().isSetCart() ? convertCart(source.getDetails().getCart().getLines()) : null);
+                .cart(source.getDetails().isSetCart() ? convertCart(source.getDetails().getCart().getLines()) : null)
+                .allocation(getAllocation(source));
     }
 
     private List<InvoiceCartLine> convertCart(List<InvoiceLine> cartLines) {
@@ -49,5 +52,13 @@ public class InvoiceConverter implements Converter<com.rbkmoney.damsel.domain.In
                                         .fromValue(l.getMetadata().get("TaxMode").getStr()))
                                 : null))
                 .collect(Collectors.toList());
+    }
+
+    private Allocation getAllocation(com.rbkmoney.damsel.domain.Invoice source) {
+        if (source.isSetAllocation()) {
+            var allocation = source.getAllocation();
+            return allocationConverter.convert(allocation);
+        }
+        return null;
     }
 }

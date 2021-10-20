@@ -78,11 +78,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>5.3.8</version>
+        </dependency>
 
         <!--RBK libs-->
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>damsel</artifactId>
+            <version>1.497-a2509fc-epic</version>
         </dependency>
         <dependency>
             <groupId>com.rbkmoney</groupId>
@@ -148,7 +154,7 @@
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>swag-webhook-events</artifactId>
-            <version>1.89-39660bc-client</version>
+            <version>1.98-611eb36-epic-client</version>
         </dependency>
 
         <!--Thirdparty libs-->

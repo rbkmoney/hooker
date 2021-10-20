@@ -5,15 +5,20 @@ import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefund;
 import com.rbkmoney.hooker.model.FeeType;
 import com.rbkmoney.hooker.utils.CashFlowUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
+import com.rbkmoney.swag_webhook_events.model.Allocation;
 import com.rbkmoney.swag_webhook_events.model.Refund;
 import com.rbkmoney.swag_webhook_events.model.RefundError;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import static com.rbkmoney.hooker.utils.ErrorUtils.getRefundError;
 
 @Component
+@RequiredArgsConstructor
 public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> {
+
+    private final AllocationConverter allocationConverter;
 
     @Override
     public Refund convert(InvoicePaymentRefund sourceWrapper) {
@@ -27,8 +32,10 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
                 .error(getError(source))
                 .amount(getAmount(sourceWrapper))
                 .currency(getCurrency(sourceWrapper))
-                .rrn(getRrn(sourceWrapper));
+                .rrn(getRrn(sourceWrapper))
+                .allocation(getAllocation(source));
     }
+
 
     private RefundError getError(com.rbkmoney.damsel.domain.InvoicePaymentRefund source) {
         return source.getStatus().isSetFailed() ? getRefundError(source.getStatus().getFailed().getFailure()) : null;
@@ -39,7 +46,8 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
             return sourceWrapper.getRefund().getCash().getAmount();
         }
         if (sourceWrapper.isSetCashFlow()) {
-            return CashFlowUtils.getFees(sourceWrapper.getCashFlow()).getOrDefault(FeeType.AMOUNT, null);
+            return CashFlowUtils.getFees(sourceWrapper.getDeprecatedCashFlow())
+                    .getOrDefault(FeeType.AMOUNT, null); // TODO ???
         }
         return null;
     }
@@ -49,7 +57,8 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
             return sourceWrapper.getRefund().getCash().getCurrency().getSymbolicCode();
         }
         if (sourceWrapper.isSetCashFlow()) {
-            return CashFlowUtils.getCurrency(sourceWrapper.getCashFlow()).getOrDefault(FeeType.AMOUNT, null);
+            return CashFlowUtils.getCurrency(sourceWrapper.getDeprecatedCashFlow())
+                    .getOrDefault(FeeType.AMOUNT, null); // TODO ???
         }
         return null;
     }
@@ -66,5 +75,13 @@ public class RefundConverter implements Converter<InvoicePaymentRefund, Refund> 
 
     private AdditionalTransactionInfo getAdditionalInfo(InvoicePaymentRefund damselRefund) {
         return damselRefund.getSessions().get(0).getTransactionInfo().getAdditionalInfo();
+    }
+
+    private Allocation getAllocation(com.rbkmoney.damsel.domain.InvoicePaymentRefund source) {
+        if (source.isSetAllocation()) {
+            var allocation = source.getAllocation();
+            return allocationConverter.convert(allocation);
+        }
+        return null;
     }
 }

@@ -10,14 +10,7 @@ import com.rbkmoney.hooker.utils.CashFlowUtils;
 import com.rbkmoney.hooker.utils.ErrorUtils;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
-import com.rbkmoney.swag_webhook_events.model.ClientInfo;
-import com.rbkmoney.swag_webhook_events.model.ContactInfo;
-import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
-import com.rbkmoney.swag_webhook_events.model.Payment;
-import com.rbkmoney.swag_webhook_events.model.PaymentContactInfo;
-import com.rbkmoney.swag_webhook_events.model.PaymentRecurrentParent;
-import com.rbkmoney.swag_webhook_events.model.PaymentResourcePayer;
-import com.rbkmoney.swag_webhook_events.model.RecurrentPayer;
+import com.rbkmoney.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -27,6 +20,7 @@ import org.springframework.stereotype.Component;
 public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
     private final MetadataDeserializer deserializer;
+    private final AllocationConverter allocationConverter;
 
     @Override
     public Payment convert(InvoicePayment sourceWrapper) {
@@ -40,7 +34,8 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                 .currency(source.getCost().getCurrency().getSymbolicCode())
                 .metadata(getMetadata(source))
                 .fee(getFee(sourceWrapper))
-                .rrn(getRrn(sourceWrapper));
+                .rrn(getRrn(sourceWrapper))
+                .allocation(getAllocation(sourceWrapper));
 
         if (source.getStatus().isSetFailed()) {
             setErrorDetails(source, target);
@@ -65,7 +60,8 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
     private Long getFee(InvoicePayment sourceWrapper) {
         return sourceWrapper.isSetCashFlow()
-                ? CashFlowUtils.getFees(sourceWrapper.getCashFlow()).getOrDefault(FeeType.FEE, 0L) : 0L;
+                ? CashFlowUtils.getFees(sourceWrapper.getDeprecatedCashFlow()).getOrDefault(FeeType.FEE, 0L) :
+                0L; // TODO ???
     }
 
     private String getRrn(InvoicePayment sourceWrapper) {
@@ -144,5 +140,13 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
     private AdditionalTransactionInfo getAdditionalInfo(InvoicePayment sourceWrapper) {
         return sourceWrapper.getSessions().get(0).getTransactionInfo().getAdditionalInfo();
+    }
+
+    private Allocation getAllocation(InvoicePayment sourceWrapper) {
+        if (sourceWrapper.isSetAllocaton()) {
+            var allocation = sourceWrapper.getAllocaton();
+            return allocationConverter.convert(allocation);
+        }
+        return null;
     }
 }
